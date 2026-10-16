@@ -7,6 +7,11 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 - Simülasyon: öğrenci, veli, ekonomi, huni, olaylar, sertifika, ofis, personel, ÜYS/sezon, tercih dönemi, rakipler, iflas. Kayıt şeması v10. 102 test (3 sezonluk denge botu dahil).
 - Görsel: ev stüdyosu + semt (4×4) / merkez (5×5) ofis arka planları; Buse, yardımcı koç, 3 öğrenci (Gemini, "Buse'li odaya ekle + fark" yöntemi). Buse ve yardımcı koçlar odada iş noktaları arasında yürür (`render/walkers.ts`, `RoomDef.workSpots/hub`), öğrenciler `studentSpots`'ta durur, arada etrafa bakar.
 
+## Yayın
+- Depo: github.com/ykuvat/rota-kocluk-oyunu (herkese açık). Oynanabilir: https://ykuvat.github.io/rota-kocluk-oyunu/
+- `main`'e gönderim → `.github/workflows/pages.yml`: `npm ci`, `npm test`, `BASE_PATH=/<depo>/ npm run build`, Pages'e yayın. `art/sprites` commit'te olmalı (derleme sprite'ları oradan senkronlar).
+- Sistemde git yok; GitHub Desktop'ın git'i: `%LOCALAPPDATA%\GitHubDesktop\app-<sürüm>\resources\app\git\cmd\git.exe`. Gönderim GitHub Desktop ile.
+
 ## Kararlar
 - Oyuncuya hesap yaptırılmaz; kart dili, görünür sonuç (kullanıcı geri bildirimi).
 - **Buse'nin çizimi değiştirilmez**; hareket yalnız konum/aynalama/1 px adım-nefes ile.
