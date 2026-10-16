@@ -8,7 +8,7 @@ Tasarım belgesi (GDD): Claude Docs'taki "Eğitim Koçluğu Simülasyonu — Mim
 - `npm run dev` — sprite'ları senkronlar (`tools/sync_sprites.mjs`), Vite'ı 5173'te açar
 - `npm test` — Vitest (`tests/`); `tests/fullgame.test.ts` 3 sezonluk tam oyun botudur (`tests/bot.ts`), denge değişince sonuçlarını `docs/gelistirme-gunlugu.md`'ye işle (`FULLGAME_SEEDS=16` ile daha çok tohum)
 - `npm run typecheck` / `npm run build`
-- Sanat araçları (Python, `tools/.venv`): `tools\.venv\Scripts\python.exe tools\pixelnorm.py art\configs\<x>.json`, `tools/extract_diff.py`, `tools/make_sheet.py`, `tools/scene_test.py`
+- Sanat araçları (Python, `tools/.venv`): `tools\.venv\Scripts\python.exe tools\pixelnorm.py art\configs\<x>.json`, `tools/extract_diff.py`, `tools/sprite_cleanup.py` (pixelnorm sonrası kırıntı/gölge), `tools/make_sheet.py`, `tools/scene_test.py`
 
 ## Mimari kuralları
 

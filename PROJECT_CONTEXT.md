@@ -2,10 +2,10 @@
 
 Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, denge), `docs/varlik-gunlugu.md` (sanat), `CLAUDE.md` (mimari kurallar).
 
-## Durum (2026-10-16)
+## Durum (2026-10-17)
 - Oyun tarayıcıda oynanır (`npm run dev`, :5173). Varsayılan "oyun modu": tur tabanlı hafta (Haftayı başlat → ~4 sn → sonuç ekranı), sağda karar kartları, altta öğrenci şeridi, Buse'nin anlattığı 5 adımlı eğitim. Eski ayrıntılı paneller ⚙ / F2.
 - Simülasyon: öğrenci, veli, ekonomi, huni, olaylar, sertifika, ofis, personel (yardımcı koç, sekreter, rehber, branş öğretmeni), şubeler (Aşama 4), ÜYS/sezon, tercih dönemi, rakipler, iflas. Kayıt şeması v11. 109 test (3 sezonluk denge botu dahil).
-- Görsel: ev stüdyosu + semt (4×4) / merkez (5×5) ofis arka planları; Buse, yardımcı koç, 3 öğrenci (Gemini, "Buse'li odaya ekle + fark" yöntemi). Buse ve yardımcı koçlar odada iş noktaları arasında yürür (`render/walkers.ts`, `RoomDef.workSpots/hub`), öğrenciler `studentSpots`'ta durur, arada etrafa bakar.
+- Görsel: ev stüdyosu + semt (4×4) / merkez (5×5) ofis arka planları; Buse, yardımcı koç, sekreter, rehber, branş öğretmeni, 3 öğrenci (Gemini, "Buse'li odaya ekle + fark" yöntemi). Buse ve yardımcı koçlar odada iş noktaları arasında yürür (`render/walkers.ts`, `RoomDef.workSpots/hub`), öğrenciler `studentSpots`'ta durur, arada etrafa bakar.
 
 ## Yayın
 - Depo: github.com/ykuvat/rota-kocluk-oyunu (herkese açık). Oynanabilir: https://ykuvat.github.io/rota-kocluk-oyunu/
@@ -23,10 +23,9 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 - Öğrenci kesitlerinde kenarda birkaç turuncu zemin pikseli.
 - İlk sezon hedef tutturma düşük (%21); güven oturmuş kurumda ~99'da doyuyor.
 - Merkez ofis seramik derzleri ızgarayla çakışmıyor.
-- Uzmanlar odada yardımcı koç sprite'ıyla görünür; rol sprite'ları ve şube sahnesi yok.
+- Şubelerin ayrı sahnesi yok; personel yuvası semt 2, merkez 3 (fazlası odada görünmez).
 - Güven ~99'da doyduğu için kalite yatırımı (branş, rehber) gelire dolaylı dönmüyor; büyüme şubelerden geliyor.
 
 ## Sıradaki
-- Sekreter, rehber ve branş öğretmeni sprite'ları (Gemini fark yöntemi) → odada rolüne göre görünüm.
 - Buse ve öğrenciler için arka (NE) görünüm ve yürüme kareleri (Gemini fark yöntemi) → yürüyüş animasyonu.
 - Her arşetip için ikinci görünüm (`char_student_<tür>_b_se`).

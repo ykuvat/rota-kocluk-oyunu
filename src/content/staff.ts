@@ -26,6 +26,14 @@ export const ROLES: Record<StaffRole, RoleDef> = {
 
 export const ROLE_IDS = Object.keys(ROLES) as StaffRole[];
 
+/** Odada personelin rolüne göre görünümü (sanat: art/configs/p5_yardimci.json, p7_*.json). */
+export const ROLE_SPRITE: Record<StaffRole, string> = {
+  coach: "char_assistant_idle_se",
+  secretary: "char_staff_secretary_se",
+  counselor: "char_staff_counselor_se",
+  teacher: "char_staff_teacher_se",
+};
+
 /** Uzman etkileri bu beceride tam (1×) güçtedir; 30 beceri yarım, 90 beceri 1,5 kat. */
 export const ROLE_SKILL_REF = 60;
 

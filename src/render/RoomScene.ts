@@ -56,7 +56,8 @@ export class RoomScene extends Container {
     room: RoomDef,
     manifest: SpriteManifest,
     textures: Map<string, Texture>,
-    staffCount = 0,
+    /** odada gösterilecek personelin sprite'ları, yuva sırasıyla (bkz. `Placement.minStaff`) */
+    staff: string[] = [],
     actors: Actor[] = [],
     onActorTap?: (id: string) => void,
   ) {
@@ -80,10 +81,12 @@ export class RoomScene extends Container {
     const keys = sortKeys(room.placements);
     const book = new SpotBook();
     for (const p of room.placements) {
-      if (p.minStaff !== undefined && staffCount < p.minStaff) continue;
-      const info = manifest.sprites[p.sprite];
-      if (!info) throw new Error(`manifest'te sprite yok: ${p.sprite}`);
-      const s = new Sprite(textures.get(p.sprite));
+      if (p.minStaff !== undefined && staff.length < p.minStaff) continue;
+      const roleSprite = p.minStaff !== undefined ? staff[p.minStaff - 1] : undefined;
+      const sprite = roleSprite && manifest.sprites[roleSprite] && textures.has(roleSprite) ? roleSprite : p.sprite;
+      const info = manifest.sprites[sprite];
+      if (!info) throw new Error(`manifest'te sprite yok: ${sprite}`);
+      const s = new Sprite(textures.get(sprite));
       s.anchor.set(info.anchor[0] / info.size[0], info.anchor[1] / info.size[1]);
       if (p.flip) s.scale.x = -1;
       const bottom = footprintBottom(p.x, p.y, p.fx, p.fy);
@@ -94,7 +97,7 @@ export class RoomScene extends Container {
       this.objects.addChild(s);
       if (p.walker && room.workSpots?.length) {
         this.walkers.push(new Walker(s, { x: p.x, y: p.y }, info.size[1], room.workSpots, room.hub, book, this.objects));
-      } else if (p.sprite.startsWith("char_")) this.breathe(s, p.id, info.size[1]);
+      } else if (sprite.startsWith("char_")) this.breathe(s, p.id, info.size[1]);
     }
 
     // öğrenciler: odadaki sabit yerlerde, başlarının üstünde ruh hâli; tıklanınca kartı açılır

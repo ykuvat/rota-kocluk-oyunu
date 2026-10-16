@@ -2,7 +2,7 @@ import type { Placement, RoomDef } from "../types";
 
 // Aşama 3 ofisleri. Arka planlar Gemini'de üretildi (art/configs/oda_ofis_*.json); zemin ızgarası
 // tools/floor_corners.py ile ölçüldü. Masalar uzun kenarı +y boyunca, sol-arka duvara dayalı.
-// Yardımcı koçlar ekipte kişi varken görünür (minStaff).
+// Personel yuvaları (minStaff): ekipte o sırada kişi varken görünür, rolünün sprite'ıyla (content/staff.ts → ROLE_SPRITE).
 const DESK_TOP = 56;
 
 const workstation = (id: string, x: number, y: number, laptop = true): Placement[] => [
@@ -32,6 +32,7 @@ export const officeDistrict: RoomDef = {
     { id: "basket", sprite: "furn_wastebasket_wicker_se", x: 1.2, y: 3.55, fx: 0.3, fy: 0.3 },
     { id: "buse", sprite: "char_buse_idle_se", x: 1.6, y: 2.8, fx: 0.4, fy: 0.4, walker: true },
     { id: "assistant1", sprite: "char_assistant_idle_se", x: 2.7, y: 3.1, fx: 0.4, fy: 0.4, minStaff: 1, flip: true, walker: true },
+    { id: "assistant2", sprite: "char_assistant_idle_se", x: 3.5, y: 3.4, fx: 0.4, fy: 0.4, minStaff: 2, walker: true },
   ],
   // mobilya taban izleriyle ve iş noktalarıyla çakışmayan boş zemin
   studentSpots: [
@@ -78,6 +79,7 @@ export const officeCentral: RoomDef = {
     { id: "buse", sprite: "char_buse_idle_se", x: 1.8, y: 3.4, fx: 0.4, fy: 0.4, walker: true },
     { id: "assistant1", sprite: "char_assistant_idle_se", x: 3.1, y: 3.8, fx: 0.4, fy: 0.4, minStaff: 1, flip: true, walker: true },
     { id: "assistant2", sprite: "char_assistant_idle_se", x: 3.9, y: 3.2, fx: 0.4, fy: 0.4, minStaff: 2, walker: true },
+    { id: "assistant3", sprite: "char_assistant_idle_se", x: 4.5, y: 3.0, fx: 0.4, fy: 0.4, minStaff: 3, flip: true, walker: true },
   ],
   studentSpots: [
     { x: 1.3, y: 1.05, flip: true },

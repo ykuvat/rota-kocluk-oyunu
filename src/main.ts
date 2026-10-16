@@ -10,6 +10,7 @@ import { Floaters } from "./render/floaters";
 import { RoomScene, spriteTop, type Actor } from "./render/RoomScene";
 import { calendarAt } from "./sim/calendar";
 import { createState, type GameState, type SimEvent } from "./sim/state";
+import { ROLE_IDS, ROLE_SPRITE } from "./content/staff";
 import { clearStorage, loadFromStorage, saveToStorage } from "./platform/save";
 import { advance } from "./sim/step";
 import { applyCommand, type Command } from "./sim/commands";
@@ -39,6 +40,14 @@ TextureStyle.defaultOptions.scaleMode = "nearest";
  */
 const MS_PER_GAME_HOUR_RUNNING = 24;
 
+/** Odadaki personel yuvaları için sprite sırası: önce her rolden birer kişi (çeşitlilik), sonra kalanlar işe alınma sırasıyla. */
+function staffSprites(state: GameState): string[] {
+  const members = state.staff.members;
+  const firsts = ROLE_IDS.map((r) => members.find((m) => m.role === r)).filter((m) => m !== undefined);
+  const rest = members.filter((m) => !firsts.includes(m));
+  return [...firsts, ...rest].map((m) => ROLE_SPRITE[m.role]);
+}
+
 async function boot() {
   const host = document.getElementById("game")!;
   const app = new Application();
@@ -53,6 +62,8 @@ async function boot() {
   const needed = new Set(rooms.flatMap((r) => [...(r.background ? [r.background] : []), ...r.placements.map((p) => p.sprite)]));
   // öğrenci karakterleri ve bekleme kareleri (varsa)
   for (const name of Object.keys(manifest.sprites)) if (name.startsWith("char_student_")) needed.add(name);
+  // personelin rol görünümleri (sprite'ı olmayan rol yuvanın varsayılan sprite'ıyla çizilir)
+  for (const name of Object.values(ROLE_SPRITE)) if (manifest.sprites[name]) needed.add(name);
   const textures = new Map<string, Texture>();
   await Promise.all(
     [...needed].map(async (name) => {
@@ -74,7 +85,7 @@ async function boot() {
 
   // oda: ofis kiralanınca sahne değişir; ekip değişince de yeniden kurulur (yardımcı koçlar odada görünür)
   let room = roomFor(state);
-  let staffShown = state.staff.members.length;
+  let staffShown = staffSprites(state);
   /** öğrencinin odadaki görünümü: arşetipe göre karakter, ruh hâli simgesi */
   const actorsFor = (r: RoomDef): Actor[] => {
     const spots = r.studentSpots ?? [];
@@ -105,9 +116,9 @@ async function boot() {
   };
   const syncRoom = () => {
     const next = roomFor(state);
-    const staff = state.staff.members.length;
+    const staff = staffSprites(state);
     const nextActors = actorsFor(next);
-    if (next === room && staff === staffShown && actorKey(nextActors) === actorKey(actors)) return;
+    if (next === room && staff.join() === staffShown.join() && actorKey(nextActors) === actorKey(actors)) return;
     const moved = next !== room;
     const gridOn = scene.grid.visible;
     world.removeChild(scene);

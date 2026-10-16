@@ -26,7 +26,10 @@ export interface Placement {
   lift?: number;
   /** Bu nesnenin üstünde durduğu nesne (çizim sırası için). */
   on?: string;
-  /** Yalnız ekipte en az bu kadar yardımcı koç varken görünür. */
+  /**
+   * Personel yuvası (1'den): ekipte en az bu kadar kişi varken görünür ve o sıradaki kişinin
+   * rol sprite'ıyla çizilir (`sprite` yalnız rol sprite'ı yoksa kullanılır).
+   */
   minStaff?: number;
   /** Yatay aynala (SW yönü). */
   flip?: boolean;

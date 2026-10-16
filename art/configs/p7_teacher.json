@@ -1,0 +1,21 @@
+{
+  "source": "art/inbox/p7/teacher.png",
+  "out_dir": "art/sprites/characters/staff",
+  "_note": "Branş öğretmeni (kadın, ~30): Buse'li odaya (v4) Gemini'ye eklettirilen kişi (p7_uzmanlar_odada_v1, 1024 px çıktı 2048'e büyütüldü) - v4 farkı (tools/extract_diff.py --names secretary,counselor,teacher --pick 836:920,1267:1310,1568:1593). Boy Buse'ye (128) göre 125 px.",
+  "bg_tolerance": 22,
+  "shadow_tolerance": 12,
+  "shadow_color": [106, 133, 130],
+  "shadow_zone": 0.2,
+  "keep_shadow": true,
+  "shadow_alpha": 90,
+  "close_iterations": 6,
+  "min_area": 3000,
+  "palette_colors": 40,
+  "palette_mode": "sprite",
+  "preview_scale": 3,
+  "preview_name": "_preview_teacher.png",
+  "meta_name": "_meta_staff_teacher.json",
+  "items": [
+    { "name": "char_staff_teacher_se", "height": 125 }
+  ]
+}

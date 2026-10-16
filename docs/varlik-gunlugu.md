@@ -84,7 +84,7 @@ Dizüstü, yazıcı, kettle ve sepet eski sayfadan (`p4_mobilya_ekonomik.json`, 
 - Yardımcı koç: `extract_diff.py p1_buse_odada_v4.jpg p5_yardimci_odada_v1.jpg --pick 707:1485` → `art/configs/p5_yardimci.json` (boy 132 px = Buse + 5 cm) → `char_assistant_idle_se` 46×136. Odada SW yönü `flip` ile aynalanır.
 - Oyun: `src/content/rooms/offices.ts` artık `background` kullanıyor (kodla çizilen kabuk yedek olarak `RoomScene`'de duruyor). Yardımcı koç yerleşimleri `minStaff` ile ekip sayısına bağlı; ekip değişince sahne yeniden kurulur.
 - **Bilinen kusurlar:** merkez ofisin seramik derzleri oyun ızgarasıyla çakışmıyor (6 derz / 5 karo); yardımcı koçun sağ kenarında birkaç turuncu zemin pikseli; tek bir yardımcı koç görünümü var (iki kişi aynı sprite, biri aynalı).
-- Gemini notları: görsel aracı bir sohbette "devre dışı" deyince yeni sohbet açmak çözdü; + menüsü ekran görüntüsünde boş görünür ama erişilebilirlik ağacında öğeler vardır (dosya girişi "file input" olarak aranmalı). Tarayıcı indirme klasöründe **en yeni dosya CreationTime'a göre seçilmeli** (LastWriteTime'a göre seçince eski bir dosya yanlışlıkla taşındı, hemen geri kondu).
+- Gemini notları (devam aşağıda): görsel aracı bir sohbette "devre dışı" deyince yeni sohbet açmak çözdü; + menüsü ekran görüntüsünde boş görünür ama erişilebilirlik ağacında öğeler vardır (dosya girişi "file input" olarak aranmalı). Tarayıcı indirme klasöründe **en yeni dosya CreationTime'a göre seçilmeli** (LastWriteTime'a göre seçince eski bir dosya yanlışlıkla taşındı, hemen geri kondu).
 
 ## PixelLab ile öğrenci karakterleri (2026-10-16)
 
@@ -110,3 +110,16 @@ PixelLab (ücretsiz plan). Character Creator → Create from Text → Humanoid �
 - Karakteri ayrı bir sayfada istemek açıyı değiştirmiyor; **karakteri onaylı odanın içine ekletmek** açıyı, ölçeği ve stili otomatik eşitliyor.
 - Yeni varlık sayfaları aynı sohbette, oda görseli bağlamdayken istendiğinde stil tutarlı kalıyor.
 - Çıktılar "sahte piksel" (ızgara tutarsız); oyuna girmeden önce normalleştirme aracından geçecek.
+
+## Uzman personel: sekreter, rehber öğretmen, branş öğretmeni (2026-10-17)
+
+| Kaynak | İstek | Sonuç |
+| --- | --- | --- |
+| art/inbox/p7_uzmanlar_odada_v1.jpg | Buse'li odaya (v4) üç yetişkin ekle: sekreter (koyu küt saç, lacivert hırka, pano), rehber (kır saç, sakal, bej yelek), branş öğretmeni (kızıl at kuyruğu, hardal kazak, kitaplar) | Sekreter ve branş öğretmeni kabul. Rehber halının üstünde çizildi; fark halıyı da aldı, ayaklar kesildi |
+| art/inbox/p7_rehber_odada_v2.jpg | Yalnız rehber, halısız zeminde, ayakkabılar görünür | Kabul (odanın ön-sol kenarında, gri zemin üstünde) |
+
+- Gemini (Flash) bu kez **1024 px** verdi; v4 2048 olduğundan fark için Lanczos ile 2048'e büyütüldü (*_2048.png). pixelnorm "çözünürlük yetersiz" uyarısı veriyor ama sonuç temiz (büyütmeden gelen yumuşaklık FFT tahminini şaşırtıyor).
+- Kesim: extract_diff.py p1_buse_odada_v4.jpg p7_uzmanlar_odada_v1_2048.png art/inbox/p7 --names secretary,counselor,teacher --pick 836:920,1267:1310,1568:1593 (rehber v2'den ayrıca). Konfigler rt/configs/p7_*.json; rehberin açık mavi gömleği gri zeminle karıştığı için g_tolerance 8.
+- Yeni araç **	ools/sprite_cleanup.py**: pixelnorm çıktısında ince çıkıntıları (--despur: saç ucuna yapışan duvar/zemin kırıntısı), kopuk parçaları, gerekirse alttaki açık halı parçalarını (--strip-light-bottom) siler; gölgeyi düzgün bir elips olarak yeniden çizer ve boş alt satırları kırpar (çapa alt-orta; boş satır karakteri havada gösterir). Sıra: pixelnorm → sprite_cleanup.
+- Sprite'lar rt/sprites/characters/staff/char_staff_{secretary,counselor,teacher}_se (53×129, 50×135, 57×125). Odada personel yuvaları (Placement.minStaff) önce her rolden birer kişiyle dolar; sprite content/staff.ts → ROLE_SPRITE. Semt ofisi 2, merkez 3 yuva.
+- **Bilinen kusurlar:** rehberin bacak arasında birkaç açık piksel; tek görünüm (SE, aynası SW), yürüme karesi yok.

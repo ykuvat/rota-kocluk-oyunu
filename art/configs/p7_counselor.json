@@ -1,0 +1,21 @@
+{
+  "source": "art/inbox/p7/counselor.png",
+  "out_dir": "art/sprites/characters/staff",
+  "_note": "Rehber öğretmen (erkek, ~40): Buse'li odaya (v4) Gemini'ye eklettirilen kişi (p7_rehber_odada_v2; ilk denemede halı üstünde durduğu için ayakları kesiliyordu, halısız zeminde yeniden üretildi; 1024 px çıktı 2048'e büyütüldü) - v4 farkı (tools/extract_diff.py). Boy Buse'ye (128) göre 134 px.",
+  "bg_tolerance": 8,
+  "shadow_tolerance": 12,
+  "shadow_color": [106, 133, 130],
+  "shadow_zone": 0.2,
+  "keep_shadow": true,
+  "shadow_alpha": 90,
+  "close_iterations": 6,
+  "min_area": 3000,
+  "palette_colors": 40,
+  "palette_mode": "sprite",
+  "preview_scale": 3,
+  "preview_name": "_preview_counselor.png",
+  "meta_name": "_meta_staff_counselor.json",
+  "items": [
+    { "name": "char_staff_counselor_se", "height": 134 }
+  ]
+}
