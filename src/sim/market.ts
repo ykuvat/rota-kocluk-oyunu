@@ -9,6 +9,7 @@ import { post } from "./economy";
 import { repAwareness, repTrust } from "./effects";
 import { fireEvent } from "./events";
 import { makeLead } from "./funnel";
+import { staffPreferenceBonus } from "./staff";
 import { emit, spendCoachHours, type GameState } from "./state";
 import { sigmoid } from "./student";
 import type { ExamResult } from "./season";
@@ -106,9 +107,10 @@ export function preferenceHourly(state: GameState, rng: Rng): void {
   }
 }
 
-export function preferenceProbability(r: PrefRequest, price: number): number {
+/** `bonus`: kurumun ek logit katkısı (rehber öğretmen). */
+export function preferenceProbability(r: PrefRequest, price: number, bonus = 0): number {
   const c = PREFERENCE;
-  return sigmoid(c.bias + ((r.willingness - price) / 1000) * c.priceW + ((r.satisfaction - 50) / 50) * c.satW + (r.source === "graduate" ? c.graduateBonus : 0));
+  return sigmoid(c.bias + ((r.willingness - price) / 1000) * c.priceW + ((r.satisfaction - 50) / 50) * c.satW + (r.source === "graduate" ? c.graduateBonus : 0) + bonus);
 }
 
 /** Tercih danışmanlığı görüşmesi: kabul ederse ücret işletmeye. */
@@ -120,7 +122,7 @@ export function preferenceSession(state: GameState, requestId: string, price: nu
   if (!(price >= 500 && price <= 20_000)) return { error: "lead.badPrice" };
   if (!spendCoachHours(state, PREFERENCE.hours)) return { error: "coach.noTime" };
   p.requests = p.requests.filter((x) => x !== r);
-  const sold = rng.next() < preferenceProbability(r, price);
+  const sold = rng.next() < preferenceProbability(r, price, staffPreferenceBonus(state));
   if (sold) {
     post(state, "business", price, "preferenceCounseling");
     p.sold++;

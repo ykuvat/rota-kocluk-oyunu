@@ -12,7 +12,7 @@ import { holdParentMeeting } from "./parent";
 import { ECONOMY, FUNNEL } from "../content/business";
 import { transfer } from "./economy";
 import { resolveEvent } from "./events";
-import { activeCount, capacity, certEffect, conversionBonus, rentOffice, startCert } from "./growth";
+import { activeCount, capacity, certEffect, conversionBonus, openBranch, rentOffice, startCert } from "./growth";
 import { assignCoach, fireStaff, hireStaff, raiseSalary } from "./staff";
 import { closeReport } from "./season";
 import { declinePreference, preferenceSession } from "./market";
@@ -34,6 +34,7 @@ export type Command =
   | { type: "resolveEvent"; eventId: string; optionId: string }
   | { type: "startCert"; certId: string }
   | { type: "rentOffice"; officeId: string }
+  | { type: "openBranch"; branchId: string }
   | { type: "hireStaff"; candidateId: string }
   | { type: "fireStaff"; staffId: string }
   | { type: "raiseSalary"; staffId: string; amount: number }
@@ -119,6 +120,11 @@ export function applyCommand(state: GameState, cmd: Command): CommandResult {
 
     case "rentOffice": {
       const err = rentOffice(state, cmd.officeId);
+      return err ? fail(err) : { ok: true };
+    }
+
+    case "openBranch": {
+      const err = openBranch(state, cmd.branchId);
       return err ? fail(err) : { ok: true };
     }
 

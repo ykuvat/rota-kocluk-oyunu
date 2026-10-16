@@ -2,7 +2,7 @@
 // Her para hareketi bir işlemdir; bakiye = başlangıç + işlemler toplamı (testle korunur).
 
 import { ECONOMY } from "../content/business";
-import { OFFICE_BY_ID } from "../content/growth";
+import { BRANCH_BY_ID, OFFICE_BY_ID } from "../content/growth";
 import { STAFF } from "../content/staff";
 import { emit, type GameState } from "./state";
 
@@ -30,7 +30,8 @@ export type TxCategory =
   | "salaries"
   | "severance"
   | "preferenceCounseling"
-  | "questReward";
+  | "questReward"
+  | "tutoring";
 
 export interface Transaction {
   hour: number;
@@ -120,7 +121,7 @@ export function monthlyForecast(state: GameState): { income: number; personalCos
   const income = state.students.filter((s) => !s.left).reduce((a, s) => a + s.fee, 0);
   const m = ECONOMY.monthlyPersonal;
   const personalCosts = m.rent + m.food + m.transport + m.phoneInternet + ECONOMY.dailyWorkCost * 21;
-  const o = state.office ? OFFICE_BY_ID[state.office] : null;
+  const places = state.office ? [OFFICE_BY_ID[state.office], ...state.branches.map((id) => BRANCH_BY_ID[id])].filter(Boolean) : [];
   const salaries = state.staff.members.reduce((a, m) => a + Math.round(m.salary * (1 + STAFF.employerCostRate)), 0);
-  return { income, personalCosts, advertising: state.marketing.paidBudget * 4.3, office: (o ? o.rent + o.utilities : 0) + salaries };
+  return { income, personalCosts, advertising: state.marketing.paidBudget * 4.3, office: places.reduce((a, o) => a + o.rent + o.utilities, 0) + salaries };
 }

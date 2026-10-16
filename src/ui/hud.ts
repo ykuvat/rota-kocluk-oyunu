@@ -2,7 +2,7 @@
 
 import { calendarAt } from "../sim/calendar";
 import { monthlyForecast } from "../sim/economy";
-import type { GameState } from "../sim/state";
+import { coachHours, type GameState } from "../sim/state";
 import { t, tk } from "../platform/i18n";
 
 export interface HudView {
@@ -33,7 +33,7 @@ export function renderHud(el: HTMLElement, state: GameState, view: HudView): voi
     `<b>${t("hud.title")}</b>`,
     `${time} · ${clock} · ${t("hud.zoom")}: ${view.zoom}x`,
     `${tk("money.personal")}: ${money(e.personal)} · ${tk("money.business")}: ${money(e.business)} · ${tk("money.monthlyNet")}: ${money(net)}`,
-    `${t("hud.coachHours")}: ${state.coach.usedThisWeek}/${state.coach.weeklyHours} · ${tk("rep.awareness")} ${Math.round(state.reputation.awareness)} · ${tk("rep.trust")} ${Math.round(state.reputation.trust)}`,
+    `${t("hud.coachHours")}: ${state.coach.usedThisWeek}/${coachHours(state)} · ${tk("rep.awareness")} ${Math.round(state.reputation.awareness)} · ${tk("rep.trust")} ${Math.round(state.reputation.trust)}`,
     `<span style="color:#a99ab0">${t("hud.help")}</span>`,
   ].map((l) => `<div>${l}</div>`).join("");
 }

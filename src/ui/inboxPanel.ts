@@ -24,7 +24,7 @@ const css = `
 import { fmtMoney as fmt, fmtVars, noticeText } from "./notices";
 
 /** Oyun akarken bildirim olarak da gösterilen geçmiş kayıtları (diğerleri zaten anlık geri bildirimle gösterilir). */
-const TOAST_TYPES = new Set(["eventFollowUp", "certEarned", "stageReached", "staffQuit", "staffHired", "studentLeft", "seasonEnded",
+const TOAST_TYPES = new Set(["eventFollowUp", "certEarned", "stageReached", "branchOpened", "staffQuit", "staffHired", "studentLeft", "seasonEnded",
   "preferenceOpened", "preferenceClosed", "rivalMove", "rivalsBeaten", "questDone"]);
 
 export class InboxPanel {

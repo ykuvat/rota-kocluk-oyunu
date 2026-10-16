@@ -187,6 +187,32 @@ Tarayıcıda baştan oynandı: eğitim adımları, iki hafta, kararların sonucu
 - Karakterlerde bekleme: animasyon kareleri varsa `AnimatedSprite`, yoksa (Buse dahil) kodla nefes — ayaklar sabit 1 piksel uzama. Buse'nin çizimine dokunulmadı.
 - Vite artık `art/`, `tools/`, `docs/` klasörlerini izlemiyor (indirilen ZIP kilidi sunucuyu çökertiyordu).
 
+## M4 — Personel rolleri ve şubeler / Aşama 4 (2026-10-17)
+
+Şema v11 (personel rolü, `branches`, `lastBranchHour`; eski ekip yardımcı koç olur).
+
+| Rol | Ne yapar | Maaş (60 beceri) | Başvuru gelir |
+| --- | --- | --- | --- |
+| Yardımcı koç | öğrenci takibi (değişmedi) | 22.000 ₺ | her zaman |
+| Sekreter | Buse'ye +6 sa/hafta, aday bekleme ×1,5, kayıt logit +0,25, her veliye +0,6/hafta | 6.800 ₺ | ≥12 öğrenci |
+| Branş öğretmeni | en zayıf 12 öğrenciye haftalık etüt (en zayıf konuya ustalık), aile başı 350 ₺/hafta etüt ücreti | 16.600 ₺ | ≥14 öğrenci |
+| Rehber öğretmen | en kaygılı 16 öğrenciye kaygı −5 / motivasyon +3, veli +0,8/hafta, tercih kabulü logit +0,8 | 12.800 ₺ | ≥20 öğrenci |
+
+Uzman etkisi beceri / 60 ile ölçeklenir; uzmanlar yer (ofis + şube) başına sınırlı (sekreter 1, rehber 1, branş 2); öğrenci yalnız yardımcı koça atanır. Kod: `content/staff.ts` (`ROLES`, `SPECIALISTS`), `sim/staff.ts` (`specialistsWeekly`), `sim/state.ts` (`coachHours`).
+
+**Şubeler (Aşama 4):** Liman (14), Kampüs (16), Yamaç (12) kapasite. Koşul: güven 60 (+10/şube), kapasitenin %75'i dolu, açıldıktan sonra her yerde iki koç (Buse dahil → ilk şube için 3 yardımcı koç), peşinat + 3 aylık (kira + bir koç maaşı) kasada, ÜYS'ye 10 haftadan az kalmamış, son şubeden 26 hafta geçmiş. Şube kapasite, kayıt katkısı ve haftalık bilinirlik ekler; kira ayın 1'inde. Oyun koşullar sağlanınca karar kartıyla önerir; Kurum → Gelişim'de engeller görünür. Kod: `content/growth.ts` (`BRANCHES`, `STAGES.branch`), `sim/growth.ts` (`branchBlocker`, `openBranch`).
+
+**Denge süreci (bot, 12 tohum):** ilk sürümde uzmanlar küçük kurumda (≤16 öğrenci, ofis kapasitesi) %50 iflas getirdi → maaşlar düşürüldü, başvurular kurum büyüklüğüne bağlandı, sekretere saat, branşa ücretli etüt eklendi. Şube ilk sürümde sınavdan hemen önce açılıp yaz boşluğunda iflas ettiriyordu → ÜYS öncesi yasak, şubeler arası 26 hafta, para yedeği. Yeni `lean` stratejisi (uzman/şube yok) karşılaştırma için.
+
+| Strateji (3. sezon) | Servet | İflas | Tutturma | Şube | Uzman |
+| --- | --- | --- | --- | --- | --- |
+| Makul (uzman + şube) | 827 bin | %0 | %60 | 1,9 | 2,8 |
+| Makul, tek ofis (`lean`) | 460 bin | %0 | %62 | 0 | 0 |
+
+16 tohumda: 816 bin / %57 / 1,9 şube. Ölçek büyüdükçe tutturma biraz düşüyor (Buse herkese yetişemiyor); tek tek uzmanlar küçük kurumda kârı azaltır ama kaliteyi artırır (branş öğretmeniyle tutturma %62 → %73). `tests/fullgame.test.ts` artık şube açıldığını ve büyümenin tek ofisten kârlı olduğunu da doğrular. Testler: 109.
+
+**Açık:** odadaki personel hepsi yardımcı koç sprite'ıyla görünür (rol sprite'ı yok); şubelerin ayrı sahnesi yok; güven ~99'da doyduğu için kalite artışı (branş, rehber) doğrudan gelire dönmüyor.
+
 **Sıradaki adaylar (eski):** 11. sınıf için ayrı müfredat ilerlemesi (okulda yeni konu öğrenme); rakiplerin oyuncunun fiyatına göre tepki vermesi; tercih danışmanlığının başarı ölçüsü (yerleşme sonucu) ve bunun ertesi sezona etkisi.
 
 **Ayar notları:** Tek koçta 8'in çok üstü vaka yükü cezası sert (16 öğrencide haftada −12 veli memnuniyeti); ev kapasitesi 10 olduğu için Aşama 1–2'de sorun değil, ofiste "işe al" baskısı yaratıyor. Gerekirse fazla vaka sayısı 5'te sınırlanabilir. Ofis duvar/zemin sanatı Gemini'yle üretilince `procedural` yerine `background` sprite'ı kullanılacak; yardımcı koç karakter sprite'ı yok.

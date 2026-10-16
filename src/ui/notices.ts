@@ -36,7 +36,10 @@ export function noticeText(state: GameState, e: SimEvent): string | null {
     case "staffQuit":
       return tf("notice.staffQuit", { name: String(d.name) });
     case "staffHired":
-      return tf("notice.staffHired", { name: String(d.name) });
+      // rolsüz eski kayıtlar yardımcı koçtur
+      return tf("notice.staffHired", { name: String(d.name), role: tk(`role.${String(d.role ?? "coach")}`) });
+    case "branchOpened":
+      return tf("notice.branchOpened", { branch: tk(`branch.${d.branch}`) });
     case "staffFired":
       return tf("notice.staffFired", { name: String(d.name) });
     case "studentLeft":

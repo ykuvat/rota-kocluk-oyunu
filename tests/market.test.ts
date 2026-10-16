@@ -103,7 +103,7 @@ describe("rakipler", () => {
     let priceWar = false, blitz = false, poach = false;
     for (let seed = 0; seed < 30; seed++) {
       const s = calmState(100 + seed);
-      s.staff.members.push({ id: "t1", name: "Elif Kara", skill: 70, skillLo: 60, skillHi: 80, salary: 32_000, morale: 60, usedThisWeek: 0, weeksEmployed: 8 });
+      s.staff.members.push({ id: "t1", name: "Elif Kara", role: "coach", skill: 70, skillLo: 60, skillHi: 80, salary: 32_000, morale: 60, usedThisWeek: 0, weeksEmployed: 8 });
       rivalsSeasonEnd(s, createRng(seed), 0.6);
       expect(s.market.rivalRates.length).toBe(4);
       expect(s.history.filter((e) => e.type === "rivalMove").length).toBe(2);

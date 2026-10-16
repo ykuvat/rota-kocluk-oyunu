@@ -123,7 +123,7 @@ describe("olay motoru", () => {
         const st = s.students[0];
         st.mocks.push({ week: 1, total: 30 } as never);
         // ekip gerektiren olaylar için bir yardımcı koç
-        s.staff.members.push({ id: "t1", name: "Elif Kara", skill: 60, skillLo: 50, skillHi: 70, salary: 30_000, morale: 60, usedThisWeek: 0, weeksEmployed: 5 });
+        s.staff.members.push({ id: "t1", name: "Elif Kara", role: "coach", skill: 60, skillLo: 50, skillHi: 70, salary: 30_000, morale: 60, usedThisWeek: 0, weeksEmployed: 5 });
         const p = fireEvent(s, def, createRng(1), def.student ? st : undefined)!;
         const r = applyCommand(s, { type: "resolveEvent", eventId: p.id, optionId: opt.id });
         expect(r.ok, `${def.id}.${opt.id}`).toBe(true);

@@ -6,17 +6,18 @@ import { createMarketing, createReputation, type Lead, type Marketing, type Repu
 import { createStaff, type StaffState } from "./staff";
 import { createSeason, type SeasonState } from "./season";
 import { REPUTATION } from "../content/business";
+import { SPECIALISTS } from "../content/staff";
 import { createMarket, type MarketState } from "./marketEffects";
 import type { PreferenceState } from "./market";
 import type { Student } from "./student";
 
-/** Şema sürümü. Değişince platform/save.ts'e göç eklenir. 2: veli · 3: ekonomi, huni, itibar, öğrenci ücreti · 4: olaylar, koç saat cezaları · 5: sertifikalar, aşama, ofis · 6: personel · 7: bildirim geçmişi, sezon ve ÜYS · 8: sınıf düzeyi, tercih dönemi, rakip pazarı · 9: iflas (oyun sonu) · 10: hedef görevleri. */
-export const STATE_VERSION = 10;
+/** Şema sürümü. Değişince platform/save.ts'e göç eklenir. 2: veli · 3: ekonomi, huni, itibar, öğrenci ücreti · 4: olaylar, koç saat cezaları · 5: sertifikalar, aşama, ofis · 6: personel · 7: bildirim geçmişi, sezon ve ÜYS · 8: sınıf düzeyi, tercih dönemi, rakip pazarı · 9: iflas (oyun sonu) · 10: hedef görevleri · 11: personel rolleri, şubeler. */
+export const STATE_VERSION = 11;
 
 /** Oyuncuyu ilgilendiren olaylar ayrıca kalıcı geçmişte tutulur (günlük kırpılsa da kaybolmaz). */
 export const NOTABLE = new Set([
   "studentEnrolled", "studentLeft", "parentWarning", "eventArrived", "eventResolved", "eventExpired", "eventFollowUp",
-  "certEarned", "stageReached", "staffHired", "staffQuit", "staffFired", "personalDebt", "coachOverloaded",
+  "certEarned", "stageReached", "branchOpened", "staffHired", "staffQuit", "staffFired", "personalDebt", "coachOverloaded",
   "examResult", "seasonEnded", "studentPromoted", "preferenceOpened", "preferenceClosed", "preferenceSold", "preferenceLost", "rivalMove", "rivalsBeaten", "rivalsLastPlace", "gameOver", "questDone",
 ]);
 export const HISTORY_LIMIT = 300;
@@ -84,9 +85,13 @@ export interface GameState {
   };
   students: Student[];
   events: EventsState;
-  /** 1: evden serbest koç · 2: tanınan koç · 3: ofisli kurum */
+  /** 1: evden serbest koç · 2: tanınan koç · 3: ofisli kurum · 4: şubeli kurum */
   stage: number;
   office: string | null;
+  /** açılan şubeler (açılış sırasıyla) */
+  branches: string[];
+  /** son şubenin açıldığı saat (şubeler arası bekleme için) */
+  lastBranchHour: number | null;
   staff: StaffState;
   season: SeasonState;
   /** önemli olayların kalıcı geçmişi (en fazla HISTORY_LIMIT) */
@@ -121,6 +126,8 @@ export function createState(seed: number, weeklyHours: number): GameState {
     events: createEvents(),
     stage: 1,
     office: null,
+    branches: [],
+    lastBranchHour: null,
     staff: createStaff(),
     season: createSeason(0, START_HOUR, {}, REPUTATION.startTrust),
     history: [],
@@ -147,8 +154,13 @@ export function emit(state: GameState, type: string, data: Record<string, unknow
   }
 }
 
+/** Koçun bu haftaki toplam saati: kendi saati + sekreterin üstlendiği evrak/telefon işi. */
+export function coachHours(state: GameState): number {
+  return state.coach.weeklyHours + (state.staff.members.some((m) => m.role === "secretary") ? SPECIALISTS.secretary.adminHours : 0);
+}
+
 export function spendCoachHours(state: GameState, hours: number): boolean {
-  if (state.coach.usedThisWeek + hours > state.coach.weeklyHours) return false;
+  if (state.coach.usedThisWeek + hours > coachHours(state)) return false;
   state.coach.usedThisWeek += hours;
   return true;
 }

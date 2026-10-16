@@ -52,9 +52,26 @@ export const OFFICES: OfficeDef[] = [
 
 export const OFFICE_BY_ID: Record<string, OfficeDef> = Object.fromEntries(OFFICES.map((o) => [o.id, o]));
 
+/** Şube (Aşama 4): ana ofise ek kapasite ve bilinirlik; ofisle aynı alanlar. Semtler kurgusal. */
+export type BranchDef = OfficeDef;
+
+export const BRANCHES: BranchDef[] = [
+  { id: "harbor", rent: 11_000, utilities: 2_000, depositMonths: 2, setup: 25_000, capacity: 14, conversion: 0.1, trustOnce: 4, awarenessWeekly: 1 },
+  { id: "campus", rent: 14_000, utilities: 2_500, depositMonths: 2, setup: 30_000, capacity: 16, conversion: 0.15, trustOnce: 4, awarenessWeekly: 1.2 },
+  { id: "hills", rent: 9_000, utilities: 1_800, depositMonths: 2, setup: 22_000, capacity: 12, conversion: 0.08, trustOnce: 3, awarenessWeekly: 0.8 },
+];
+
+export const BRANCH_BY_ID: Record<string, BranchDef> = Object.fromEntries(BRANCHES.map((b) => [b.id, b]));
+
 export const STAGES = {
   /** evde aynı anda bakılabilecek en fazla öğrenci (tek oda, tek koç) */
   homeCapacity: 10,
   /** Aşama 2 eşiği */
   stage2: { activeStudents: 4, trust: 50, tuitionTotal: 40_000 },
+  /**
+   * şube açma koşulu (her şube için; ilk şube Aşama 4'tür): kurum güveni (her açık şube eşiği yükseltir),
+   * mevcut kapasitenin doluluğu, açıldıktan sonra her yer (ofis + şubeler) için koç (Buse dahil),
+   * peşinatın üstünde yeni yerin birkaç aylık gideri (kira + `coachSkillRef` becerili bir koçun maaşı); ÜYS'den önceki haftalarda ve bir önceki şubeden minWeeksBetween hafta içinde açılmaz
+   */
+  branch: { trust: 60, trustPerBranch: 10, fillRatio: 0.75, coachesPerSite: 2, reserveMonths: 3, coachSkillRef: 60, examBlackoutWeeks: 10, minWeeksBetween: 26 },
 } as const;

@@ -1,25 +1,26 @@
 // Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
 // Strateji "good": makul oyuncu (sinyal okur, veliyle görüşür, büyür, ofis ve ekip kurar).
+// Strateji "lean": "good" gibi ama uzman almaz, şube açmaz (uzman/şube tuzak mı diye karşılaştırma).
 // Strateji "passive": aday kabul eder, program yazar, başka hiçbir şey yapmaz.
 
 import { BALANCE } from "../src/content/balance";
 import { EVENT_BY_ID } from "../src/content/events";
-import { OFFICE_BY_ID } from "../src/content/growth";
+import { BRANCHES, OFFICE_BY_ID } from "../src/content/growth";
 import type { InterventionId } from "../src/content/interventions";
 import { balancedProgram } from "../src/content/programs";
 import { PREFERENCE } from "../src/content/season";
-import { STAFF } from "../src/content/staff";
+import { STAFF, type StaffRole } from "../src/content/staff";
 import { createRng } from "../src/core/rng";
 import { calendarAt, HOURS_PER_DAY } from "../src/sim/calendar";
 import { applyCommand } from "../src/sim/commands";
 import { startCareer } from "../src/sim/funnel";
-import { activeCount, capacity } from "../src/sim/growth";
+import { activeCount, branchBlocker, capacity, placesMonthly } from "../src/sim/growth";
 import { weeklySignals } from "../src/sim/insight";
-import { caseload } from "../src/sim/staff";
-import { createState, type GameState } from "../src/sim/state";
+import { caseload, coaches, membersOf } from "../src/sim/staff";
+import { coachHours, createState, type GameState } from "../src/sim/state";
 import { advance } from "../src/sim/step";
 
-export type Strategy = "good" | "passive" | "cheap" | "greedy";
+export type Strategy = "good" | "lean" | "passive" | "cheap" | "greedy";
 
 const SIGNAL_TO_IV: Record<string, InterventionId> = {
   "signal.shortAnswers": "trustTalk", "signal.cancels": "trustTalk", "signal.dontKnow": "smallGoals",
@@ -27,6 +28,9 @@ const SIGNAL_TO_IV: Record<string, InterventionId> = {
   "signal.halfDone": "focusPlan", "signal.tasksPileUp": "simplifyProgram", "signal.schoolLoad": "simplifyProgram",
   "signal.blankInSubject": "subjectSupport", "signal.asksSameQuestion": "subjectSupport",
 };
+
+/** "good" stratejisinin uzman alımı: rol ve gereken en az aktif öğrenci (denge deneyleri için değiştirilebilir). */
+export const BOT_SPECIALISTS: [StaffRole, number][] = [["secretary", 12], ["teacher", 14], ["counselor", 20]];
 
 /** Makul oyuncunun olay seçimleri. */
 const EVENT_CHOICE: Record<string, string> = {
@@ -46,6 +50,8 @@ export interface SeasonMetrics {
   trust: number;
   stage: number;
   staff: number;
+  specialists: number;
+  branches: number;
   certs: number;
   leftEarly: number;
   debtWeeks: number;
@@ -80,14 +86,14 @@ function daily(state: GameState, strategy: Strategy, day: number): void {
   // adaylar: kapasite ve saat varsa tanış
   for (const lead of [...state.leads]) {
     if (activeCount(state) >= capacity(state)) break;
-    const free = state.coach.weeklyHours - state.coach.usedThisWeek;
+    const free = coachHours(state) - state.coach.usedThisWeek;
     if (smart && free < 6 && state.staff.members.length === 0) break;
     const r = applyCommand(state, { type: "introMeeting", leadId: lead.id, price: price(state, strategy) });
     if (r.ok && r.enrolled && r.id) {
       const s = state.students.find((x) => x.id === r.id)!;
       // ekibe dağıt: Buse'nin yükü idealdeyse boş kapasitesi olan yardımcıya
       if (smart && caseload(state, undefined) >= 7) {
-        const m = state.staff.members.find((x) => caseload(state, x.id) < STAFF.idealCaseload);
+        const m = coaches(state).find((x) => caseload(state, x.id) < STAFF.idealCaseload);
         if (m) applyCommand(state, { type: "assignCoach", studentId: s.id, coachId: m.id });
       }
     }
@@ -111,8 +117,7 @@ function weekly(state: GameState, strategy: Strategy, week: number): void {
   if (!smart) return;
   const e = state.economy;
   // maaş çek: kişisel hesap yaşam giderini karşılasın, işletmede 2 aylık yedek kalsın
-  const reserve = 20_000 + (state.office ? 2 * (OFFICE_BY_ID[state.office].rent + OFFICE_BY_ID[state.office].utilities) : 0)
-    + state.staff.members.reduce((a, m) => a + m.salary * (1 + STAFF.employerCostRate), 0);
+  const reserve = 20_000 + 2 * placesMonthly(state) + state.staff.members.reduce((a, m) => a + m.salary * (1 + STAFF.employerCostRate), 0);
   if (e.personal < 15_000 && e.business > reserve + 5_000) {
     applyCommand(state, { type: "transfer", amount: Math.round(Math.min(e.business - reserve, 30_000 - e.personal) / 1000) * 1000 });
   }
@@ -131,10 +136,27 @@ function weekly(state: GameState, strategy: Strategy, week: number): void {
     if (e.business > o.rent * o.depositMonths + o.setup + 4 * (o.rent + o.utilities)) applyCommand(state, { type: "rentOffice", officeId: "district" });
   }
   // ekip: oyuncunun yükü dolunca, iyi görünen aday ve parası varsa
-  if (state.office && caseload(state, undefined) >= 7 && state.staff.members.every((m) => caseload(state, m.id) >= 6)) {
-    const c = [...state.staff.candidates].sort((a, b) => b.skillLo + b.skillHi - a.skillLo - a.skillHi)[0];
+  const best = (role: StaffRole) =>
+    state.staff.candidates.filter((c) => c.role === role).sort((a, b) => b.skillLo + b.skillHi - a.skillLo - a.skillHi)[0];
+  // şube hazırlığı: koşullardan yalnız koç sayısı eksikse önceden koç alınır
+  const nextBranch = BRANCHES.find((b) => !state.branches.includes(b.id));
+  const branchNeedsCoach = strategy !== "lean" && !!nextBranch && branchBlocker(state, nextBranch.id) === "branch.coaches";
+  if (state.office && (branchNeedsCoach || (caseload(state, undefined) >= 7 && coaches(state).every((m) => caseload(state, m.id) >= 6)))) {
+    const c = best("coach");
     if (c && (c.skillLo + c.skillHi) / 2 >= 55 && e.business > c.askSalary * 3) applyCommand(state, { type: "hireStaff", candidateId: c.id });
   }
+  // uzmanlar: kurum kalabalıklaşınca ve kasa birkaç aylık maaşı kaldırıyorsa
+  if (state.office && strategy !== "lean") {
+    const n = activeCount(state);
+    for (const [role, minStudents] of BOT_SPECIALISTS) {
+      if (n < minStudents || membersOf(state, role).length) continue;
+      const c = best(role);
+      if (c && (c.skillLo + c.skillHi) / 2 >= 50 && e.business > reserve + c.askSalary * 4) applyCommand(state, { type: "hireStaff", candidateId: c.id });
+    }
+  }
+  // şube: koşullar sağlandıysa sıradaki şube (oyun bunu karar kartıyla önerir)
+  const next = BRANCHES.find((b) => !state.branches.includes(b.id));
+  if (next && strategy !== "lean" && branchBlocker(state, next.id) === null) applyCommand(state, { type: "openBranch", branchId: next.id });
 }
 
 /** Son oynanan oyunun durumu (hata ayıklama ve ayrıntılı rapor için). */
@@ -154,7 +176,7 @@ export function playGame(seed: number, strategy: Strategy, seasons = 3): SeasonM
       const m: SeasonMetrics = {
         season: out.length, active: 0, graduated: 0, hitRate: null, avgNet: null, personal: state.economy.personal,
         business: state.economy.business, worth: state.economy.personal + state.economy.business, trust: state.reputation.trust,
-        stage: state.stage, staff: 0, certs: state.coach.certs.length, leftEarly: 0, debtWeeks, prefIncome: 0, minWorth, bankrupt: 1,
+        stage: state.stage, staff: 0, specialists: 0, branches: state.branches.length, certs: state.coach.certs.length, leftEarly: 0, debtWeeks, prefIncome: 0, minWorth, bankrupt: 1,
       };
       while (out.length < seasons) out.push({ ...m, season: out.length });
       break;
@@ -184,6 +206,8 @@ export function playGame(seed: number, strategy: Strategy, seasons = 3): SeasonM
         trust: state.reputation.trust,
         stage: state.stage,
         staff: state.staff.members.length,
+        specialists: state.staff.members.filter((m) => m.role !== "coach").length,
+        branches: state.branches.length,
         certs: state.coach.certs.length,
         leftEarly: r.leftEarly,
         debtWeeks,
@@ -222,6 +246,8 @@ export function averageRuns(strategy: Strategy, seeds: number[], seasons = 3) {
       stage: m((x) => x.stage),
       office: rows.filter((x) => x.stage >= 3).length / rows.length,
       staff: m((x) => x.staff),
+      specialists: m((x) => x.specialists),
+      branches: m((x) => x.branches),
       certs: m((x) => x.certs),
       leftEarly: m((x) => x.leftEarly),
       prefIncome: m((x) => x.prefIncome),

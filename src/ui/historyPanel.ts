@@ -23,7 +23,7 @@ const css = `
 type Filter = "all" | "students" | "business" | "events";
 const GROUPS: Record<Exclude<Filter, "all">, string[]> = {
   students: ["studentEnrolled", "studentLeft", "parentWarning", "examResult", "coachOverloaded"],
-  business: ["certEarned", "stageReached", "staffHired", "staffQuit", "staffFired", "personalDebt", "seasonEnded"],
+  business: ["certEarned", "stageReached", "branchOpened", "staffHired", "staffQuit", "staffFired", "personalDebt", "seasonEnded"],
   events: ["eventArrived", "eventResolved", "eventExpired", "eventFollowUp"],
 };
 

@@ -8,10 +8,11 @@ const seeds = Array.from({ length: N }, (_, i) => 9000 + i);
 describe("tam oyun dengesi: 3 sezon", () => {
   it("makul oyuncu büyür ve kazanır; pasif ve uç fiyatlar geride kalır", () => {
     const good = averageRuns("good", seeds);
+    const lean = averageRuns("lean", seeds);
     const passive = averageRuns("passive", seeds);
     const cheap = averageRuns("cheap", seeds);
     const greedy = averageRuns("greedy", seeds);
-    console.log([formatTable("good", good), formatTable("passive", passive), formatTable("cheap", cheap), formatTable("greedy", greedy)].join("\n"));
+    console.log([formatTable("good", good), formatTable("lean", lean), formatTable("passive", passive), formatTable("cheap", cheap), formatTable("greedy", greedy)].join("\n"));
     const v = (rows: typeof good, i: number, k: string) => Number(rows[i][k]);
     expect(good.length).toBe(3);
     // makul oyuncu iflas etmez, her sezon büyür
@@ -27,5 +28,9 @@ describe("tam oyun dengesi: 3 sezon", () => {
     expect(v(greedy, 2, "worth")).toBeLessThan(v(good, 2, "worth"));
     expect(v(cheap, 2, "worth")).toBeLessThan(v(good, 2, "worth"));
     expect(v(cheap, 2, "hitRate")).toBeLessThan(v(good, 2, "hitRate"));
-  }, 120_000);
+    // büyüme yolu: makul oyuncu 3. sezona kadar çoğunlukla şube açar (Aşama 4); uzman + şube yatırımı tek ofiste kalmaktan kârlı
+    expect(v(good, 2, "branches")).toBeGreaterThan(0.5);
+    expect(v(good, 2, "worth")).toBeGreaterThan(v(lean, 2, "worth"));
+    expect(v(lean, 2, "hitRate")).toBeGreaterThan(0.5);
+  }, 180_000);
 });

@@ -14,7 +14,7 @@ import { REPUTATION } from "../content/business";
 import { checkBankruptcy, monthlySettlement, workDayCost } from "./economy";
 import { eventsDaily } from "./events";
 import { officeMonthly, weeklyGrowth } from "./growth";
-import { payroll, refreshCandidates, staffWeekly } from "./staff";
+import { payroll, refreshCandidates, specialistsWeekly, staffWeekly } from "./staff";
 import { seasonHourly } from "./season";
 import { preferenceHourly } from "./market";
 import { checkQuests } from "./quests";
@@ -106,6 +106,8 @@ export function advance(state: GameState, hours: number): void {
       refreshCandidates(state, rng);
       // yeni hafta: koç saatlerini sıfırla, öğrenci takibini ve pazarlamayı planla, adayları üret
       weeklyPlanning(state, rng);
+      // uzmanların bu haftaki işi (sekreter, rehber, branş öğretmeni)
+      specialistsWeekly(state);
     }
   }
   state.rng = rng.state();

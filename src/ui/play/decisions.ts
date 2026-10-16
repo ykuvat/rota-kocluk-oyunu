@@ -11,8 +11,16 @@ import { dominantCauseLastWeek, weeklySignals } from "../../sim/insight";
 import type { MissCause } from "../../sim/student";
 import { parentSignals } from "../../sim/parent";
 import { findStudent, type GameState } from "../../sim/state";
+import { BRANCHES } from "../../content/growth";
+import { SPECIALISTS, type StaffRole } from "../../content/staff";
+import { branchBlocker } from "../../sim/growth";
 import { fmtVars } from "../notices";
 import { fmt, hash, toast } from "./common";
+
+export const ROLE_ICON: Record<StaffRole, string> = { coach: "🧑‍💼", secretary: "☎️", counselor: "🫂", teacher: "📐" };
+
+/** Rolün oyuncuya tek cümlelik açıklaması. */
+export const roleDesc = (role: StaffRole) => tf(`role.desc.${role}`, { h: SPECIALISTS.secretary.adminHours });
 
 interface Option {
   label: string;
@@ -271,18 +279,41 @@ export class DecisionPanel {
       for (const c of s.staff.candidates) {
         const key = `cand:${c.id}`;
         if (this.dismissed.has(key)) continue;
+        const role = tk(`role.${c.role}`);
         cards.push({
           key,
-          icon: "🧑‍💼",
-          title: tf("play.candTitle", { name: c.name }),
-          body: tf("play.candBody", { lo: c.skillLo, hi: c.skillHi, salary: fmt(c.askSalary) }),
+          icon: ROLE_ICON[c.role],
+          title: tf("play.candTitle", { name: c.name, role }),
+          body: `${roleDesc(c.role)}<br>${tf("play.candBody", { lo: c.skillLo, hi: c.skillHi, salary: fmt(c.askSalary) })}`,
           options: [
             {
               label: tk("play.hire"),
               primary: true,
-              act: () => this.feedback(applyCommand(s, { type: "hireStaff", candidateId: c.id }), tf("notice.staffHired", { name: c.name })),
+              act: () => this.feedback(applyCommand(s, { type: "hireStaff", candidateId: c.id }), tf("notice.staffHired", { name: c.name, role })),
             },
             { label: tk("play.skip"), act: () => void this.dismissed.add(key) },
+          ],
+        });
+      }
+    }
+
+    // şube: koşullar sağlanınca bir sonraki şube önerilir (Aşama 4)
+    const next = BRANCHES.find((b) => !s.branches.includes(b.id));
+    if (next && branchBlocker(s, next.id) === null) {
+      const key = `branch:${next.id}:${s.branches.length}`;
+      if (!this.dismissed.has(key)) {
+        cards.push({
+          key,
+          icon: "🏢",
+          title: tf(s.branches.length ? "play.branchTitleMore" : "play.branchTitle", { branch: tk(`branch.${next.id}`) }),
+          body: tf("play.branchBody", { upfront: fmt(next.rent * next.depositMonths + next.setup), monthly: fmt(next.rent + next.utilities), cap: next.capacity }),
+          options: [
+            {
+              label: tk("play.openBranch"),
+              primary: true,
+              act: () => this.feedback(applyCommand(s, { type: "openBranch", branchId: next.id }), tf("notice.branchOpened", { branch: tk(`branch.${next.id}`) })),
+            },
+            { label: tk("play.later"), act: () => void this.dismissed.add(key) },
           ],
         });
       }

@@ -1,15 +1,16 @@
 // İşletme paneli (sol alt): adaylar, pazarlama, para. Durumu yalnız komutlarla değiştirir.
 
 import { COACHING, ECONOMY } from "../content/business";
-import { CERTS, OFFICES, STAGES } from "../content/growth";
-import { activeCount, capacity } from "../sim/growth";
+import { BRANCHES, CERTS, OFFICES, STAGES } from "../content/growth";
+import { roleDesc } from "./play/decisions";
+import { activeCount, branchBlocker, branchTrust, capacity } from "../sim/growth";
 import { STAFF } from "../content/staff";
 import { caseload, visibleSkill } from "../sim/staff";
 import { PREFERENCE } from "../content/season";
 import { getLocale, tf, tk } from "../platform/i18n";
 import { HOURS_PER_DAY } from "../sim/calendar";
 import { applyCommand, type Command } from "../sim/commands";
-import type { GameState } from "../sim/state";
+import { coachHours, type GameState } from "../sim/state";
 
 const css = `
 #business-panel{position:fixed;left:12px;bottom:12px;width:340px;max-height:calc(100vh - 150px);overflow:auto;padding:10px 12px;
@@ -106,6 +107,9 @@ export class BusinessPanel {
       case "office":
         cmd = { type: "rentOffice", officeId: d.office! };
         break;
+      case "branch":
+        cmd = { type: "openBranch", branchId: d.branch! };
+        break;
       case "hire":
         cmd = { type: "hireStaff", candidateId: d.cand! };
         break;
@@ -163,7 +167,7 @@ export class BusinessPanel {
         <button data-act="organic" data-delta="1">+</button> <span class="muted">${fmt(m.followers)} ${tk("biz.followers")}</span></div>
       <div class="row">${tk("biz.paid")}: <button data-act="paid" data-delta="-250">−</button> ${fmt(m.paidBudget)} ₺
         <button data-act="paid" data-delta="250">+</button></div>
-      <div class="row muted">${tk("biz.capacity")}: ${caseload(s, undefined)} × ${COACHING.followUpHours} ${tk("panel.hours")} (${tk("hud.coachHours")} ${s.coach.weeklyHours})</div>
+      <div class="row muted">${tk("biz.capacity")}: ${caseload(s, undefined)} × ${COACHING.followUpHours} ${tk("panel.hours")} (${tk("hud.coachHours")} ${coachHours(s)})</div>
       <div class="row"><button data-act="draw">${tk("biz.draw")}</button><button data-act="deposit">${tk("biz.deposit")}</button></div>`;
   }
 
@@ -192,8 +196,23 @@ export class BusinessPanel {
           <button data-act="office" data-office="${o.id}">${tk("growth.rent")}</button></div></div>`,
       ).join("");
     return `<h3>${tk("growth.stage")}</h3><div>${tk(`growth.stage.${s.stage}`)} · ${tk("growth.capacity")} ${activeCount(s)}/${capacity(s)}</div>${next}
-      <h3>${tk("growth.office")}</h3>${office}<h3>${tk("staff.title")}</h3>${this.staffHtml()}
+      <h3>${tk("growth.office")}</h3>${office}${this.branchHtml()}<h3>${tk("staff.title")}</h3>${this.staffHtml()}
       <h3>${tk("growth.certs")}</h3>${certs}`;
+  }
+
+  /** Şubeler (Aşama 4): açılanlar ve açılış koşulları. */
+  private branchHtml(): string {
+    const s = this.state;
+    if (!s.office) return "";
+    const t = STAGES.branch;
+    const rows = BRANCHES.map((b) => {
+      if (s.branches.includes(b.id)) return `<div class="lead"><b>${tk(`branch.${b.id}`)}</b> · <span class="muted">${tf("growth.branchOpen", { cap: b.capacity })}</span></div>`;
+      const err = branchBlocker(s, b.id);
+      const action = err ? `<span class="muted">${tk(`error.${err}`)}</span>` : `<button data-act="branch" data-branch="${b.id}">${tk("play.openBranch")}</button>`;
+      return `<div class="lead"><b>${tk(`branch.${b.id}`)}</b>
+        <div class="row"><span class="muted">${tf("growth.officeInfo", { rent: fmt(b.rent), util: fmt(b.utilities), upfront: fmt(b.rent * b.depositMonths + b.setup), cap: b.capacity })}</span>${action}</div></div>`;
+    }).join("");
+    return `<h3>${tk("growth.branches")}</h3><div class="muted">${tf("growth.branchRule", { trust: branchTrust(s), fill: Math.round(t.fillRatio * 100), months: t.reserveMonths })}</div>${rows}`;
   }
 
   /** ÜYS sonrası tercih danışmanlığı talepleri. */
@@ -234,8 +253,9 @@ export class BusinessPanel {
       ? s.staff.members
           .map((m) => {
             const v = visibleSkill(m);
-            return `<div class="lead"><b>${m.name}</b> · <span class="muted">${tk("staff.skill")} ${skill(v.lo, v.hi)} · ${tf("staff.salary", { v: fmt(m.salary) })}</span>
-              <div class="muted">${tf("staff.load", { n: caseload(s, m.id), h: m.usedThisWeek, max: STAFF.weeklyHours })} · ${tk("staff.morale")}: ${moraleWord(m.morale)}</div>
+            const work = m.role === "coach" ? tf("staff.load", { n: caseload(s, m.id), h: m.usedThisWeek, max: STAFF.weeklyHours }) : roleDesc(m.role);
+            return `<div class="lead"><b>${m.name}</b> · ${tk(`role.${m.role}`)} · <span class="muted">${tk("staff.skill")} ${skill(v.lo, v.hi)} · ${tf("staff.salary", { v: fmt(m.salary) })}</span>
+              <div class="muted">${work} · ${tk("staff.morale")}: ${moraleWord(m.morale)}</div>
               <div class="row"><button data-act="raise" data-staff="${m.id}">${tk("staff.raise")}</button><button data-act="fire" data-staff="${m.id}">${tk("staff.fire")}</button></div></div>`;
           })
           .join("")
@@ -244,7 +264,7 @@ export class BusinessPanel {
     const cands = s.staff.candidates.length
       ? s.staff.candidates
           .map(
-            (c) => `<div class="lead"><b>${c.name}</b> · <span class="muted">${tk("staff.skill")} ${skill(c.skillLo, c.skillHi)} · ${tf("staff.ask", { v: fmt(c.askSalary) })}</span>
+            (c) => `<div class="lead"><b>${c.name}</b> · ${tk(`role.${c.role}`)} · <span class="muted">${tk("staff.skill")} ${skill(c.skillLo, c.skillHi)} · ${tf("staff.ask", { v: fmt(c.askSalary) })}</span>
               <div class="row"><button data-act="hire" data-cand="${c.id}">${tk("staff.hire")}</button></div></div>`,
           )
           .join("")

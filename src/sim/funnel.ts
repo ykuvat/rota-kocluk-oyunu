@@ -11,7 +11,8 @@ import { GRADES } from "../content/season";
 import { marketDemand } from "./marketEffects";
 import { payFromBusinessFirst } from "./economy";
 import { certEffect } from "./growth";
-import { emit, spendCoachHours, type GameState } from "./state";
+import { leadTtlFactor } from "./staff";
+import { coachHours, emit, spendCoachHours, type GameState } from "./state";
 import { generateStudent, sigmoid, type Student } from "./student";
 
 export interface Lead {
@@ -79,7 +80,8 @@ export function makeLead(state: GameState, source: LeadSource, rng: Rng): Lead {
     willingness: Math.round(Math.max(2_500, FUNNEL.willingnessMean + normal(rng) * FUNNEL.willingnessSd) / 100) * 100,
     grade: rng.next() < GRADES.eleventhShareByMonth[calendarAt(state.hour).month - 1] ? 11 : 12,
     createdHour: state.hour,
-    expiresHour: state.hour + FUNNEL.leadTtlDays * HOURS_PER_DAY,
+    // sekreter randevuyu tutar, aileyi geri arar: aday daha uzun bekler
+    expiresHour: state.hour + Math.round(FUNNEL.leadTtlDays * leadTtlFactor(state)) * HOURS_PER_DAY,
   };
   state.leads.push(lead);
   state.reputation.awareness = Math.min(100, state.reputation.awareness + REPUTATION.awarenessPerLead);
@@ -113,7 +115,7 @@ export function weeklyPlanning(state: GameState, rng: Rng): void {
       ok = m.usedThisWeek + COACHING.followUpHours <= STAFF.weeklyHours;
       if (ok) m.usedThisWeek += COACHING.followUpHours;
     } else {
-      ok = coach.usedThisWeek + COACHING.followUpHours <= coach.weeklyHours;
+      ok = coach.usedThisWeek + COACHING.followUpHours <= coachHours(state);
       if (ok) coach.usedThisWeek += COACHING.followUpHours;
     }
     if (ok) covered++;
@@ -144,7 +146,7 @@ export function weeklyPlanning(state: GameState, rng: Rng): void {
   }
 
   const m = state.marketing;
-  const free = () => coach.weeklyHours - coach.usedThisWeek;
+  const free = () => coachHours(state) - coach.usedThisWeek;
   // kayıt sezonu × rakip reklamlarının pazardan aldığı pay
   const season = seasonFactor(state.hour) * marketDemand(state);
 

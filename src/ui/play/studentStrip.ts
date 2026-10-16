@@ -8,6 +8,7 @@ import { applyCommand } from "../../sim/commands";
 import { insightOf, weeklySignals } from "../../sim/insight";
 import { expectedNet } from "../../sim/exam";
 import { targetNet } from "../../sim/season";
+import { coaches } from "../../sim/staff";
 import type { GameState } from "../../sim/state";
 import type { StateStat, Student } from "../../sim/student";
 import { moodLabel, moodOf, MOOD_ICON, parentFace, toast } from "./common";
@@ -155,7 +156,7 @@ export class StudentStrip {
     const last = st.mocks.at(-1);
     const par = st.parent;
     const week = calendarAt(now).weekIndex;
-    const staff = s.staff.members;
+    const staff = coaches(s);
     const coachBtns = staff.length
       ? `<div class="row muted">${tk("play.assign")}:</div><div class="btns">
           <button data-a="coach" data-v="me" class="${st.coachId ? "" : "on"}">${tk("panel.coachSelf")}</button>

@@ -10,6 +10,7 @@ import { calendarAt, daysUntil } from "../sim/calendar";
 import { parentSignals, satisfactionWord } from "../sim/parent";
 import { applyCommand, type Command } from "../sim/commands";
 import { observe, weeklySignals } from "../sim/insight";
+import { coaches } from "../sim/staff";
 import type { GameState } from "../sim/state";
 import { stat, type StateStat, type Student } from "../sim/student";
 
@@ -118,7 +119,7 @@ export class StudentPanel {
 
   /** Takip koçu seçimi (yalnız ekip varsa). */
   private coachHtml(s: Student, cmd: (c: object) => string): string {
-    const members = this.state.staff.members;
+    const members = coaches(this.state);
     if (!members.length) return "";
     const opt = (id: string | null, label: string) => {
       const on = (s.coachId ?? null) === id;

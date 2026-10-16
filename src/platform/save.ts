@@ -76,6 +76,17 @@ const MIGRATIONS: Record<number, (s: Raw) => Raw> = {
   8: (s) => ({ ...s, version: 9, gameOver: null }),
   // 9 → 10: hedef görevleri (eski kayıtta hepsi açık; koşulu sağlananlar ilk denetimde tamamlanır)
   9: (s) => ({ ...s, version: 10, quests: [] }),
+  // 10 → 11: personel rolleri (eski ekip ve başvurular yardımcı koç), şubeler
+  10: (s) => {
+    const staff = s.staff as { members: Raw[]; candidates: Raw[] };
+    return {
+      ...s,
+      version: 11,
+      branches: [],
+      lastBranchHour: null,
+      staff: { ...staff, members: staff.members.map((m) => ({ ...m, role: "coach" })), candidates: staff.candidates.map((c) => ({ ...c, role: "coach" })) },
+    };
+  },
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {

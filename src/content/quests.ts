@@ -28,6 +28,8 @@ export const QUESTS: QuestDef[] = [
   { id: "office", trust: 4, done: (s) => s.office !== null },
   { id: "firstHire", money: 5_000, done: (s) => s.staff.members.length >= 1 },
   { id: "firstSeason", trust: 5, done: (s) => s.season.reports.length >= 1 },
+  { id: "firstSpecialist", trust: 3, done: (s) => s.staff.members.some((m) => m.role !== "coach") },
+  { id: "stage4", money: 10_000, done: (s) => s.branches.length >= 1 },
 ];
 
 export const QUEST_BY_ID: Record<string, QuestDef> = Object.fromEntries(QUESTS.map((q) => [q.id, q]));
