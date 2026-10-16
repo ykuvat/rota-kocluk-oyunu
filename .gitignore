@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/assets/sprites/
+tools/.venv/
+__pycache__/
+*.log
+# reddedilen PixelLab denemeleri ve indirilen arşivler (kaynak değil)
+art/inbox/pixellab/
+*.zip

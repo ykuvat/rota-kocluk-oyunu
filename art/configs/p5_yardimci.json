@@ -1,0 +1,19 @@
+{
+  "source": "art/inbox/p5_yardimci_from_room.png",
+  "out_dir": "art/sprites/characters/assistant",
+  "_note": "Yardımcı koç (erkek, ~26 yaş). Kaynak: Buse'li odaya (v4) Gemini'ye eklettirilen kişi - v4 farkı (tools/extract_diff.py --pick 707:1485). Gemini Buse'den ~%19 büyük çizdi; boy Buse'nin 128 px'ine göre +5 cm = 132 px'e sabitlendi.",
+  "bg_tolerance": 22,
+  "shadow_tolerance": 12,
+  "shadow_color": [106, 133, 130],
+  "shadow_zone": 0.2,
+  "keep_shadow": true,
+  "shadow_alpha": 90,
+  "close_iterations": 6,
+  "min_area": 3000,
+  "palette_colors": 40,
+  "palette_mode": "sprite",
+  "preview_scale": 3,
+  "items": [
+    { "name": "char_assistant_idle_se", "height": 132 }
+  ]
+}

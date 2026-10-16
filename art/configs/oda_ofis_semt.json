@@ -1,0 +1,20 @@
+{
+  "source": "art/inbox/ofis_semt_bos_v1_2to1.png",
+  "out_dir": "art/sprites/rooms/office_district",
+  "_note": "Semt ofisi arka planı (Gemini, oda_bos_v1 referanslı). Gemini'nin izometrisi ~1,87:1; kaynak dikeyde 0,922 ile sıkıştırılıp 2:1 yapıldı (ofis_semt_bos_v1_2to1.png). 4x4 karo: zemin 512 px, (0,0) üst köşesi sprite'ta (274, 215) — tools/floor_corners.py.",
+  "meta_name": "_meta.json",
+  "preview_name": "_preview.png",
+  "fixed_step": 3.15,
+  "bg_tolerance": 18,
+  "shadow_tolerance": 1,
+  "shadow_color": [0, 255, 0],
+  "keep_shadow": false,
+  "close_iterations": 4,
+  "min_area": 20000,
+  "palette_colors": 48,
+  "palette_mode": "sprite",
+  "preview_scale": 1,
+  "items": [
+    { "name": "room_office_district_empty" }
+  ]
+}

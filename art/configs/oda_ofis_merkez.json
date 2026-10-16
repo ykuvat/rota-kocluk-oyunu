@@ -1,0 +1,20 @@
+{
+  "source": "art/inbox/ofis_merkez_bos_v1_2to1.png",
+  "out_dir": "art/sprites/rooms/office_central",
+  "_note": "Merkez ofis arka planı (Gemini, semt ofisi referanslı). Kaynak dikeyde 0,939 ile 2:1'e getirildi. 5x5 karo: zemin 640 px, (0,0) üst köşesi sprite'ta (339, 274). Zemindeki seramik derzleri oyun ızgarasıyla çakışmaz.",
+  "meta_name": "_meta.json",
+  "preview_name": "_preview.png",
+  "fixed_step": 2.54,
+  "bg_tolerance": 18,
+  "shadow_tolerance": 1,
+  "shadow_color": [0, 255, 0],
+  "keep_shadow": false,
+  "close_iterations": 4,
+  "min_area": 20000,
+  "palette_colors": 48,
+  "palette_mode": "sprite",
+  "preview_scale": 1,
+  "items": [
+    { "name": "room_office_central_empty" }
+  ]
+}

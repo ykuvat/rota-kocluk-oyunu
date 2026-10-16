@@ -1,0 +1,28 @@
+{
+    "items":  [
+                  {
+                      "height":  126,
+                      "name":  "char_student_quiet_se"
+                  }
+              ],
+    "shadow_zone":  0.2,
+    "close_iterations":  6,
+    "shadow_color":  [
+                         106,
+                         133,
+                         130
+                     ],
+    "bg_tolerance":  22,
+    "preview_name":  "_preview_quiet.png",
+    "shadow_alpha":  90,
+    "out_dir":  "art/sprites/characters/students",
+    "shadow_tolerance":  12,
+    "source":  "art/inbox/p6_quiet.png",
+    "min_area":  3000,
+    "palette_colors":  40,
+    "meta_name":  "_meta_student_quiet.json",
+    "preview_scale":  3,
+    "palette_mode":  "sprite",
+    "_note":  "Öğrenci (quiet): Buse\u0027li odaya (v4) Gemini\u0027ye eklettirilen kişi - v4 farkı (tools/extract_diff.py). Boy Buse\u0027ye (128) göre 126 px.",
+    "keep_shadow":  true
+}

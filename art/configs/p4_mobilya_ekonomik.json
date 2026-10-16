@@ -1,0 +1,31 @@
+{
+  "source": "art/inbox/p4_mobilya_ekonomik_v1.jpg",
+  "out_dir": "art/sprites/furniture/economy",
+  "_note": "width = oyun içi piksel genişliği; 1 m karo 128x64 px, ekran genişliği = (en + derinlik) * 64. skip: daha iyisi p4_oda_mobilya.json'dan (oda içi kesit) geliyor.",
+  "_note_readability": "masaüstü eşyaları okunurluk için gerçek ölçüden ~%30 büyük çizilir",
+  "meta_name": "_meta_sayfa.json",
+  "preview_name": "_preview_sayfa.png",
+  "bg_tolerance": 22,
+  "shadow_tolerance": 26,
+  "keep_shadow": true,
+  "shadow_alpha": 90,
+  "close_iterations": 6,
+  "min_area": 3000,
+  "palette_colors": 32,
+  "palette_mode": "sprite",
+  "preview_scale": 2,
+  "items": [
+    { "name": "furn_desk_eco_se",            "width": 116, "skip": true },
+    { "name": "furn_chair_eco_se",           "width": 64,  "skip": true },
+    { "name": "dev_laptop_old_se",           "width": 52,  "footprint": [0.35, 0.25] },
+    { "name": "dev_printer_inkjet_se",       "width": 60,  "footprint": [0.45, 0.35] },
+    { "name": "furn_bookshelf_eco_se_empty", "width": 70,  "skip": true },
+    { "name": "furn_bookshelf_eco_se_half",  "width": 70,  "skip": true },
+    { "name": "furn_bookshelf_eco_se_full",  "width": 70,  "skip": true },
+    { "name": "drink_kettle_tray_se",        "width": 52,  "footprint": [0.35, 0.25] },
+    { "name": "edu_whiteboard_stand_se",     "width": 90,  "skip": true },
+    { "name": "deco_plant_pot_se",           "width": 48,  "skip": true },
+    { "name": "light_desk_lamp_se",          "width": 36,  "skip": true },
+    { "name": "furn_wastebasket_wicker_se",  "width": 36,  "footprint": [0.3, 0.3] }
+  ]
+}

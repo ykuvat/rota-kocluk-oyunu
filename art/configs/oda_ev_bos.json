@@ -1,0 +1,20 @@
+{
+  "source": "art/inbox/oda_bos_v1.jpg",
+  "out_dir": "art/sprites/rooms/home_studio",
+  "_note": "Başlangıç odası arka planı. fixed_step, zemin baklavasını tam 3x3 karoya (384x~200 px) oturtacak şekilde seçildi (zemin genişliği 816 px / 384).",
+  "meta_name": "_meta.json",
+  "preview_name": "_preview.png",
+  "fixed_step": 2.125,
+  "bg_tolerance": 18,
+  "shadow_tolerance": 1,
+  "shadow_color": [0, 255, 0],
+  "keep_shadow": false,
+  "close_iterations": 4,
+  "min_area": 20000,
+  "palette_colors": 48,
+  "palette_mode": "sprite",
+  "preview_scale": 2,
+  "items": [
+    { "name": "room_home_studio_empty" }
+  ]
+}

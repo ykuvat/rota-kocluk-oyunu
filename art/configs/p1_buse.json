@@ -1,0 +1,19 @@
+{
+  "source": "art/inbox/p1_buse_from_room.png",
+  "out_dir": "art/sprites/characters/buse",
+  "_note": "Kaynak: odaya eklenmiş Buse (v4) - oda (P3) farkı, tools/extract_diff.py ile. height = oyun içi boy (px); yetişkin ≈ 128 px (karo 128x64). SW yönü oyunda aynalanarak elde edilir.",
+  "bg_tolerance": 22,
+  "shadow_tolerance": 12,
+  "shadow_color": [106, 133, 130],
+  "shadow_zone": 0.2,
+  "keep_shadow": true,
+  "shadow_alpha": 90,
+  "close_iterations": 6,
+  "min_area": 3000,
+  "palette_colors": 40,
+  "palette_mode": "sprite",
+  "preview_scale": 3,
+  "items": [
+    { "name": "char_buse_idle_se", "height": 128 }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "source": "art/inbox/p4_oda_kesitler.png",
+  "out_dir": "art/sprites/furniture/economy",
+  "_note": "Kaynak: boş odaya Gemini ile tek tek eklenen mobilyalar, tools/extract_diff.py ile kesildi, tools/make_sheet.py ile birleştirildi. fixed_step = Buse'nin (128 px) örnekleme adımı; böylece tüm nesneler odadaki göreli boyutlarını korur.",
+  "meta_name": "_meta_oda.json",
+  "preview_name": "_preview_oda.png",
+  "fixed_step": 3.91,
+  "bg_tolerance": 22,
+  "shadow_tolerance": 12,
+  "shadow_color": [106, 133, 130],
+  "keep_shadow": true,
+  "shadow_alpha": 90,
+  "close_iterations": 6,
+  "min_area": 3000,
+  "palette_colors": 32,
+  "palette_mode": "sprite",
+  "preview_scale": 2,
+  "items": [
+    { "name": "furn_desk_eco_se",            "footprint": [1.2, 0.6] },
+    { "name": "deco_plant_pot_se",           "footprint": [0.4, 0.4] },
+    { "name": "furn_chair_eco_se",           "footprint": [0.5, 0.5] },
+    { "name": "light_desk_lamp_se",          "footprint": [0.2, 0.2] },
+    { "name": "edu_whiteboard_stand_se",     "footprint": [1.0, 0.4] },
+    { "name": "furn_bookshelf_eco_se_empty", "footprint": [0.8, 0.3] },
+    { "name": "furn_bookshelf_eco_se_half",  "footprint": [0.8, 0.3] },
+    { "name": "furn_bookshelf_eco_se_full",  "footprint": [0.9, 0.3] }
+  ]
+}
