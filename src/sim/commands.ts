@@ -225,6 +225,7 @@ export function applyCommand(state: GameState, cmd: Command): CommandResult {
       // güven düşükse öğrenci az açılır (GDD D5)
       const trust = stat(s, "trust", state.hour).value;
       addInsight(s, keys, INSIGHT.interviewGain * (0.4 + trust / 100) * certEffect(state, "insightFactor"));
+      s.lastInterviewWeek = calendarAt(state.hour).weekIndex;
       emit(state, "interview", { id: s.id, topic: cmd.topic });
       return { ok: true };
     }

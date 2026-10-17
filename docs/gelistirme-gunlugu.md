@@ -251,3 +251,13 @@ Uzman etkisi beceri / 60 ile ölçeklenir; uzmanlar yer (ofis + şube) başına 
 
 - Vite HMR bir kez ara düzenlemeyi önbellekte tuttu (`addInsight is not defined`); sunucuyu yeniden başlatmak çözdü.
 - Git kurulu değil; sürüm kontrolü yok.
+
+## Seçimlerin görünürlüğü ve tempo (2026-10-17)
+- Kullanıcı: tıklamalar hızlı kayboluyor, alt alta yanlış kartlara basılıyor; sohbet/veli bir şey hissettirmiyor; hafta çok hızlı.
+- Karar kartı seçilince kaybolmaz: seçilen seçenek ve sonucu kartta kalır, hafta başlayınca temizlenir; kartların sırası sabit (alttaki kart yukarı kaymaz), 450 ms çift dokunuş koruması. Hata kartın içinde.
+- Başlıkta "⏱ boş/toplam sa" (Buse'nin haftalık koçluk saati).
+- Sohbet: haftada bir (`Student.lastInterviewWeek`, isteğe bağlı alan, şema değişmedi); karar kartına geçen haftanın baskın nedenini ima eden cümle (`clue.<neden>`), güven < 30 ise "pek açılmadı". Önceden oyun modunda sohbetin görünür etkisi yoktu (tanıma yalnız eski panelde).
+- Veli görüşmesi: memnuniyet önce → sonra, 4 haftadan sık ise "yarım etki" uyarısı (düğmede de).
+- Hafta hızı 1× = 60 ms/saat (~10 sn/hafta), ⏩ 2×/4×, ⏸ hafta ortası durdurma; gün şeridi; 22:00'de Buse üstünde günün görev sayısı.
+- Çubuklar: öğrenci kartında haftalık görev (yapılan/program), öğrenci penceresinde görev/tanıma/veli memnuniyeti, HUD'da ve Kurum panelinde sertifika eğitimi (hafta).
+- Kurum paneli oyun modunda daha büyük yazı, sertifikalar üstte, kapatma düğmesi. Mobilde "Ayrıntılar" düğmesi gerçekten gizli (CSS özgüllük hatası).

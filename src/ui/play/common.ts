@@ -35,15 +35,25 @@ body.play #student-panel, body.play #inbox, body.play #history-btn, body.play #o
 body.play #back-to-game{display:none}
 #back-to-game{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:40}
 body.play #business-panel:not(.open){display:none!important}
-body.play #business-panel.open{z-index:30;bottom:132px;font-family:var(--font);background:var(--panel-solid);border-radius:var(--radius);
-  border:1px solid var(--line);box-shadow:var(--shadow);padding:14px 16px}
-body.play #business-panel.open h3{text-transform:none;letter-spacing:0;font-size:14px;color:#f6d39a}
-body.play #business-panel.open .lead{background:var(--card);border-radius:14px;padding:10px 12px}
-body.play #business-panel.open button{font-family:var(--font);font-weight:700;border:0;border-radius:10px;padding:6px 10px;background:var(--card-hi)}
+body.play #business-panel.open{z-index:30;bottom:132px;width:380px;font:500 14px/1.5 var(--font);background:var(--panel-solid);border-radius:var(--radius);
+  border:1px solid var(--line);box-shadow:var(--shadow);padding:14px 16px;overscroll-behavior:contain}
+body.play #business-panel.open h3{text-transform:none;letter-spacing:0;font-size:16px;color:#f6d39a;margin:16px 0 6px}
+body.play #business-panel.open .lead{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+body.play #business-panel.open .lead b{font-size:15px}
+body.play #business-panel.open .lead.now{outline:2px solid var(--accent)}
+body.play #business-panel.open .muted{color:var(--muted)}
+body.play #business-panel.open button{font-family:var(--font);font-weight:700;font-size:14px;border:0;border-radius:10px;padding:8px 12px;background:var(--card-hi)}
+body.play #business-panel.open .tabs{position:sticky;top:-14px;background:var(--panel-solid);padding:2px 0 8px;z-index:1}
+body.play #business-panel.open .tabs button{flex:1}
+body.play #business-panel.open .tabs button.x{flex:none;background:transparent;color:var(--muted)}
+body:not(.play) #business-panel .tabs button.x{display:none}
 body.play #business-panel.open .tabs button.on{background:var(--accent);color:#3a2410}
+body.play #business-panel.open input{font:600 14px var(--font);padding:6px 8px;width:96px}
+body.play #business-panel.open .pbar span{background:var(--accent)}
 body:not(.play) .pl-only{display:none!important}
 @media (max-width:760px){
-  body.play #business-panel.open{left:8px;right:8px;width:auto;top:64px;bottom:8px;max-height:none}
+  body.play #business-panel.open{left:8px;right:8px;width:auto;top:64px;bottom:8px;max-height:none;z-index:35}
+  body.play:has(#business-panel.open) #tut{display:none}
   .pl .toast{top:62px;font-size:13px}
 }
 `;

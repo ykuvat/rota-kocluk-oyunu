@@ -63,6 +63,8 @@ export interface Student {
   insight: Partial<Record<StateStat, number>>;
   /** Bu hafta yapılan müdahale sayısı (aşırı müdahale cezası için; hafta kapanışında sıfırlanır). */
   ivThisWeek?: number;
+  /** Son birebir sohbetin haftası (oyun modunda haftada bir; sohbet asıl nedeni ima eder). */
+  lastInterviewWeek?: number;
   parent: Parent;
   /** Aylık ücret (₺), kayıt görüşmesinde belirlenir. */
   fee: number;

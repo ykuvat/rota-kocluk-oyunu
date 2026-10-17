@@ -1,6 +1,7 @@
 // Sade üst bilgi: tarih, para (tek bakiye), itibar yıldızı, sezon amacı, hedefler ve küçük menü.
 // Zaman düğmesi yok: hafta, sağdaki "Haftayı başlat" ile oynar.
 
+import { CERT_BY_ID } from "../../content/growth";
 import { QUEST_BY_ID } from "../../content/quests";
 import { getLocale, tf, tk } from "../../platform/i18n";
 import { calendarAt, daysUntil } from "../../sim/calendar";
@@ -28,6 +29,10 @@ const css = `
 #phud .menu{display:flex;gap:4px}
 #phud .menu button{padding:5px 10px;font-size:12px}
 #phud .gbtn{display:none}
+#phud .train{margin-top:8px;background:var(--card);border-radius:12px;padding:6px 10px;font-size:12.5px}
+#phud .train .tl{display:flex;justify-content:space-between;gap:8px}
+#phud .train .tb{height:6px;background:rgba(0,0,0,.28);border-radius:4px;overflow:hidden;margin-top:4px}
+#phud .train .tb span{display:block;height:100%;background:#9fc6ff;border-radius:4px}
 @media (max-width:760px){
   #phud{left:8px;right:8px;top:8px;width:auto;padding:8px 10px;border-radius:16px}
   #phud .top{flex-wrap:nowrap}
@@ -93,7 +98,9 @@ export class PlayHud {
     const stars = Math.max(1, Math.round(s.reputation.trust / 20));
     const goals = openQuests(s);
     const company = this.c.showCompany();
-    const key = `${cal.dayIndex}|${Math.round(money)}|${s.quests.length}|${stars}|${company}|${getLocale()}`;
+    const tr = s.coach.training;
+    const cert = tr ? CERT_BY_ID[tr.cert] : undefined;
+    const key = `${cal.dayIndex}|${Math.round(money)}|${s.quests.length}|${stars}|${company}|${tr?.cert}:${tr?.weeksLeft}|${getLocale()}`;
     if (!force && key === this.lastKey) return;
     this.lastKey = key;
     const reward = (id: string) => {
@@ -112,6 +119,8 @@ export class PlayHud {
         </div></div>
       <div class="bal"><span class="money ${money < 0 ? "neg" : ""}">💰 ${fmt(money)} ₺</span><span class="stars" title="${tk("play.rep")}">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></div>
       <div class="sub">${tf("play.monthTrend", { v: `${trend >= 0 ? "+" : ""}${fmt(trend)}` })}</div>
+      ${tr && cert ? `<div class="train" title="${tk(`cert.effect.${cert.id}`)}"><div class="tl"><span>📖 ${tk(`cert.${cert.id}`)}</span><span>${tf("play.trainWeeks", { done: cert.weeks - tr.weeksLeft, total: cert.weeks })}</span></div>
+        <div class="tb"><span style="width:${Math.round(((cert.weeks - tr.weeksLeft) / cert.weeks) * 100)}%"></span></div></div>` : ""}
       <div class="season">🎯 ${tf("season.goal", { n: Math.max(0, daysUntil(s.hour, examIso(s.season.index))) })}</div>
       ${goals.length ? `<div class="goals"><div class="gt">${tk("play.goals")}</div>${goals
         .map((q) => `<div class="g"><span>○ ${tk(`quest.${q.id}`)}</span><span class="r">${reward(q.id)}</span></div>`)

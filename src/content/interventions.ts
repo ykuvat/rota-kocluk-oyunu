@@ -64,6 +64,8 @@ export const INSIGHT = {
   /** Görüşme başına tanıma artışı, güven çarpanıyla: kazanç · (0,4 + güven/100) */
   interviewGain: 25,
   interviewHours: 1,
+  /** Sohbette öğrencinin asıl sorunu ima etmesi için gereken en az güven (altında "pek açılmadı") */
+  clueMinTrust: 30,
   /** Program takibiyle her hafta tüm değerlerde pasif artış */
   weeklyPassive: 3,
   /** Aralık yarı genişliği = minHalfWidth + (100 − tanıma) · widthPerMissingInsight */

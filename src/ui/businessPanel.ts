@@ -2,7 +2,7 @@
 
 import { COACHING, ECONOMY } from "../content/business";
 import { BRANCHES, CERTS, OFFICES, STAGES } from "../content/growth";
-import { roleDesc } from "./play/decisions";
+import { errorText, roleDesc } from "./play/decisions";
 import { activeCount, branchBlocker, branchTrust, capacity } from "../sim/growth";
 import { STAFF } from "../content/staff";
 import { caseload, visibleSkill } from "../sim/staff";
@@ -24,6 +24,12 @@ const css = `
 #business-panel .muted{color:#a99ab0}
 #business-panel .tabs{display:flex;gap:4px}
 #business-panel .tabs button.on{background:#c9a96e;color:#1d1722;border-color:#c9a96e}
+#business-panel .eff{margin:2px 0}
+#business-panel .lead.now{outline:2px solid #c9a96e}
+#business-panel .tag.ok{color:#9be8ae;font-weight:700}
+#business-panel .prog{flex:1}
+#business-panel .pbar{height:8px;background:rgba(0,0,0,.3);border-radius:4px;overflow:hidden;margin-top:4px}
+#business-panel .pbar span{display:block;height:100%;background:#f4bd62;border-radius:4px}
 `;
 
 const fmt = (v: number) => Math.round(v).toLocaleString("tr-TR");
@@ -120,9 +126,14 @@ export class BusinessPanel {
         cmd = { type: "raiseSalary", staffId: d.staff!, amount: 1_000 };
         break;
     }
+    if (d.act === "close") this.el.classList.remove("open");
     if (cmd) {
       const r = applyCommand(this.state, cmd);
-      if (!r.ok) this.onFeedback(tk(`error.${r.error}`), true);
+      if (!r.ok) this.onFeedback(errorText(r.error), true);
+      else if (cmd.type === "startCert") {
+        const c = CERTS.find((x) => x.id === (cmd as { certId: string }).certId)!;
+        this.onFeedback(tf("res.certStarted", { cert: tk(`cert.${c.id}`), n: c.weeks, h: c.hoursPerWeek }), false);
+      }
     }
     this.render(true);
   }
@@ -137,7 +148,8 @@ export class BusinessPanel {
     if (!force && this.el.contains(document.activeElement) && document.activeElement?.tagName === "INPUT") return;
 
     const tabs = `<div class="tabs"><button data-act="tab" data-tab="biz" class="${this.tab === "biz" ? "on" : ""}">${tk("biz.leads")}</button>
-      <button data-act="tab" data-tab="growth" class="${this.tab === "growth" ? "on" : ""}">${tk("growth.title")}</button></div>`;
+      <button data-act="tab" data-tab="growth" class="${this.tab === "growth" ? "on" : ""}">${tk("growth.title")}</button>
+      <button data-act="close" class="x" aria-label="✕">✕</button></div>`;
     if (this.tab === "growth") {
       this.el.innerHTML = tabs + this.growthHtml();
       return;
@@ -177,14 +189,18 @@ export class BusinessPanel {
     const next = s.stage === 1 ? `<div class="muted">${tf("growth.nextStage", { students: st.activeStudents, trust: st.trust, tuition: fmt(st.tuitionTotal) })}</div>` : "";
     const certs = CERTS.map((c) => {
       const owned = s.coach.certs.includes(c.id);
-      const inTraining = s.coach.training?.cert === c.id;
-      const action = owned
-        ? `<span class="muted">${tk("growth.owned")}</span>`
-        : inTraining
-          ? `<span class="muted">${tf("growth.training", { cert: tk(`cert.${c.id}`), n: s.coach.training!.weeksLeft })}</span>`
-          : `<button data-act="cert" data-cert="${c.id}">${tk("growth.start")}</button>`;
-      return `<div class="lead"><b>${tk(`cert.${c.id}`)}</b><div class="muted">${tk(`cert.effect.${c.id}`)}</div>
-        <div class="row"><span class="muted">${tf("growth.certInfo", { cost: fmt(c.cost), hours: c.hoursPerWeek, weeks: c.weeks })}</span>${action}</div></div>`;
+      const tr = s.coach.training;
+      const inTraining = tr?.cert === c.id;
+      let action: string;
+      if (owned) action = `<span class="tag ok">✔ ${tk("growth.owned")}</span>`;
+      else if (inTraining) {
+        const doneWeeks = c.weeks - tr!.weeksLeft;
+        action = `<div class="prog"><div class="pl-l">${tf("growth.trainingBar", { done: doneWeeks, total: c.weeks, n: tr!.weeksLeft })}</div>
+          <div class="pbar"><span style="width:${Math.round((doneWeeks / c.weeks) * 100)}%"></span></div></div>`;
+      } else if (tr) action = `<span class="muted">${tk("growth.oneAtATime")}</span>`;
+      else action = `<button data-act="cert" data-cert="${c.id}">${tk("growth.start")}</button>`;
+      return `<div class="lead ${inTraining ? "now" : ""}"><b>${tk(`cert.${c.id}`)}</b><div class="eff">${tk(`cert.effect.${c.id}`)}</div>
+        <div class="muted">${tf("growth.certInfo", { cost: fmt(c.cost), hours: c.hoursPerWeek, weeks: c.weeks })}</div><div class="row">${action}</div></div>`;
     }).join("");
     let office: string;
     if (s.office) office = `<div>${tf("growth.officeNow", { office: tk(`office.${s.office}`) })}</div>`;
@@ -195,9 +211,10 @@ export class BusinessPanel {
           <div class="row"><span class="muted">${tf("growth.officeInfo", { rent: fmt(o.rent), util: fmt(o.utilities), upfront: fmt(o.rent * o.depositMonths + o.setup), cap: o.capacity })}</span>
           <button data-act="office" data-office="${o.id}">${tk("growth.rent")}</button></div></div>`,
       ).join("");
+    // sertifikalar en sık bakılan bölüm: üstte
     return `<h3>${tk("growth.stage")}</h3><div>${tk(`growth.stage.${s.stage}`)} · ${tk("growth.capacity")} ${activeCount(s)}/${capacity(s)}</div>${next}
-      <h3>${tk("growth.office")}</h3>${office}${this.branchHtml()}<h3>${tk("staff.title")}</h3>${this.staffHtml()}
-      <h3>${tk("growth.certs")}</h3>${certs}`;
+      <h3>${tk("growth.certs")}</h3><div class="muted">${tk("growth.certHow")}</div>${certs}
+      <h3>${tk("growth.office")}</h3>${office}${this.branchHtml()}<h3>${tk("staff.title")}</h3>${this.staffHtml()}`;
   }
 
   /** Şubeler (Aşama 4): açılanlar ve açılış koşulları. */

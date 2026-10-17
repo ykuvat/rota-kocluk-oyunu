@@ -3,7 +3,8 @@
 Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, denge), `docs/varlik-gunlugu.md` (sanat), `CLAUDE.md` (mimari kurallar).
 
 ## Durum (2026-10-17)
-- Oyun tarayıcıda oynanır (`npm run dev`, :5173). Varsayılan "oyun modu": tur tabanlı hafta (Haftayı başlat → ~4 sn → sonuç ekranı), sağda karar kartları, altta öğrenci şeridi, Buse'nin anlattığı 5 adımlı eğitim. Eski ayrıntılı paneller ⚙ / F2.
+- Oyun tarayıcıda oynanır (`npm run dev`, :5173). Varsayılan "oyun modu": tur tabanlı hafta (Haftayı başlat → 1× ≈ 10 sn, ⏩ 2×/4×, ⏸ → sonuç ekranı), sağda karar kartları, altta öğrenci şeridi, Buse'nin anlattığı 5 adımlı eğitim. Eski ayrıntılı paneller ⚙ / F2 (mobilde gizli).
+- Karar kartları: seçilen kart seçimi ve sonucuyla yerinde kalır, hafta başlayınca temizlenir; hata (saat yetmedi vb.) kartın içinde yazar; başlıkta Buse'nin boş saati. Sohbet haftada bir, karar kartına öğrencinin ağzından asıl nedeni ima eden ipucu ekler (güven < `INSIGHT.clueMinTrust` ise açılmaz). Veli görüşmesi memnuniyet önce→sonra gösterir.
 - Simülasyon: öğrenci, veli, ekonomi, huni, olaylar, sertifika, ofis, personel (yardımcı koç, sekreter, rehber, branş öğretmeni), şubeler (Aşama 4), ÜYS/sezon, tercih dönemi, rakipler, iflas. Kayıt şeması v11. 109 test (3 sezonluk denge botu dahil).
 - Görsel: ev stüdyosu + semt (4×4) / merkez (5×5) ofis arka planları; Buse, yardımcı koç, sekreter, rehber, branş öğretmeni, 3 öğrenci (Gemini, "Buse'li odaya ekle + fark" yöntemi). Buse ve yardımcı koçlar odada iş noktaları arasında yürür (`render/walkers.ts`, `RoomDef.workSpots/hub`), öğrenciler `studentSpots`'ta durur, arada etrafa bakar.
 

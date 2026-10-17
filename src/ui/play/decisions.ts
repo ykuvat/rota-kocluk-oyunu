@@ -2,20 +2,21 @@
 // Adaylar, öğrencinin haftalık durumu, huzursuz veli, olaylar, tercih talepleri ve iş başvuruları burada.
 // Hesap (saat, program, ücret detayı) oyuncuya bırakılmaz; seçim komuta çevrilir.
 
+import { BALANCE } from "../../content/balance";
 import { EVENT_BY_ID } from "../../content/events";
-import { INTERVENTIONS, SIGNAL_TO_IV, type InterventionId } from "../../content/interventions";
+import { INSIGHT, INTERVENTIONS, SIGNAL_TO_IV, type InterventionId } from "../../content/interventions";
 import { getLocale, tf, tk } from "../../platform/i18n";
 import { calendarAt, HOURS_PER_DAY } from "../../sim/calendar";
 import { applyCommand, type CommandResult } from "../../sim/commands";
 import { dominantCauseLastWeek, weeklySignals } from "../../sim/insight";
-import type { MissCause } from "../../sim/student";
+import { stat, type MissCause, type Student } from "../../sim/student";
 import { parentSignals } from "../../sim/parent";
-import { findStudent, type GameState } from "../../sim/state";
+import { coachHours, findStudent, type GameState } from "../../sim/state";
 import { BRANCHES } from "../../content/growth";
 import { SPECIALISTS, type StaffRole } from "../../content/staff";
 import { branchBlocker } from "../../sim/growth";
 import { fmtVars } from "../notices";
-import { fmt, hash, toast } from "./common";
+import { fmt, hash } from "./common";
 
 export const ROLE_ICON: Record<StaffRole, string> = { coach: "🧑‍💼", secretary: "☎️", counselor: "🫂", teacher: "📐" };
 
@@ -34,7 +35,42 @@ interface Card {
   icon: string;
   title: string;
   body: string;
+  /** gövdenin altında ek bilgi (ör. sohbetten çıkan ipucu) */
+  extra?: string;
   options: Option[];
+}
+
+/** Saat (0,5'lik adımlar): 1,5 */
+export const fmtH = (h: number) => (Math.round(h * 10) / 10).toLocaleString(getLocale() === "tr" ? "tr-TR" : "en-US");
+
+/** Komut hatasının oyuncuya açıklaması (neden olmadı + ne yapılabilir). */
+export function errorText(error: string): string {
+  return error === "coach.noTime" ? tk("play.busy") : tk(`error.${error}`);
+}
+
+/** Veli görüşmesinden önceki durum (sonrasıyla karşılaştırmak için). */
+export function parentBefore(st: Student, week: number) {
+  const p = st.parent;
+  const since = p.lastMeetingWeek === null ? Infinity : week - p.lastMeetingWeek;
+  return { known: p.known, sat: p.satisfaction, stale: since < BALANCE.parent.meetingFreshWeeks };
+}
+
+/** Veli görüşmesinin sonucu: memnuniyet önce → sonra, sık görüşme uyarısı. */
+export function parentMeetingText(st: Student, before: ReturnType<typeof parentBefore>): string {
+  const p = st.parent;
+  const parts = [tf("res.parent", { from: Math.round(before.sat), to: Math.round(p.satisfaction), style: tk(`parent.style.${p.style}`) })];
+  if (!before.known) parts.push(tk("res.parentFirst"));
+  if (before.stale) parts.push(tf("res.parentStale", { n: BALANCE.parent.meetingFreshWeeks }));
+  return parts.join(" ");
+}
+
+/** Bu hafta sohbet edildiyse öğrencinin ağzından asıl sorunu ima eden cümle; güveni düşükse açılmaz. */
+export function interviewClueHtml(state: GameState, st: Student, week: number): string {
+  if (st.lastInterviewWeek !== week) return "";
+  const cause = dominantCauseLastWeek(st);
+  if (!cause) return "";
+  if (stat(st, "trust", state.hour).value < INSIGHT.clueMinTrust) return `<div class="clue closed">💬 ${tk("clue.closed")}</div>`;
+  return `<div class="clue">💬 “${tk(`clue.${cause}`)}”</div>`;
 }
 
 const css = `
@@ -56,13 +92,29 @@ const css = `
 #decisions .main .bar{height:6px;background:rgba(0,0,0,.25);border-radius:4px;overflow:hidden;margin-top:8px}
 #decisions .main .bar span{display:block;height:100%;background:var(--accent);border-radius:4px}
 #decisions .card.locked{opacity:.45;pointer-events:none}
-@keyframes pop{from{transform:translateY(6px)}to{transform:none}}
+#decisions .main .run{display:flex;gap:6px}
+#decisions .main .run button{width:auto;flex:none;font-size:14px;padding:10px 12px}
+#decisions .main .run button.primary{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#decisions .main .days{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;padding:0 2px}
+#decisions .main .days .past{opacity:.5}
+#decisions .main .days .now{color:var(--accent);font-weight:800}
+#decisions .head .hrs{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted);background:var(--card);border-radius:999px;padding:3px 9px;white-space:nowrap}
+#decisions .head .hrs.low{color:var(--bad)}
+#decisions .card.done{background:rgba(255,240,225,.035);border:1px dashed var(--line);animation:none}
+#decisions .card.done .b{margin-bottom:6px}
+#decisions .chosen{display:flex;gap:8px;align-items:flex-start;background:var(--card-hi);border-radius:12px;padding:8px 10px;font-weight:700}
+#decisions .chosen .ok{color:var(--good)}
+#decisions .res{font-size:13px;margin-top:6px;color:var(--soft)}
+#decisions .res.bad{color:var(--bad)}
+#decisions .err{font-size:13px;color:var(--bad);margin:-4px 0 8px}
+#decisions .clue{font-size:13px;background:rgba(155,232,174,.1);border-left:3px solid var(--good);border-radius:8px;padding:6px 8px;margin:-4px 0 10px}
+#decisions .clue.closed{background:rgba(255,170,165,.08);border-left-color:var(--bad)}@keyframes pop{from{transform:translateY(6px)}to{transform:none}}
 @media (max-width:760px){
   #decisions{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:48vh;max-height:48dvh;padding:6px 10px 10px;border-radius:20px 20px 18px 18px;
     padding-bottom:max(10px,env(safe-area-inset-bottom))}
   #decisions::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:rgba(255,235,215,.25);margin:2px auto 6px}
   #decisions .head{padding:0 4px 8px;cursor:pointer}
-  #decisions .head .chev{display:block}
+  #decisions .head .chev{display:block;margin-left:8px}
   #decisions.collapsed .head .chev{transform:rotate(-135deg);margin-top:4px}
   #decisions.collapsed .cards{display:none}
   #decisions.collapsed .head{padding-bottom:4px}
@@ -101,6 +153,11 @@ export class DecisionPanel {
   /** kartların altındaki ana düğme (hafta başlat / devam) */
   footer = "";
   onMain: () => void = () => undefined;
+  /** hafta ilerleyişi (%), çubuk düğmeler yeniden çizilmeden güncellenir */
+  progress = 0;
+  private lastFooter = "";
+  /** alt bölümdeki küçük düğmeler (hız, duraklat) */
+  onFooter: (act: string) => void = () => undefined;
   /** hafta oynarken yalnız olay kartlarına dokunulabilir */
   running = false;
   /** bu oturumda "sonra" denen kartlar (hafta değişince öğrenci kartları yeniden gelir) */
@@ -131,14 +188,32 @@ export class DecisionPanel {
         this.onMain();
         return;
       }
+      const foot = t.closest<HTMLButtonElement>("button[data-foot]");
+      if (foot) {
+        this.onFooter(foot.dataset.foot!);
+        return;
+      }
       if (t.closest(".head")) {
         this.setCollapsed(!this.collapsed);
         return;
       }
       const b = t.closest<HTMLButtonElement>("button[data-card]");
       if (!b) return;
-      const card = this.cards[Number(b.dataset.card)];
-      card?.options[Number(b.dataset.opt)]?.act();
+      // çift dokunuş / hızlı art arda tıklama: ikinci tık başka bir karta düşmesin
+      const now = performance.now();
+      if (now - this.lastClick < 450) return;
+      this.lastClick = now;
+      const card = this.cards.find((c) => c.key === b.dataset.card);
+      const opt = card?.options[Number(b.dataset.opt)];
+      if (!card || !opt) return;
+      this.last = null;
+      opt.act();
+      const res = this.last as { ok: boolean; text: string; bad: boolean } | null;
+      if (res && !res.ok) this.errors.set(card.key, res.text);
+      else {
+        this.errors.delete(card.key);
+        this.resolved.set(card.key, { card, choice: opt.label, text: res?.text ?? "", bad: res?.bad ?? false });
+      }
       this.render(true);
     });
   }
@@ -167,9 +242,19 @@ export class DecisionPanel {
     return this.state.events.pending.length;
   }
 
+  /** Son seçimin sonucu: kartın içinde gösterilir (anlık bildirim kaybolup gidiyordu). */
+  private last: { ok: boolean; text: string; bad: boolean } | null = null;
+  /** Bu hafta seçilmiş kartlar: hafta başlatılana kadar seçilen seçenek ve sonucuyla yerinde kalır. */
+  private readonly resolved = new Map<string, { card: Card; choice: string; text: string; bad: boolean }>();
+  /** Geçersiz seçim (saat yetmedi, güven az…): kart açık kalır, nedeni kartın içinde yazar. */
+  private readonly errors = new Map<string, string>();
+  /** kartların ekrandaki sırası: seçilen kart yerinde kalır, alttaki kart yukarı kaymaz (art arda yanlış dokunuş) */
+  private order: string[] = [];
+  private wasRunning = false;
+  private lastClick = 0;
+
   private feedback(r: CommandResult, okText: string, bad = false): void {
-    if (!r.ok) toast(r.error === "coach.noTime" ? tk("play.busy") : tk(`error.${r.error}`), true);
-    else toast(okText, bad);
+    this.last = r.ok ? { ok: true, text: okText, bad } : { ok: false, text: errorText(r.error), bad: true };
   }
 
   build(): Card[] {
@@ -220,12 +305,10 @@ export class DecisionPanel {
             primary: t.id === "mid",
             act: () => {
               const r = applyCommand(s, { type: "introMeeting", leadId: l.id, price: t.price });
-              if (!r.ok) this.feedback(r, "");
-              else if (r.enrolled) toast(tf("feedback.enrolled", { name: l.name, fee: fmt(t.price) }));
-              else toast(tf("feedback.notEnrolled", { name: l.name }), true);
+              this.feedback(r, r.ok && r.enrolled ? tf("feedback.enrolled", { name: l.name, fee: fmt(t.price) }) : tf("feedback.notEnrolled", { name: l.name }), r.ok && !r.enrolled);
             },
           })),
-          { label: tk("play.notNow"), act: () => void applyCommand(s, { type: "declineLead", leadId: l.id }) },
+          { label: tk("play.notNow"), act: () => this.feedback(applyCommand(s, { type: "declineLead", leadId: l.id }), tk("res.leadDeclined")) },
         ],
       });
     }
@@ -248,6 +331,7 @@ export class DecisionPanel {
           icon: "🎒",
           title: tf("play.studentTitle", { name: st.name.split(" ")[0] }),
           body: signals.slice(0, 2).map((x) => `“${tk(x)}”`).join(" · "),
+          extra: interviewClueHtml(s, st, week),
           options: [
             ...order.map((iv) => ({
               label: tk(`card.iv.${iv}`),
@@ -260,7 +344,7 @@ export class DecisionPanel {
                 this.feedback(r, tf(k, { name: st.name.split(" ")[0] }), k === "feedback.mismatched");
               },
             })),
-            { label: tk("play.later"), act: () => void this.dismissed.add(key) },
+            { label: tk("play.later"), act: () => this.note(key, tk("res.later")) },
           ],
         });
       }
@@ -279,9 +363,13 @@ export class DecisionPanel {
               label: tk("play.callParent"),
               hint: tf("play.hours", { h: 1 }),
               primary: true,
-              act: () => this.feedback(applyCommand(s, { type: "parentMeeting", studentId: st.id }), tk("feedback.parentMeeting")),
+              act: () => {
+                const before = parentBefore(st, week);
+                const r = applyCommand(s, { type: "parentMeeting", studentId: st.id });
+                this.feedback(r, parentMeetingText(st, before));
+              },
             },
-            { label: tk("play.later"), act: () => void this.dismissed.add(pkey) },
+            { label: tk("play.later"), act: () => this.note(pkey, tk("res.parentLater")) },
           ],
         });
       }
@@ -302,11 +390,10 @@ export class DecisionPanel {
               primary: i === 1,
               act: () => {
                 const res = applyCommand(s, { type: "preferenceSession", requestId: r.id, price });
-                if (!res.ok) this.feedback(res, "");
-                else toast(tf(res.enrolled ? "notice.prefSold" : "notice.prefLost", { name: r.name, price: fmt(price) }), !res.enrolled);
+                this.feedback(res, tf(res.ok && res.enrolled ? "notice.prefSold" : "notice.prefLost", { name: r.name, price: fmt(price) }), res.ok && !res.enrolled);
               },
             })),
-            { label: tk("play.skip"), act: () => void applyCommand(s, { type: "declinePreference", requestId: r.id }) },
+            { label: tk("play.skip"), act: () => this.feedback(applyCommand(s, { type: "declinePreference", requestId: r.id }), tk("res.skipped")) },
           ],
         });
       }
@@ -329,7 +416,7 @@ export class DecisionPanel {
               primary: true,
               act: () => this.feedback(applyCommand(s, { type: "hireStaff", candidateId: c.id }), tf("notice.staffHired", { name: c.name, role })),
             },
-            { label: tk("play.skip"), act: () => void this.dismissed.add(key) },
+            { label: tk("play.skip"), act: () => this.note(key, tk("res.candSkipped")) },
           ],
         });
       }
@@ -351,7 +438,7 @@ export class DecisionPanel {
               primary: true,
               act: () => this.feedback(applyCommand(s, { type: "openBranch", branchId: next.id }), tf("notice.branchOpened", { branch: tk(`branch.${next.id}`) })),
             },
-            { label: tk("play.later"), act: () => void this.dismissed.add(key) },
+            { label: tk("play.later"), act: () => this.note(key, tk("res.branchLater")) },
           ],
         });
       }
@@ -359,28 +446,68 @@ export class DecisionPanel {
     return cards;
   }
 
+  /** Komutsuz seçim ("sonra", "geç"): kart bu hafta gizlenir, seçim kartta görünür. */
+  private note(key: string, text: string): void {
+    this.dismissed.add(key);
+    this.last = { ok: true, text, bad: false };
+  }
+
   render(force = false): void {
     this.cards = this.build();
+    // hafta başlatılınca geçen seçimler temizlenir (o ana kadar ne seçildiği görünür kalır)
+    if (this.running && !this.wasRunning) {
+      this.resolved.clear();
+      this.errors.clear();
+    }
+    this.wasRunning = this.running;
     // alt düğme kartlardan ayrı güncellenir (hafta akarken kartlar yeniden çizilip titremesin)
-    if (this.footerEl.innerHTML !== this.footer) this.footerEl.innerHTML = this.footer;
+    if (this.footer !== this.lastFooter) {
+      this.footerEl.innerHTML = this.footer;
+      this.lastFooter = this.footer;
+    }
+    const bar = this.footerEl.querySelector<HTMLElement>(".bar span");
+    if (bar) bar.style.width = `${Math.round(this.progress)}%`;
+    // ekrandaki sıra: bilinen kartlar yerinde, yeni olaylar en üstte, diğer yeni kartlar sonda
+    const live = new Map(this.cards.map((c) => [c.key, c]));
+    const order = this.order.filter((k) => live.has(k) || this.resolved.has(k));
+    for (const c of this.cards) {
+      if (order.includes(c.key)) continue;
+      if (c.key.startsWith("ev:")) order.unshift(c.key);
+      else order.push(c.key);
+    }
+    this.order = order;
     // mobil sayfa: hafta oynarken kapanır (oda görünsün); yeni karar gelince (ya da olay çıkınca) açılır
     const cardKeys = this.cards.map((c) => c.key).join(",");
     const urgent = this.cards.some((c) => c.key.startsWith("ev:"));
-    if ((this.running && !urgent) || !this.cards.length) this.setCollapsed(true);
+    if ((this.running && !urgent) || !order.length) this.setCollapsed(true);
     else if (cardKeys !== this.lastCardKeys && this.cards.length) this.setCollapsed(false);
     this.lastCardKeys = cardKeys;
-    const key = `${cardKeys}|${getLocale()}|${this.state.coach.usedThisWeek}|${this.running}`;
+    const s = this.state;
+    const total = coachHours(s);
+    const free = Math.max(0, total - s.coach.usedThisWeek);
+    const key = `${order.join(",")}|${this.resolved.size}|${this.errors.size}|${getLocale()}|${s.coach.usedThisWeek}|${this.running}`;
     if (!force && key === this.lastKey) return;
     this.lastKey = key;
-    this.headEl.innerHTML = `<span class="ttl">${tk("play.decisions")}</span>${this.cards.length ? `<span class="cnt">${this.cards.length}</span>` : ""}<span class="chev" aria-hidden="true"></span>`;
-    this.cardsEl.innerHTML = this.cards.length
-      ? this.cards
-          .map(
-            (c, ci) => `<div class="card ${this.running && !c.key.startsWith("ev:") ? "locked" : ""}"><div class="t"><span class="ic">${c.icon}</span><span>${c.title}</span></div><div class="b">${c.body}</div><div class="opts">${c.options
-              .map((o, oi) => `<button data-card="${ci}" data-opt="${oi}" class="${o.primary ? "primary" : ""}"><span>${o.label}</span>${o.hint ? `<span class="hint">${o.hint}</span>` : ""}</button>`)
-              .join("")}</div></div>`,
-          )
-          .join("")
-      : `<div class="empty">${tk("play.noDecisions")}</div>`;
+    const n = this.cards.length;
+    this.headEl.innerHTML = `<span class="ttl">${tk("play.decisions")}</span>${n ? `<span class="cnt">${n}</span>` : ""}
+      <span class="hrs ${free < 1.5 ? "low" : ""}" title="${tk("play.hoursTip")}">⏱ ${tf("play.hoursFree", { free: fmtH(free), total: fmtH(total) })}</span><span class="chev" aria-hidden="true"></span>`;
+    const cardHtml = (k: string) => {
+      const done = this.resolved.get(k);
+      if (done) {
+        const c = done.card;
+        return `<div class="card done"><div class="t"><span class="ic">${c.icon}</span><span>${c.title}</span></div>
+          <div class="chosen"><span class="ok">✔</span><span>${done.choice}</span></div>${done.text ? `<div class="res ${done.bad ? "bad" : ""}">${done.text}</div>` : ""}</div>`;
+      }
+      const c = live.get(k)!;
+      const err = this.errors.get(k);
+      return `<div class="card ${this.running && !k.startsWith("ev:") ? "locked" : ""}"><div class="t"><span class="ic">${c.icon}</span><span>${c.title}</span></div><div class="b">${c.body}</div>${c.extra ?? ""}${err ? `<div class="err">⚠ ${err}</div>` : ""}<div class="opts">${c.options
+        .map((o, oi) => `<button data-card="${k}" data-opt="${oi}" class="${o.primary ? "primary" : ""}"><span>${o.label}</span>${o.hint ? `<span class="hint">${o.hint}</span>` : ""}</button>`)
+        .join("")}</div></div>`;
+    };
+    const pending = order.filter((k) => !this.resolved.has(k));
+    const chosen = order.filter((k) => this.resolved.has(k));
+    // seçilenler yerinde kalır; bekleyen kart kalmadıysa üstte kısa bir not
+    this.cardsEl.innerHTML =
+      (!pending.length ? `<div class="empty">${tk(chosen.length ? "play.allChosen" : "play.noDecisions")}</div>` : "") + order.map(cardHtml).join("");
   }
 }

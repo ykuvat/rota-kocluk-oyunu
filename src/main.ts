@@ -42,7 +42,9 @@ TextureStyle.defaultOptions.scaleMode = "nearest";
  * Tur tabanlı hafta: zaman oyuncu "Haftayı başlat" deyince akar. Bir hafta (168 oyun saati) ≈ 4 sn oynar;
  * bir olay çıkarsa durur, oyuncu cevaplayınca "Haftaya devam" der. Hafta bitince sonuç ekranı gelir.
  */
-const MS_PER_GAME_HOUR_RUNNING = 24;
+/** Hafta oynarken bir oyun saatinin süresi (ms), hız katına göre: 1× ≈ 10 sn/hafta (günler takip edilebilsin). */
+const MS_PER_GAME_HOUR = { 1: 60, 2: 30, 4: 15 } as const;
+type RunSpeed = keyof typeof MS_PER_GAME_HOUR;
 
 /** Görsel tarz (deneme): pixel art ya da çizgi film; HUD'daki 🎨 ile değişir. */
 const artStyle = getArtStyle();
@@ -231,6 +233,16 @@ async function boot() {
     document.getElementById("business-panel")?.classList.remove("open");
   };
   decisions.onMain = startOrContinue;
+  let speed: RunSpeed = 1;
+  decisions.onFooter = (act) => {
+    if (act === "speed") speed = speed === 1 ? 2 : speed === 2 ? 4 : 1;
+    // hafta ortasında durdur: kartlara, öğrencilere bakılabilir; "Haftaya devam" ile sürer
+    if (act === "pause" && running) {
+      running = false;
+      decisions.running = false;
+    }
+    lastPanel = 0;
+  };
   const endWeek = () => {
     running = false;
     inWeek = false;
@@ -244,8 +256,12 @@ async function boot() {
   const updateFooter = () => {
     const cal = calendarAt(state.hour);
     if (running) {
-      const pct = Math.round(((cal.weekday * 24 + cal.hourOfDay) / 168) * 100);
-      decisions.footer = `<button class="primary" disabled>${tk("turn.running")} ${tk(`day.${cal.weekday}`)}</button><div class="bar"><span style="width:${pct}%"></span></div>`;
+      // çubuk her saat ilerler ama düğmeler yalnız gün değişince yeniden çizilir (dokunuş boşa gitmesin)
+      decisions.progress = ((cal.weekday * 24 + cal.hourOfDay) / 168) * 100;
+      const days = Array.from({ length: 7 }, (_, d) => `<span class="${d < cal.weekday ? "past" : d === cal.weekday ? "now" : ""}">${tk(`dayShort.${d}`)}</span>`).join("");
+      decisions.footer = `<div class="run"><button class="primary" disabled>⏳ ${tk(`day.${cal.weekday}`)}</button>
+        <button data-foot="speed" title="${tk("turn.speedTip")}">⏩ ${speed}×</button><button data-foot="pause" title="${tk("turn.pauseTip")}">⏸</button></div>
+        <div class="bar"><span></span></div><div class="days">${days}</div>`;
     } else if (state.events.pending.length) {
       decisions.footer = `<div class="sub">⚡ ${tk("turn.eventStop")}</div>`;
     } else {
@@ -302,6 +318,22 @@ async function boot() {
     lastTuition = tuition;
   };
 
+  // günlük çalışma (22:00): o gün kaç görevin yapıldığı Buse'nin üstünde görünür
+  let seenDone = 0;
+  let seenAssigned = 0;
+  const studyFloat = (silent = false) => {
+    let done = 0, assigned = 0;
+    for (const st of state.students) if (!st.left) (done += st.week.done), (assigned += st.week.assigned);
+    if (assigned < seenAssigned) seenDone = seenAssigned = 0; // yeni hafta
+    if (assigned > seenAssigned && !silent) {
+      const d = done - seenDone, a = assigned - seenAssigned;
+      floaters.spawn(buseAt(), `📚 ${tf("float.study", { done: d, total: a })}`, d >= a * 0.7 ? 0x8fe3a0 : d >= a * 0.4 ? 0xffe39a : 0xff9d9d);
+    }
+    seenDone = done;
+    seenAssigned = assigned;
+  };
+  studyFloat(true);
+
   let lastPanel = 0;
   let lastLocale = getLocale();
   const refresh = () => {
@@ -342,10 +374,12 @@ async function boot() {
     scene.update(ticker.deltaMS / 1000);
     if (running) {
       acc += ticker.deltaMS;
-      while (acc >= MS_PER_GAME_HOUR_RUNNING && running) {
-        acc -= MS_PER_GAME_HOUR_RUNNING;
+      const msPerHour = MS_PER_GAME_HOUR[speed];
+      while (acc >= msPerHour && running) {
+        acc -= msPerHour;
         const weekBefore = calendarAt(state.hour).weekIndex;
         advance(state, 1);
+        studyFloat();
         if (calendarAt(state.hour).weekIndex !== weekBefore) endWeek();
         // olay, sezon raporu ya da iflas: hafta durur, oyuncu cevaplar
         else if (state.events.pending.length || state.season.pendingReport || state.gameOver) {
