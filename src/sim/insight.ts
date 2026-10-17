@@ -1,7 +1,7 @@
 // Gözlem sisi (GDD "Teşhis ve Gözlem"): oyuncu öğrencinin iç durumunu kesin değil, aralık olarak görür.
 // Aralığın merkezi gerçek değerden deterministik bir miktar sapar; tanıma arttıkça hem aralık hem sapma daralır.
 
-import { INSIGHT } from "../content/interventions";
+import { INSIGHT, INTERVIEW_TOPICS } from "../content/interventions";
 import { stat, type MissCause, type StateStat, type Student } from "./student";
 
 export interface Observed {
@@ -12,6 +12,19 @@ export interface Observed {
 }
 
 export const insightOf = (s: Student, key: StateStat) => s.insight[key] ?? INSIGHT.initial;
+
+/** Ortalama tanıma (0–100): görüşme konularının kapsadığı tüm değerler üzerinden. */
+export function averageInsight(s: Student): number {
+  const keys = [...new Set(Object.values(INTERVIEW_TOPICS).flat())];
+  return Math.round(keys.reduce((a, k) => a + insightOf(s, k), 0) / keys.length);
+}
+
+/** Geçen haftanın kaçırma nedenleri, sıklığa göre (en sık önce). */
+export function causesLastWeek(s: Student): MissCause[] {
+  const last = s.history.at(-1);
+  if (!last) return [];
+  return (Object.entries(last.missCauses) as [MissCause, number][]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+}
 
 /** Öğrenci kimliği + değer adından −1..1 arası sabit sayı (kayıt gerektirmez, tekrar üretilebilir). */
 function bias(id: string, key: string): number {

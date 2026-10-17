@@ -1,6 +1,5 @@
 // Odadaki hayat: o an odada kim var, Buse ne yapıyor (yalnız görüntü; sim durumu değişmez).
-// - Hafta oynarken: gündüz koçluk günü gelen öğrenci Buse'yle seans masasında oturur (diğer gelenler bekler);
-//   kimse gelmezse Buse odada dolaşıp iş yapar; gece ve eğitim saatlerinde masasında çalışır.
+// - Hafta oynarken: arka plan sabit; Buse odada dolaşıp iş yapar, gündüz koçluk günü gelen öğrenciler odada.
 // - Hafta dururken (kararlar): seçili öğrenciyle (yoksa ilk öğrenciyle) seansta; eğitim sürüyorsa masasında ders çalışır.
 
 import { VISITS } from "../content/visits";
@@ -43,8 +42,9 @@ export function roomLife(state: GameState, room: RoomDef, running: boolean, focu
     const focus = active.find((s) => s.id === focusId) ?? active[0];
     return withStudents(focus ? [focus] : []);
   }
+  // hafta oynarken poz arka planı değişmez: günde birkaç kez tüm resmin değişmesi slayt gösterisi gibi duruyordu.
+  // Buse odada yürür, koçluk günü gelen öğrenciler gündüz odada bekler; pozlar hafta durunca görünür.
   const h = cal.hourOfDay;
-  if (h < VISITS.dayStart || h >= VISITS.dayEnd) return desk ? atDesk : { hideBuse: false, visitors: [] };
-  if (studying && desk && h >= VISITS.studyStart && h < VISITS.studyEnd) return atDesk;
-  return withStudents(active.filter((s) => visitDay(s) === cal.weekday));
+  if (h < VISITS.dayStart || h >= VISITS.dayEnd) return { hideBuse: false, visitors: [] };
+  return { hideBuse: false, visitors: active.filter((s) => visitDay(s) === cal.weekday) };
 }

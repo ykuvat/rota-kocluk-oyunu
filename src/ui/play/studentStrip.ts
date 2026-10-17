@@ -4,10 +4,10 @@
 import { BALANCE } from "../../content/balance";
 import { INSIGHT, INTERVIEW_TOPICS } from "../../content/interventions";
 import { getLocale, tf, tk } from "../../platform/i18n";
-import { errorText, interviewClueHtml, parentBefore, parentMeetingText } from "./decisions";
+import { errorText, interviewClueHtml, parentBefore, parentMeetingText, signalText } from "./decisions";
 import { calendarAt } from "../../sim/calendar";
 import { applyCommand } from "../../sim/commands";
-import { insightOf, weeklySignals } from "../../sim/insight";
+import { averageInsight, insightOf, weeklySignals } from "../../sim/insight";
 import { expectedNet } from "../../sim/exam";
 import { targetNet } from "../../sim/season";
 import { coaches } from "../../sim/staff";
@@ -43,6 +43,7 @@ const css = `
 #stpop .res.bad{color:var(--bad)}
 #stpop .clue{margin-top:6px;font-weight:500;border-left:3px solid var(--good);padding-left:8px}
 #stpop .clue.closed{border-left-color:var(--bad)}
+#stpop .clue .cl-n{font-size:11.5px;color:var(--muted);font-weight:500}
 #stpop .how{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.4}
 #strip .wk{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:4px;align-items:center}
 #strip .wk .gb{flex:1;margin:0;height:4px}
@@ -52,15 +53,13 @@ const css = `
   #strip .st{width:128px;padding:6px 8px}
   #strip .st .gl{display:none}
   #strip .st .h{font-size:11px}
-  #stpop{left:8px!important;right:8px;width:auto;bottom:calc(var(--sheet-h,120px) + 14px);max-height:calc(100dvh - var(--sheet-h,120px) - 80px)}  #stpop .btns .det{display:none}
+  #stpop{left:8px!important;right:8px;width:auto;bottom:calc(var(--sheet-h,120px) + 14px);max-height:calc(100dvh - var(--sheet-h,120px) - 80px)}
+  #stpop .btns .det{display:none}
 }
 `;
 
 /** Ortalama tanıma (%): koçun öğrenciyi ne kadar tanıdığı. */
-function avgInsight(s: Student): number {
-  const keys = [...new Set(Object.values(INTERVIEW_TOPICS).flat())];
-  return Math.round(keys.reduce((a, k) => a + insightOf(s, k), 0) / keys.length);
-}
+const avgInsight = averageInsight;
 
 /** Etiketli küçük ilerleme çubuğu. */
 function meter(icon: string, label: string, pct: number, color = "var(--accent)"): string {
@@ -192,7 +191,7 @@ export class StudentStrip {
             const nowNet = Math.max(0, Math.round(expectedNet(st, now)));
             const pct = Math.min(100, Math.round((nowNet / target) * 100));
             return `<div class="st ${this.selected === st.id ? "sel" : ""}" data-st="${st.id}"><span class="m">${MOOD_ICON[m]}</span>
-              <div class="n">${st.name.split(" ")[0]} ${trend}</div><div class="h">${sig ? `“${tk(sig)}”` : tk(`mood.${m}`)}</div>
+              <div class="n">${st.name.split(" ")[0]} ${trend}</div><div class="h">${sig ? `“${signalText(sig, `st:${st.id}:${calendarAt(now).weekIndex}`)}”` : tk(`mood.${m}`)}</div>
               <div class="gb" title="${tf("goal.bar", { target, now: nowNet })}"><span style="width:${pct}%;background:${pct >= 100 ? "var(--good)" : "var(--accent)"}"></span></div>
               <div class="gl">${tf("goal.bar", { target, now: nowNet })}</div>
               <div class="wk" title="${tk("play.weekTasksTip")}">📚<div class="gb"><span style="width:${st.program.length ? Math.min(100, (st.week.done / st.program.length) * 100) : 0}%;background:#9fc6ff"></span></div>${st.week.done}/${st.program.length}</div></div>`;

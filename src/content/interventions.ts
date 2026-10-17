@@ -66,6 +66,9 @@ export const INSIGHT = {
   interviewHours: 1,
   /** Sohbette öğrencinin asıl sorunu ima etmesi için gereken en az güven (altında "pek açılmadı") */
   clueMinTrust: 30,
+  /** İpucunun asıl nedeni göstermesi olasılığı (%) = taban + ortalama tanıma · çarpan; tutmazsa ikinci nedeni ya da belirsiz bir şey söyler */
+  clueBaseAccuracy: 40,
+  clueAccuracyPerInsight: 0.6,
   /** Program takibiyle her hafta tüm değerlerde pasif artış */
   weeklyPassive: 3,
   /** Aralık yarı genişliği = minHalfWidth + (100 − tanıma) · widthPerMissingInsight */

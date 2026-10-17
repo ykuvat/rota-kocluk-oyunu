@@ -74,7 +74,7 @@ export class PlayHud {
     this.el.id = "phud";
     this.el.className = "pl pl-only";
     document.body.appendChild(this.el);
-    this.el.addEventListener("pointerdown", (e) => {
+    this.el.addEventListener("click", (e) => {
       const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-a]");
       if (!b) return;
       e.preventDefault();

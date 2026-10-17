@@ -261,3 +261,12 @@ Uzman etkisi beceri / 60 ile ölçeklenir; uzmanlar yer (ofis + şube) başına 
 - Hafta hızı 1× = 60 ms/saat (~10 sn/hafta), ⏩ 2×/4×, ⏸ hafta ortası durdurma; gün şeridi; 22:00'de Buse üstünde günün görev sayısı.
 - Çubuklar: öğrenci kartında haftalık görev (yapılan/program), öğrenci penceresinde görev/tanıma/veli memnuniyeti, HUD'da ve Kurum panelinde sertifika eğitimi (hafta).
 - Kurum paneli oyun modunda daha büyük yazı, sertifikalar üstte, kapatma düğmesi. Mobilde "Ayrıntılar" düğmesi gerçekten gizli (CSS özgüllük hatası).
+
+## Menü kullanımı, gecikmeli sonuç, sorun çeşitliliği (2026-10-17)
+- Hafta sonu özeti `pointerdown`da kapanıyordu; parmak kalkınca dokunuş alttaki "Haftayı başlat"a düşüp haftayı başlatıyordu. Özet ve paneller (`playHud`, `businessPanel`, `historyPanel`, `tutorial`) artık `click`; ayrıca özet kapandıktan 800 ms sonrasına kadar hafta başlamaz.
+- Yeni olay kapalı mobil sayfayı her zaman açar; alt düğme "⚡ Bir gelişme var — karta cevap ver" karta götürür.
+- Geçmiş ve Kurum panelleri oyun modunda yumuşak stil, ✕ ile kapanır, birbirini kapatır; telefonda tam ekran (altındaki şerit/sayfa gizlenir).
+- Müdahale ve veli kartının sonucu tıklayınca söylenmez ("hafta sonunda göreceksin"); hafta sonu ekranında görünür (veli satırı: memnuniyet önce → sonra).
+- Öğrenci kartı: iki sinyal karışık sırada ve 3 farklı cümleyle (`signal.X.v1/v2`); seçenekler, gösterilen sinyalleri üretebilecek TÜM nedenlerin çareleri + çeldirici (en fazla 4). Sohbet ipucu tanımaya bağlı: doğru olma olasılığı %40 + tanıma·0,6; tutmazsa ikinci nedeni ya da belirsiz bir şey söyler, güven yüzdesi gösterilir.
+- Sertifika kartı: eğitim yokken, parası ve saati yeten en ucuz 3 sertifika 4 haftada bir karar kartı olarak gelir.
+- Hafta oynarken oda poz arka planı değişmez (slayt gösterisi gibi duruyordu); Buse yürür, koçluk günü gelen öğrenciler odada; pozlar yalnız hafta dururken.

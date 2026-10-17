@@ -51,9 +51,23 @@ body.play #business-panel.open .tabs button.on{background:var(--accent);color:#3
 body.play #business-panel.open input{font:600 14px var(--font);padding:6px 8px;width:96px}
 body.play #business-panel.open .pbar span{background:var(--accent)}
 body:not(.play) .pl-only{display:none!important}
+body.play #history.open{left:auto;right:364px;transform:none;bottom:12px;top:auto;width:420px;max-height:calc(100vh - 24px);z-index:30;padding:14px 16px;
+  font:500 14px/1.5 var(--font);background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overscroll-behavior:contain}
+body.play #history.open h3{text-transform:none;letter-spacing:0;font-size:17px;color:#f6d39a;margin:0}
+body.play #history.open .hh{position:sticky;top:-14px;background:var(--panel-solid);padding:2px 0 8px;z-index:1}
+body.play #history.open .hh .x{font-size:20px;padding:4px 8px}
+body.play #history.open .filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+body.play #history.open .filters button{font:700 13px var(--font);border:0;border-radius:999px;padding:6px 12px;margin:0;background:var(--card-hi);color:var(--ink)}
+body.play #history.open .filters button.on{background:var(--accent);color:#3a2410}
+body.play #history.open .item{flex-direction:column;gap:0;padding:8px 2px;border-bottom:1px solid var(--line)}
+body.play #history.open .when{width:auto;font-size:12px;color:var(--muted)}
+body.play #history.open .bad{color:var(--bad)}
 @media (max-width:760px){
   body.play #business-panel.open{left:8px;right:8px;width:auto;top:64px;bottom:8px;max-height:none;z-index:35}
-  body.play:has(#business-panel.open) #tut{display:none}
+  body.play #history.open{left:8px;right:8px;width:auto;top:64px;bottom:8px;max-height:none;z-index:35}
+  /* telefonda açık panel tam ekran: altındaki şerit, karar sayfası ve eğitim balonu gizlenir (üst üste binmesin) */
+  body.play:has(#business-panel.open) :is(#tut,#strip,#stpop,#decisions,#history),
+  body.play:has(#history.open) :is(#tut,#strip,#stpop,#decisions){display:none!important}
   .pl .toast{top:62px;font-size:13px}
 }
 `;

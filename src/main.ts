@@ -199,8 +199,15 @@ async function boot() {
   const hud = new PlayHud(state, {
     // kurum menüsü (sertifika, ofis, ekip) erken oyunda gizli: oyuncuyu boğmasın
     showCompany: () => state.students.length >= 3 || state.stage >= 2 || calendarAt(state.hour).weekIndex >= 6,
-    onCompany: () => document.getElementById("business-panel")?.classList.toggle("open"),
-    onHistory: () => history.toggle(),
+    // paneller birbirini kapatır: üst üste binmesin
+    onCompany: () => {
+      history.close();
+      document.getElementById("business-panel")?.classList.toggle("open");
+    },
+    onHistory: () => {
+      document.getElementById("business-panel")?.classList.remove("open");
+      history.toggle();
+    },
     onDetails: () => setDetails(true),
     artStyle,
     onStyle: () => {
@@ -223,6 +230,8 @@ async function boot() {
   let weeksPlayed = 0;
   const startOrContinue = () => {
     if (running || summary.isOpen || report.isOpen || state.gameOver) return;
+    // hafta sonu özeti az önce kapandıysa (çift dokunuş) yeni hafta kendiliğinden başlamasın
+    if (performance.now() - summary.closedAt < 800) return;
     if (state.events.pending.length) {
       toast(tk("turn.eventStop"), true);
       return;
@@ -231,6 +240,7 @@ async function boot() {
     inWeek = true;
     running = true;
     document.getElementById("business-panel")?.classList.remove("open");
+    history.close();
   };
   decisions.onMain = startOrContinue;
   let speed: RunSpeed = 1;
@@ -263,7 +273,7 @@ async function boot() {
         <button data-foot="speed" title="${tk("turn.speedTip")}">⏩ ${speed}×</button><button data-foot="pause" title="${tk("turn.pauseTip")}">⏸</button></div>
         <div class="bar"><span></span></div><div class="days">${days}</div>`;
     } else if (state.events.pending.length) {
-      decisions.footer = `<div class="sub">⚡ ${tk("turn.eventStop")}</div>`;
+      decisions.footer = `<button class="primary" data-foot="open">⚡ ${tk("turn.eventStop")}</button>`;
     } else {
       const waiting = decisions.count;
       decisions.footer = `<button class="primary" data-main="1">${tk(inWeek ? "turn.continue" : "turn.start")}</button>

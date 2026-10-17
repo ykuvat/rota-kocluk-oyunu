@@ -8,11 +8,11 @@ import { INSIGHT, INTERVENTIONS, SIGNAL_TO_IV, type InterventionId } from "../..
 import { getLocale, tf, tk } from "../../platform/i18n";
 import { calendarAt, HOURS_PER_DAY } from "../../sim/calendar";
 import { applyCommand, type CommandResult } from "../../sim/commands";
-import { dominantCauseLastWeek, weeklySignals } from "../../sim/insight";
+import { averageInsight, causesLastWeek, dominantCauseLastWeek, SIGNALS, weeklySignals } from "../../sim/insight";
 import { stat, type MissCause, type Student } from "../../sim/student";
 import { parentSignals } from "../../sim/parent";
 import { coachHours, findStudent, type GameState } from "../../sim/state";
-import { BRANCHES } from "../../content/growth";
+import { BRANCHES, CERTS } from "../../content/growth";
 import { SPECIALISTS, type StaffRole } from "../../content/staff";
 import { branchBlocker } from "../../sim/growth";
 import { fmtVars } from "../notices";
@@ -67,10 +67,20 @@ export function parentMeetingText(st: Student, before: ReturnType<typeof parentB
 /** Bu hafta sohbet edildiyse öğrencinin ağzından asıl sorunu ima eden cümle; güveni düşükse açılmaz. */
 export function interviewClueHtml(state: GameState, st: Student, week: number): string {
   if (st.lastInterviewWeek !== week) return "";
-  const cause = dominantCauseLastWeek(st);
-  if (!cause) return "";
+  const causes = causesLastWeek(st);
+  if (!causes.length) return "";
   if (stat(st, "trust", state.hour).value < INSIGHT.clueMinTrust) return `<div class="clue closed">💬 ${tk("clue.closed")}</div>`;
-  return `<div class="clue">💬 “${tk(`clue.${cause}`)}”</div>`;
+  // öğrenciyi az tanıyorsan ipucu yanıltabilir: ikinci nedeni ya da belirsiz bir şey söyler (deterministik)
+  const accuracy = INSIGHT.clueBaseAccuracy + averageInsight(st) * INSIGHT.clueAccuracyPerInsight;
+  const roll = hash(`clue:${st.id}:${week}`) % 100;
+  const text = roll < accuracy ? `“${tk(`clue.${causes[0]}`)}”` : causes[1] ? `“${tk(`clue.${causes[1]}`)}”` : tk("clue.vague");
+  return `<div class="clue">💬 ${text}<div class="cl-n">${tf("clue.reliability", { v: Math.min(100, Math.round(accuracy)) })}</div></div>`;
+}
+
+/** Sinyalin cümlesi: aynı sinyal her hafta aynı sözlerle gelmesin (öğrenci + hafta için sabit varyant). */
+export function signalText(sig: string, seed: string): string {
+  const v = hash(`${sig}:${seed}`) % 3;
+  return tk(v === 0 ? sig : `${sig}.v${v}`);
 }
 
 const css = `
@@ -85,6 +95,9 @@ const css = `
 #decisions .card .b{color:var(--soft);margin-bottom:10px;font-size:13.5px}
 #decisions .opts{display:flex;flex-direction:column;gap:6px}
 #decisions .opts button{display:flex;align-items:center;text-align:left;padding:10px 12px;border-radius:12px}
+#decisions .opts button .sm{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+#decisions .opts button.primary .sm{color:#7a5222}
+#decisions .chosen .sm{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 #decisions .empty{color:var(--muted);padding:10px 4px}
 #decisions .main{padding-top:10px}
 #decisions .main button{width:100%;font-size:17px;padding:13px;border-radius:14px}
@@ -108,6 +121,7 @@ const css = `
 #decisions .res.bad{color:var(--bad)}
 #decisions .err{font-size:13px;color:var(--bad);margin:-4px 0 8px}
 #decisions .clue{font-size:13px;background:rgba(155,232,174,.1);border-left:3px solid var(--good);border-radius:8px;padding:6px 8px;margin:-4px 0 10px}
+#decisions .clue .cl-n{font-size:11.5px;color:var(--muted);margin-top:2px}
 #decisions .clue.closed{background:rgba(255,170,165,.08);border-left-color:var(--bad)}@keyframes pop{from{transform:translateY(6px)}to{transform:none}}
 @media (max-width:760px){
   #decisions{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:48vh;max-height:48dvh;padding:6px 10px 10px;border-radius:20px 20px 18px 18px;
@@ -139,10 +153,13 @@ export function priceTiers(state: GameState) {
 export interface DecisionRecord {
   studentId: string;
   name: string;
-  iv: InterventionId;
-  matched: boolean | undefined;
+  /** öğrenci müdahalesi; yoksa `note` (ör. veli görüşmesi) */
+  iv?: InterventionId;
+  matched?: boolean;
   /** kararın verildiği andaki gerçek kök neden (yanlış seçimde oyuncuya açıklanır) */
-  cause: MissCause | null;
+  cause?: MissCause | null;
+  /** müdahale dışı kararın hafta sonu satırı: [ne yapıldı, sonucu] */
+  note?: [string, string];
 }
 
 export class DecisionPanel {
@@ -190,7 +207,11 @@ export class DecisionPanel {
       }
       const foot = t.closest<HTMLButtonElement>("button[data-foot]");
       if (foot) {
-        this.onFooter(foot.dataset.foot!);
+        if (foot.dataset.foot === "open") {
+          // olay kartına götür: sayfayı aç, ilk olaya kaydır
+          this.setCollapsed(false);
+          this.cardsEl.querySelector(".card.ev")?.scrollIntoView({ block: "start", behavior: "smooth" });
+        } else this.onFooter(foot.dataset.foot!);
         return;
       }
       if (t.closest(".head")) {
@@ -251,6 +272,7 @@ export class DecisionPanel {
   /** kartların ekrandaki sırası: seçilen kart yerinde kalır, alttaki kart yukarı kaymaz (art arda yanlış dokunuş) */
   private order: string[] = [];
   private wasRunning = false;
+  private lastUrgentKeys = "";
   private lastClick = 0;
 
   private feedback(r: CommandResult, okText: string, bad = false): void {
@@ -319,29 +341,33 @@ export class DecisionPanel {
       const signals = weeklySignals(st);
       const key = `st:${st.id}:${week}`;
       if (signals.length && !st.ivThisWeek && !this.dismissed.has(key)) {
+        // görünen iki sinyal (sırası karışık: ilk sinyal hep asıl neden olmasın)
+        const shown = signals.slice(0, 2).sort((a, b) => hash(`${key}:${a}`) - hash(`${key}:${b}`));
+        // seçenekler: bu sinyalleri üretebilecek TÜM nedenlerin çareleri (sinyaller birden çok nedene uyar) + bir çeldirici
+        const causes = (Object.keys(SIGNALS) as MissCause[]).filter((c) => SIGNALS[c].some((x) => shown.includes(x)));
+        const plausible = (Object.keys(INTERVENTIONS) as InterventionId[]).filter((iv) => INTERVENTIONS[iv].targets.some((t) => causes.includes(t)));
         const best = SIGNAL_TO_IV[signals[0]];
-        const second = signals.map((x) => SIGNAL_TO_IV[x]).find((x) => x && x !== best);
-        const pool = (Object.keys(INTERVENTIONS) as InterventionId[]).filter((x) => x !== best && x !== second);
-        const distractor = pool[hash(key) % pool.length];
-        const ivs = [best, second ?? distractor, second ? distractor : pool[(hash(key) + 3) % pool.length]].filter(Boolean) as InterventionId[];
-        // sırayı sabit ama tahmin edilemez karıştır
-        const order = ivs.map((iv, i) => ({ iv, k: hash(`${key}:${i}`) })).sort((a, b) => a.k - b.k).map((x) => x.iv);
+        const mix = (list: InterventionId[], salt: string) => [...list].sort((a, b) => hash(`${key}:${salt}:${a}`) - hash(`${key}:${salt}:${b}`));
+        const picked = [best, ...mix(plausible.filter((x) => x !== best), "p")].slice(0, 3);
+        const pool = (Object.keys(INTERVENTIONS) as InterventionId[]).filter((x) => !picked.includes(x));
+        const ivs = [...picked, mix(pool, "d")[0]].filter(Boolean) as InterventionId[];
+        const order = mix(ivs, "o");
         cards.push({
           key,
           icon: "🎒",
           title: tf("play.studentTitle", { name: st.name.split(" ")[0] }),
-          body: signals.slice(0, 2).map((x) => `“${tk(x)}”`).join(" · "),
+          body: shown.map((x) => `“${signalText(x, key)}”`).join(" · "),
           extra: interviewClueHtml(s, st, week),
           options: [
             ...order.map((iv) => ({
               label: tk(`card.iv.${iv}`),
-              hint: tf("play.hours", { h: INTERVENTIONS[iv].hours }),
+              hint: tf("play.hours", { h: fmtH(INTERVENTIONS[iv].hours) }),
               act: () => {
                 const cause = dominantCauseLastWeek(st);
                 const r = applyCommand(s, { type: "intervene", studentId: st.id, intervention: iv });
                 if (r.ok) this.weekDecisions.push({ studentId: st.id, name: st.name.split(" ")[0], iv, matched: r.matched, cause });
-                const k = r.ok && r.matched === true ? "feedback.matched" : r.ok && r.matched === false ? "feedback.mismatched" : "feedback.neutral";
-                this.feedback(r, tf(k, { name: st.name.split(" ")[0] }), k === "feedback.mismatched");
+                // sonuç hemen söylenmez: hafta sonu ekranında (öğrencinin haftası nasıl geçti) görülür
+                this.feedback(r, tk("res.weekEnd"));
               },
             })),
             { label: tk("play.later"), act: () => this.note(key, tk("res.later")) },
@@ -366,7 +392,8 @@ export class DecisionPanel {
               act: () => {
                 const before = parentBefore(st, week);
                 const r = applyCommand(s, { type: "parentMeeting", studentId: st.id });
-                this.feedback(r, parentMeetingText(st, before));
+                if (r.ok) this.weekDecisions.push({ studentId: st.id, name: st.name.split(" ")[0], note: [tk("play.callParent"), parentMeetingText(st, before)] });
+                this.feedback(r, tk("res.weekEnd"));
               },
             },
             { label: tk("play.later"), act: () => this.note(pkey, tk("res.parentLater")) },
@@ -417,6 +444,33 @@ export class DecisionPanel {
               act: () => this.feedback(applyCommand(s, { type: "hireStaff", candidateId: c.id }), tf("notice.staffHired", { name: c.name, role })),
             },
             { label: tk("play.skip"), act: () => this.note(key, tk("res.candSkipped")) },
+          ],
+        });
+      }
+    }
+
+    // mesleki gelişim: eğitim yokken, parası ve saati yeten sertifikalar 4 haftada bir kart olarak önerilir
+    // (yalnız Kurum menüsünde dururken oyuncu sertifikaları bulamıyordu)
+    if (!s.coach.training && week >= 2) {
+      const free = coachHours(s) - s.coach.usedThisWeek;
+      const cash = s.economy.personal + s.economy.business;
+      const can = CERTS.filter((c) => !s.coach.certs.includes(c.id) && c.cost <= cash && c.hoursPerWeek <= free)
+        .sort((a, b) => a.cost - b.cost)
+        .slice(0, 3);
+      const key = `cert:${Math.floor(week / 4)}`;
+      if (can.length && !this.dismissed.has(key)) {
+        cards.push({
+          key,
+          icon: "📖",
+          title: tk("play.certTitle"),
+          body: tk("play.certBody"),
+          options: [
+            ...can.map((c) => ({
+              label: `${tk(`cert.${c.id}`)}<small class="sm">${tk(`cert.effect.${c.id}`)}</small>`,
+              hint: tf("play.certHint", { cost: fmt(c.cost), weeks: c.weeks, h: c.hoursPerWeek }),
+              act: () => this.feedback(applyCommand(s, { type: "startCert", certId: c.id }), tf("res.certStarted", { cert: tk(`cert.${c.id}`), n: c.weeks, h: c.hoursPerWeek })),
+            })),
+            { label: tk("play.later"), act: () => this.note(key, tk("res.certLater")) },
           ],
         });
       }
@@ -479,8 +533,12 @@ export class DecisionPanel {
     // mobil sayfa: hafta oynarken kapanır (oda görünsün); yeni karar gelince (ya da olay çıkınca) açılır
     const cardKeys = this.cards.map((c) => c.key).join(",");
     const urgent = this.cards.some((c) => c.key.startsWith("ev:"));
+    const urgentKeys = this.cards.filter((c) => c.key.startsWith("ev:")).map((c) => c.key).join(",");
     if ((this.running && !urgent) || !order.length) this.setCollapsed(true);
+    // yeni olay her zaman sayfayı açar (kapalı sayfada "gelişme var" yazıp kartı göstermemek kafa karıştırıyordu)
+    else if (urgentKeys && urgentKeys !== this.lastUrgentKeys) this.setCollapsed(false);
     else if (cardKeys !== this.lastCardKeys && this.cards.length) this.setCollapsed(false);
+    this.lastUrgentKeys = urgentKeys;
     this.lastCardKeys = cardKeys;
     const s = this.state;
     const total = coachHours(s);
@@ -500,7 +558,7 @@ export class DecisionPanel {
       }
       const c = live.get(k)!;
       const err = this.errors.get(k);
-      return `<div class="card ${this.running && !k.startsWith("ev:") ? "locked" : ""}"><div class="t"><span class="ic">${c.icon}</span><span>${c.title}</span></div><div class="b">${c.body}</div>${c.extra ?? ""}${err ? `<div class="err">⚠ ${err}</div>` : ""}<div class="opts">${c.options
+      return `<div class="card ${k.startsWith("ev:") ? "ev" : this.running ? "locked" : ""}"><div class="t"><span class="ic">${c.icon}</span><span>${c.title}</span></div><div class="b">${c.body}</div>${c.extra ?? ""}${err ? `<div class="err">⚠ ${err}</div>` : ""}<div class="opts">${c.options
         .map((o, oi) => `<button data-card="${k}" data-opt="${oi}" class="${o.primary ? "primary" : ""}"><span>${o.label}</span>${o.hint ? `<span class="hint">${o.hint}</span>` : ""}</button>`)
         .join("")}</div></div>`;
     };

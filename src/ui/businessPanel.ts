@@ -48,7 +48,7 @@ export class BusinessPanel {
     this.el = document.createElement("div");
     this.el.id = "business-panel";
     document.body.appendChild(this.el);
-    this.el.addEventListener("pointerdown", (e) => {
+    this.el.addEventListener("click", (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-act]");
       if (!btn) return;
       e.preventDefault();

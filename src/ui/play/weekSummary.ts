@@ -15,6 +15,7 @@ const css = `
 #wsum h2{margin:0 0 4px;font-size:21px;font-weight:800;color:#ffdc9a}
 #wsum h4{margin:14px 0 6px;font-size:14px;font-weight:800;color:#f6d39a}
 #wsum .line{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;margin-bottom:4px;background:var(--card);border-radius:12px}
+#wsum .line.col{flex-direction:column;gap:2px}
 #wsum .ok{color:var(--good)}
 #wsum .bad{color:var(--bad)}
 #wsum .foot{display:flex;justify-content:flex-end;margin-top:16px}
@@ -45,7 +46,8 @@ export class WeekSummary {
     this.el.className = "pl pl-only";
     this.el.style.display = "none";
     document.body.appendChild(this.el);
-    this.el.addEventListener("pointerdown", (e) => {
+    // "click" (pointerdown değil): parmak kalkınca dokunuş alttaki "Haftayı başlat"a düşmesin
+    this.el.addEventListener("click", (e) => {
       if ((e.target as HTMLElement).closest("button[data-close]")) this.close();
     });
   }
@@ -54,8 +56,12 @@ export class WeekSummary {
     return this.open;
   }
 
+  /** son kapanış anı (ms): hemen ardından gelen dokunuş haftayı başlatmasın */
+  closedAt = 0;
+
   close(): void {
     this.open = false;
+    this.closedAt = performance.now();
     this.el.style.display = "none";
     this.onClose();
   }
@@ -84,6 +90,7 @@ export class WeekSummary {
     const decHtml = decisions.length
       ? decisions
           .map((d) => {
+            if (d.note) return `<div class="line col"><span>${d.name} · ${d.note[0]}</span><span class="muted">${d.note[1]}</span></div>`;
             const what = `${d.name} · ${tk(`card.iv.${d.iv}`)}`;
             const res =
               d.matched === true

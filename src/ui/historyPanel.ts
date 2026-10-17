@@ -18,6 +18,8 @@ const css = `
 #history .bad{color:#ffb0b0}
 #history .filters button{background:#3a3140;color:#d8cbe0;border:1px solid #5a4a66;border-radius:4px;padding:2px 6px;margin:0 4px 6px 0;font:11px system-ui;cursor:pointer}
 #history .filters button.on{background:#c9a96e;color:#1d1722}
+#history .hh{display:flex;align-items:center;justify-content:space-between}
+#history .hh .x{background:transparent;border:0;color:#a99ab0;font-size:16px;cursor:pointer}
 `;
 
 type Filter = "all" | "students" | "business" | "events";
@@ -46,7 +48,11 @@ export class HistoryPanel {
     this.el = document.createElement("div");
     this.el.id = "history";
     this.el.style.display = "none";
-    this.el.addEventListener("pointerdown", (e) => {
+    this.el.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest("button[data-close]")) {
+        this.close();
+        return;
+      }
       const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-filter]");
       if (!b) return;
       this.filter = b.dataset.filter as Filter;
@@ -54,6 +60,16 @@ export class HistoryPanel {
     });
     document.body.appendChild(this.el);
     this.seen = state.history.length;
+  }
+
+  get isOpen(): boolean {
+    return this.open;
+  }
+
+  close(): void {
+    if (!this.open) return;
+    this.open = false;
+    this.render(true);
   }
 
   toggle(): void {
@@ -73,6 +89,7 @@ export class HistoryPanel {
     this.lastKey = key;
     this.btn.innerHTML = `${tk("history.title")} (H)${unread ? `<span class="dot">${unread}</span>` : ""}`;
     this.el.style.display = this.open ? "block" : "none";
+    this.el.classList.toggle("open", this.open);
     if (!this.open) return;
 
     const allowed = this.filter === "all" ? null : new Set(GROUPS[this.filter]);
@@ -91,6 +108,6 @@ export class HistoryPanel {
     const filters = (["all", "students", "business", "events"] as Filter[])
       .map((f) => `<button data-filter="${f}" class="${f === this.filter ? "on" : ""}">${tk(`history.filter.${f}`)}</button>`)
       .join("");
-    this.el.innerHTML = `<h3>${tk("history.title")}</h3><div class="filters">${filters}</div>${items || `<div class="item">${tf("history.empty", {})}</div>`}`;
+    this.el.innerHTML = `<div class="hh"><h3>${tk("history.title")}</h3><button data-close="1" class="x" aria-label="✕">✕</button></div><div class="filters">${filters}</div>${items || `<div class="item">${tf("history.empty", {})}</div>`}`;
   }
 }
