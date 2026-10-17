@@ -12,6 +12,8 @@ export const BALANCE = {
     distraction: 0.025,
     overload: 2.2, // (günlük yük / sürdürülebilir yük − 1)+ başına
     bias: -2.6,
+    /** Kaçırma nedeni çekilişi: açık^bu üs ile orantılı (büyüdükçe baskın neden daha çok kazanır) */
+    causeSharpness: 1.3,
   },
   mastery: {
     gainPerHour: 3.0, // ustalık puanı / saat (öğrenme hızı 1, kalite 1, boş konu)

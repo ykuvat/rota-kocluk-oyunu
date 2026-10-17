@@ -16,7 +16,7 @@ const css = `
 #tut button.skip{background:transparent;box-shadow:none;color:#8a7a8f}
 .tut-glow{box-shadow:0 0 0 3px #f4bd62,0 0 24px 6px rgba(244,189,98,.6)!important}
 @media (max-width:760px){
-  #tut{left:8px;right:8px;transform:none;top:8px;width:auto;min-width:0;padding:10px 12px;gap:10px;font-size:13.5px;border-radius:18px}
+  #tut{left:8px;right:8px;transform:none;top:calc(var(--hud-h,64px) + 14px);width:auto;min-width:0;padding:10px 12px;gap:10px;font-size:13.5px;border-radius:18px}
   #tut.low{top:auto;bottom:calc(var(--sheet-h,120px) + 14px)}
   #tut img{width:30px}
   #tut .btns{margin-top:4px}
@@ -81,6 +81,11 @@ export class Tutorial {
 
   get active(): boolean {
     return this.step < STEPS.length;
+  }
+
+  /** Rehberi baştan göster (ayarlardan). Tamamlanmış adımlar kendiliğinden geçilir. */
+  restart(): void {
+    this.go(0);
   }
 
   private go(n: number): void {

@@ -57,9 +57,8 @@ export interface HudControls {
   onDetails(): void;
   /** HUD yüksekliği değişti (mobilde hedefler açılıp kapandı): kamera yeniden ortalansın */
   onLayout?(): void;
-  /** görsel tarz denemesi: şu anki tarz ve değiştir */
-  artStyle?: string;
-  onStyle?(): void;
+  /** ayarlar menüsü (dil, tarz, kaydet, yeni oyun) */
+  onSettings(): void;
 }
 
 export class PlayHud {
@@ -83,7 +82,7 @@ export class PlayHud {
       if (a === "history") this.c.onHistory();
       if (a === "details") this.c.onDetails();
       if (a === "goals") this.el.classList.toggle("gopen");
-      if (a === "style") this.c.onStyle?.();
+      if (a === "settings") this.c.onSettings();
       this.render(true);
       this.c.onLayout?.();
     });
@@ -113,9 +112,8 @@ export class PlayHud {
         <div class="menu">
           <button data-a="goals" class="gbtn ghost" title="${tk("play.goals")}">🎯${goals.length ? ` ${goals.length}` : ""}</button>
           ${company ? `<button data-a="company">${tk("play.company")}</button>` : ""}
-          ${this.c.onStyle ? `<button data-a="style" class="ghost" title="${tk(this.c.artStyle === "cartoon" ? "play.style.toPixel" : "play.style.toCartoon")}">🎨</button>` : ""}
           <button data-a="history" class="ghost">${tk("play.history")}</button>
-          <button data-a="details" class="ghost det" title="${tk("play.details")}">⚙</button>
+          <button data-a="settings" class="ghost" title="${tk("set.title")}" aria-label="${tk("set.title")}">☰</button>
         </div></div>
       <div class="bal"><span class="money ${money < 0 ? "neg" : ""}">💰 ${fmt(money)} ₺</span><span class="stars" title="${tk("play.rep")}">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></div>
       <div class="sub">${tf("play.monthTrend", { v: `${trend >= 0 ? "+" : ""}${fmt(trend)}` })}</div>

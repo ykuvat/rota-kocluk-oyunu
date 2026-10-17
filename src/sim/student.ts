@@ -192,11 +192,11 @@ export function complianceProbability(terms: ComplianceTerms): number {
   return sigmoid(Object.values(terms).reduce((a, b) => a + b, 0));
 }
 
-/** Kaçırmanın baskın nedeni: ortalama bir öğrenciye göre en çok düşüren terim. */
-export function dominantMissCause(terms: ComplianceTerms): MissCause {
+/** Ortalama bir öğrenciye göre her nedenin açığı (logit). */
+function missDeficits(terms: ComplianceTerms): Record<Exclude<MissCause, "time">, number> {
   const w = BALANCE.compliance;
   // nötr referans: tüm durum değerleri 50, yorgunluk 20, uyumsuzluk 15, yük yok
-  const deficit: Record<Exclude<MissCause, "time">, number> = {
+  return {
     motivation: w.motivation * 50 - terms.motivation,
     trust: w.trust * 50 - terms.trust + (w.goalOwnership * 50 - terms.goalOwnership),
     fatigue: -terms.fatigue - w.fatigue * 20,
@@ -204,15 +204,33 @@ export function dominantMissCause(terms: ComplianceTerms): MissCause {
     distraction: -terms.distraction - w.distraction * 50 + (w.discipline * 50 - terms.discipline),
     overload: -terms.overload,
   };
+}
+
+/** Kaçırmanın baskın nedeni: ortalama bir öğrenciye göre en çok düşüren terim. */
+export function dominantMissCause(terms: ComplianceTerms): MissCause {
   let best: MissCause = "motivation";
   let bestV = -Infinity;
-  for (const [k, val] of Object.entries(deficit) as [Exclude<MissCause, "time">, number][]) {
+  for (const [k, val] of Object.entries(missDeficits(terms)) as [Exclude<MissCause, "time">, number][]) {
     if (val > bestV) {
       bestV = val;
       best = k;
     }
   }
   return best;
+}
+
+/**
+ * Tek bir kaçırmanın nedeni: açıkların karesiyle orantılı çekiliş. Baskın neden çoğu zaman kazanır ama
+ * ikinci derece sorunlar (ve yaşam olaylarının büyüttüğü açıklar) da görünür; öğrenci her hafta aynı nedenle kaçırmaz.
+ */
+export function sampleMissCause(terms: ComplianceTerms, rng: Rng): MissCause {
+  const d = Object.entries(missDeficits(terms)) as [Exclude<MissCause, "time">, number][];
+  const weights = d.map(([, v]) => Math.max(0, v) ** BALANCE.compliance.causeSharpness);
+  const total = weights.reduce((a, b) => a + b, 0);
+  if (total <= 0) return dominantMissCause(terms);
+  let r = rng.next() * total;
+  for (let i = 0; i < d.length; i++) if ((r -= weights[i]) < 0) return d[i][0];
+  return d[d.length - 1][0];
 }
 
 /** Yapılan görevin ustalık kazancı (GDD D3). */
@@ -243,7 +261,8 @@ export interface DayResult {
 export function simulateDay(s: Student, weekday: number, dayIndex: number, now: number, rng: Rng): DayResult {
   const today = s.program.filter((b) => b.weekday === weekday);
   const result: DayResult = { done: [], missed: [] };
-  const free = weekday >= 5 ? BALANCE.load.freeHoursWeekend : BALANCE.load.freeHoursWeekday;
+  // boş saat: yaşam olayları (ör. okulda sınav haftası) "freeHours" değiştiricisiyle daraltabilir
+  const free = evaluate("freeHours", weekday >= 5 ? BALANCE.load.freeHoursWeekend : BALANCE.load.freeHoursWeekday, s.mods, now, 0, 24).value;
   const assignedHours = today.reduce((a, b) => a + b.hours, 0);
   const overload = Math.max(0, assignedHours / sustainableHours(s, now, weekday) - 1);
   let used = 0;
@@ -265,7 +284,7 @@ export function simulateDay(s: Student, weekday: number, dayIndex: number, now: 
       nudge(s, "fatigue", block.hours * BALANCE.fatigue.perHour);
       result.done.push(block);
     } else {
-      result.missed.push({ block, cause: dominantMissCause(terms) });
+      result.missed.push({ block, cause: sampleMissCause(terms, rng) });
     }
   }
 

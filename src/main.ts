@@ -34,6 +34,8 @@ import { StudentStrip } from "./ui/play/studentStrip";
 import { PlayHud } from "./ui/play/playHud";
 import { WeekSummary } from "./ui/play/weekSummary";
 import { resetTutorial, Tutorial } from "./ui/play/tutorial";
+import { SettingsMenu } from "./ui/play/settings";
+import { loadLocale, saveLocale } from "./platform/prefs";
 
 // pixel art: bulanıklaştırmadan, en yakın komşu ölçekleme
 TextureStyle.defaultOptions.scaleMode = "nearest";
@@ -46,8 +48,14 @@ TextureStyle.defaultOptions.scaleMode = "nearest";
 const MS_PER_GAME_HOUR = { 1: 60, 2: 30, 4: 15 } as const;
 type RunSpeed = keyof typeof MS_PER_GAME_HOUR;
 
-/** Görsel tarz (deneme): pixel art ya da çizgi film; HUD'daki 🎨 ile değişir. */
+/** Görsel tarz: pixel art ya da çizgi film; ☰ ayarlardan değişir. */
 const artStyle = getArtStyle();
+
+// kaydedilmiş dil tercihi
+{
+  const l = loadLocale();
+  if (l) setLocale(l);
+}
 
 /** Odadaki personel yuvaları için sprite sırası: önce her rolden birer kişi (çeşitlilik), sonra kalanlar işe alınma sırasıyla. */
 function staffSprites(state: GameState): string[] {
@@ -209,13 +217,33 @@ async function boot() {
       history.toggle();
     },
     onDetails: () => setDetails(true),
+    onSettings: () => {
+      history.close();
+      document.getElementById("business-panel")?.classList.remove("open");
+      settings.toggle();
+    },
+    onLayout: () => relayout(),
+  });
+  const startNewGame = () => {
+    clearStorage();
+    resetTutorial();
+    location.href = location.pathname;
+  };
+  const settings = new SettingsMenu({
     artStyle,
+    onLocale: (l) => {
+      setLocale(l);
+      saveLocale(l);
+    },
     onStyle: () => {
       setArtStyle(artStyle === "cartoon" ? "pixel" : "cartoon");
       saveToStorage(state);
       location.href = location.pathname; // ?stil= parametresi seçimi ezmesin
     },
-    onLayout: () => relayout(),
+    onSave: () => saveToStorage(state),
+    onTutorial: () => tutorial.restart(),
+    onNewGame: startNewGame,
+    onDetails: () => setDetails(true),
   });
   const back = document.createElement("button");
   back.id = "back-to-game";
@@ -412,7 +440,11 @@ async function boot() {
     }
     if ((e.target as HTMLElement).tagName === "INPUT") return;
     if (e.key === "g" || e.key === "G") scene.grid.visible = !scene.grid.visible;
-    if (e.key === "l" || e.key === "L") setLocale(getLocale() === "tr" ? "en" : "tr");
+    if (e.key === "l" || e.key === "L") {
+      const l = getLocale() === "tr" ? "en" : "tr";
+      setLocale(l);
+      saveLocale(l);
+    }
     if (e.key === "d" || e.key === "D") panel.debug = !panel.debug;
     if (e.key === "h" || e.key === "H") history.toggle();
     if (e.key === "s" || e.key === "S") {
@@ -421,11 +453,7 @@ async function boot() {
     }
     if (e.key === "F2") setDetails(isPlay());
     if (e.key === "n" || e.key === "N") {
-      if (window.confirm(tf("play.confirmNew", {}))) {
-        clearStorage();
-        resetTutorial();
-        location.reload();
-      }
+      if (window.confirm(tf("play.confirmNew", {}))) startNewGame();
     }
     if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
@@ -440,6 +468,8 @@ async function boot() {
     const sheet = document.getElementById("decisions");
     const h = sheet ? Math.round(sheet.getBoundingClientRect().height) : 0;
     document.documentElement.style.setProperty("--sheet-h", `${h}px`);
+    // telefonda rehber balonu üst çubuğun altında durur (☰ ve Kurum düğmeleri kapanmasın)
+    document.documentElement.style.setProperty("--hud-h", `${document.getElementById("phud")?.offsetHeight ?? 56}px`);
     const key = `${h}|${document.getElementById("phud")?.offsetHeight}|${isMobile()}|${isPlay()}`;
     if (key === lastLayout) return;
     lastLayout = key;

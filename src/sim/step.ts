@@ -22,6 +22,7 @@ import { pruneMarket } from "./marketEffects";
 import { expireLeads, updateReputation, weeklyPlanning } from "./funnel";
 import type { StateStat } from "./student";
 import { pruneExpired } from "./modifiers";
+import { lifeEventsWeekly } from "./lifeEvents";
 import { emit, type GameState } from "./state";
 import { closeWeek, simulateDay } from "./student";
 
@@ -99,6 +100,8 @@ export function advance(state: GameState, hours: number): void {
           emit(state, "studentLeft", { id: s.id, name: s.name, reason: "parent" });
         }
       }
+      // öğrencilerin hayatından geçici olaylar: gelecek haftanın sorunları her hafta aynı olmasın
+      lifeEventsWeekly(state, rng);
       updateReputation(state);
       weeklyGrowth(state);
       staffWeekly(state, rng);

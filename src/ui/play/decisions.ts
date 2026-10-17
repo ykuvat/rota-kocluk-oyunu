@@ -10,6 +10,7 @@ import { calendarAt, HOURS_PER_DAY } from "../../sim/calendar";
 import { applyCommand, type CommandResult } from "../../sim/commands";
 import { averageInsight, causesLastWeek, dominantCauseLastWeek, SIGNALS, weeklySignals } from "../../sim/insight";
 import { stat, type MissCause, type Student } from "../../sim/student";
+import { activeLifeEvent } from "../../sim/lifeEvents";
 import { parentSignals } from "../../sim/parent";
 import { coachHours, findStudent, type GameState } from "../../sim/state";
 import { BRANCHES, CERTS } from "../../content/growth";
@@ -73,7 +74,10 @@ export function interviewClueHtml(state: GameState, st: Student, week: number): 
   // öğrenciyi az tanıyorsan ipucu yanıltabilir: ikinci nedeni ya da belirsiz bir şey söyler (deterministik)
   const accuracy = INSIGHT.clueBaseAccuracy + averageInsight(st) * INSIGHT.clueAccuracyPerInsight;
   const roll = hash(`clue:${st.id}:${week}`) % 100;
-  const text = roll < accuracy ? `“${tk(`clue.${causes[0]}`)}”` : causes[1] ? `“${tk(`clue.${causes[1]}`)}”` : tk("clue.vague");
+  // doğru ipucu: süren bir yaşam olayı varsa öğrenci onu anlatır (sınav haftası, yeni oyun...), yoksa asıl nedeni ima eder
+  const life = activeLifeEvent(st, state.hour);
+  const truth = life && life !== "goodNews" ? tk(`clue.life.${life}`) : tk(`clue.${causes[0]}`);
+  const text = roll < accuracy ? `“${truth}”` : causes[1] ? `“${tk(`clue.${causes[1]}`)}”` : tk("clue.vague");
   return `<div class="clue">💬 ${text}<div class="cl-n">${tf("clue.reliability", { v: Math.min(100, Math.round(accuracy)) })}</div></div>`;
 }
 

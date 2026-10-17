@@ -270,3 +270,10 @@ Uzman etkisi beceri / 60 ile ölçeklenir; uzmanlar yer (ofis + şube) başına 
 - Öğrenci kartı: iki sinyal karışık sırada ve 3 farklı cümleyle (`signal.X.v1/v2`); seçenekler, gösterilen sinyalleri üretebilecek TÜM nedenlerin çareleri + çeldirici (en fazla 4). Sohbet ipucu tanımaya bağlı: doğru olma olasılığı %40 + tanıma·0,6; tutmazsa ikinci nedeni ya da belirsiz bir şey söyler, güven yüzdesi gösterilir.
 - Sertifika kartı: eğitim yokken, parası ve saati yeten en ucuz 3 sertifika 4 haftada bir karar kartı olarak gelir.
 - Hafta oynarken oda poz arka planı değişmez (slayt gösterisi gibi duruyordu); Buse yürür, koçluk günü gelen öğrenciler odada; pozlar yalnız hafta dururken.
+
+## Sorun çeşitliliği ve ayarlar menüsü (2026-10-18)
+- Kaçırma nedeni artık yalnız en büyük açığa yazılmıyor: `sampleMissCause` açık^`causeSharpness` (1,3) ile orantılı çeker. Baskın neden çoğunlukla kazanır, ikincil sorunlar da sinyal üretir.
+- Yaşam olayları (`content/lifeEvents.ts`, `sim/lifeEvents.ts`): hafta kapanışında öğrenci başına %30 olasılıkla yeni oyun, okulda sınav haftası (`freeHours` −2 → "vakit yok"), hastalık, arkadaşla küslük, ailede gerginlik ya da iyi haber; birkaç günlük `life.<id>` değiştiricisi. Sohbet ipucu doğru çıkarsa öğrenci olayı anlatır.
+- Ölçüm (12 tohum, 3. sezon): good hitRate 0,51 (önce ~0,57), lean 0,59. Değişiklik bilerek zorlaştırıyor: bot sinyal→çare eşlemesiyle oynuyor, çeşitlilik onu yanıltıyor. `FULLGAME_SEEDS=16` ile "pasif ilk yıl batar ≥ 0,5" 0,44'te kalıyor; olaylar ve çekiliş kapalıyken de aynı (bu değişiklikten bağımsız).
+- `tests/lifeEvents.test.ts`: dağınık ve sessiz öğrencide 20 haftada en az 3 farklı sinyal üreten neden; süren olay varken ikincisi yok.
+- Ayarlar (☰, `ui/play/settings.ts`): dil (kalıcı, `platform/prefs.ts`), görsel tarz, kaydet, rehberi yeniden göster, ayrıntılı paneller (masaüstü), yeni oyun (sayfa içi onay). Önceden yalnız klavye kısayolu vardı. Telefonda rehber balonu üst çubuğun altında (`--hud-h`).
