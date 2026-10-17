@@ -1,0 +1,78 @@
+{
+  "source": "art\\configs\\cizgi_merkez.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "room_office_central_cartoon",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "room_office_central_cartoon_s_anxious",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "room_office_central_cartoon_s_messy",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    }
+  ]
+}

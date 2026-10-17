@@ -1,0 +1,11 @@
+{
+  "_note": "Çizgi film merkez ofis. Kaynak Gemini (art/inbox/cizgi/m*): m0 boş ofis (seans masalı) = arka plan; m2_* Buse + öğrenci seansta. Gemini her odayı aynı çerçevede çizdi (oda silueti 82..941, alt 972; tools ile ölçüldü) -> zemin köşeleri semt ofisiyle aynı alındı. Ölçek tüm odalarda 0.4752 (karakterler aynı boy); merkez ofiste eşyalar daha küçük çizildiği için oda daha geniş görünür. Sessiz öğrenci seansı ve masa başı pozu Gemini günlük sınırı nedeniyle sonra eklenecek (yokken: ayakta ziyaret / dolaşan Buse).",
+  "out_dir": "art/sprites/cartoon/office_central",
+  "meta_name": "_meta.json",
+  "resolution": 2,
+  "items": [
+    {"name": "room_office_central_cartoon", "kind": "room", "source": "art/inbox/cizgi/m0_merkez_bos_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "room_office_central_cartoon_s_anxious", "kind": "room", "source": "art/inbox/cizgi/m2_merkez_seans_anxious_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "room_office_central_cartoon_s_messy", "kind": "room", "source": "art/inbox/cizgi/m2_merkez_seans_messy_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}}
+  ]
+}

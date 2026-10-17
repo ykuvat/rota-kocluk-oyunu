@@ -36,3 +36,37 @@ export const officeDistrictCartoon: RoomDef = {
     desk: "room_office_district_cartoon_desk",
   },
 };
+
+/** Merkez ofis (sanat: art/configs/cizgi_merkez.json): eşyalar daha küçük çizildi, zemin daha geniş görünür. */
+export const officeCentralCartoon: RoomDef = {
+  id: "office_central_cartoon",
+  background: "room_office_central_cartoon",
+  floorOrigin: [214.3, 176.9],
+  tilesX: 3,
+  tilesY: 3,
+  placements: [
+    { id: "buse", sprite: "char_buse_cartoon_se", x: 1.5, y: 1.4, fx: 0.4, fy: 0.4, walker: true },
+    { id: "assistant1", sprite: "char_assistant_cartoon_se", x: 1.1, y: 2.75, fx: 0.4, fy: 0.4, minStaff: 1, flip: true, walker: true },
+    { id: "assistant2", sprite: "char_assistant_cartoon_se", x: 1.8, y: 1.05, fx: 0.4, fy: 0.4, minStaff: 2, walker: true },
+    { id: "assistant3", sprite: "char_assistant_cartoon_se", x: 2.95, y: 2.05, fx: 0.4, fy: 0.4, minStaff: 3, flip: true, walker: true },
+  ],
+  studentSpots: [
+    { x: 0.55, y: 2.85, flip: true },
+    { x: 1.35, y: 2.9 },
+    { x: 0.3, y: 2.3, flip: true },
+  ],
+  workSpots: [
+    { x: 0.75, y: 1.6, icon: "💻", faceLeft: true },
+    { x: 1.05, y: 1.15, icon: "💻", faceLeft: true },
+    { x: 1.55, y: 1.1, icon: "☎️" },
+    { x: 1.95, y: 0.75, icon: "✏️" },
+    { x: 2.25, y: 1.0, icon: "☕" },
+  ],
+  hub: { x: 1.5, y: 1.45 },
+  poses: {
+    session: {
+      anxious_perfectionist: "room_office_central_cartoon_s_anxious",
+      talented_messy: "room_office_central_cartoon_s_messy",
+    },
+  },
+};

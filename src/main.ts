@@ -2,7 +2,7 @@ import { Application, Assets, Container, Texture, TextureStyle } from "pixi.js";
 import { BALANCE } from "./content/balance";
 import { homeStudio } from "./content/rooms/homeStudio";
 import { homeStudioCartoon } from "./content/rooms/homeStudioCartoon";
-import { officeDistrictCartoon } from "./content/rooms/officesCartoon";
+import { officeCentralCartoon, officeDistrictCartoon } from "./content/rooms/officesCartoon";
 import { getArtStyle, setArtStyle } from "./platform/artStyle";
 import { roomLife } from "./ui/roomLife";
 import { officeCentral, officeDistrict } from "./content/rooms/offices";
@@ -67,7 +67,7 @@ async function boot() {
   const manifest: SpriteManifest = await (await fetch(`${base}assets/sprites/manifest.json`)).json();
   availableSprites = new Set(Object.keys(manifest.sprites));
 
-  const rooms = [homeStudio, homeStudioCartoon, officeDistrict, officeDistrictCartoon, officeCentral];
+  const rooms = [homeStudio, homeStudioCartoon, officeDistrict, officeDistrictCartoon, officeCentral, officeCentralCartoon];
   const needed = new Set(rooms.flatMap((r) => [...(r.background ? [r.background] : []), ...r.placements.map((p) => p.sprite)]));
   // odanın poz varyantları (seans, masa başı): manifest'te varsa
   for (const r of rooms) for (const n of [...Object.values(r.poses?.session ?? {}), ...(r.poses?.desk ? [r.poses.desk] : [])]) if (manifest.sprites[n]) needed.add(n);
@@ -439,7 +439,7 @@ function studentSprite(archetype: string, id: string): string {
 }
 
 function roomFor(state: GameState): RoomDef {
-  if (state.office === "central") return officeCentral;
+  if (state.office === "central") return artStyle === "cartoon" && availableSprites.has(officeCentralCartoon.background!) ? officeCentralCartoon : officeCentral;
   if (state.office === "district") return artStyle === "cartoon" && availableSprites.has(officeDistrictCartoon.background!) ? officeDistrictCartoon : officeDistrict;
   // tarz denemesi yalnız ev odasını kapsıyor; ofisler pixel art kalır
   return artStyle === "cartoon" && availableSprites.has(homeStudioCartoon.background!) ? homeStudioCartoon : homeStudio;

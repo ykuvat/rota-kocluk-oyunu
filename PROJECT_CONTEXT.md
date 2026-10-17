@@ -15,7 +15,7 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 ## Kararlar
 - Oyuncuya hesap yaptırılmaz; kart dili, görünür sonuç (kullanıcı geri bildirimi).
 - **Buse'nin çizimi değiştirilmez**; hareket yalnız konum/aynalama/1 px adım-nefes ile.
-- Görsel tarz: **çizgi film varsayılan** (Game Dev Tycoon benzeri; `tools/cartoon_cut.py`); pixel art 🎨 ile hâlâ seçilebilir. Ev odası çizgi film; ofisler ve personel henüz pixel art (sıradaki iş).
+- Görsel tarz: **çizgi film varsayılan** (Game Dev Tycoon benzeri; `tools/cartoon_cut.py`); pixel art 🎨 ile hâlâ seçilebilir. Ev odası, semt ve merkez ofis, Buse, öğrenciler ve 4 personel rolü çizgi film.
 - Öğrenciler odada sürekli durmaz: koçluk günü gelir, Buse'yle masada oturur (`ui/roomLife.ts`). İsimler görünümün cinsiyetine uyar.
 - PixelLab öğrencileri reddedildi ("çok kötü"); karakterler Gemini fark yöntemiyle üretilir.
 - Ücretli işlem/hesap açma kullanıcıya ait.
@@ -29,6 +29,6 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 - Güven ~99'da doyduğu için kalite yatırımı (branş, rehber) gelire dolaylı dönmüyor; büyüme şubelerden geliyor.
 
 ## Sıradaki
-- Ofisleri (semt, merkez), yardımcı koçu ve uzmanları çizgi film tarzına geçir (boş oda + mobilya ayrı; oturma pozları); şube sahnesi.
+- Merkez ofis: sessiz öğrenci seansı ve masa başı pozu (Gemini sınırı sıfırlanınca; aynı sohbette m2 -> m3). Şube sahnesi.
 - Buse ve öğrenciler için arka (NE) görünüm ve yürüme kareleri (Gemini fark yöntemi) → yürüyüş animasyonu.
 - Her arşetip için ikinci görünüm (`char_student_<tür>_b_se`).
