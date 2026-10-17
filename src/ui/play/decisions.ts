@@ -38,21 +38,38 @@ interface Card {
 }
 
 const css = `
-#decisions{position:fixed;right:12px;top:12px;bottom:12px;width:340px;overflow:auto;padding:10px 12px;background:var(--panel);border-radius:12px}
-#decisions h3{margin:2px 0 8px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-#decisions .card{background:var(--card);border-radius:10px;padding:10px 11px;margin-bottom:10px;border:1px solid var(--line);animation:pop .25s ease-out}
-#decisions .card .t{font-weight:700;font-size:15px;margin-bottom:3px}
-#decisions .card .b{color:#e6d9ea;margin-bottom:8px}
-#decisions .opts{display:flex;flex-direction:column;gap:5px}
-#decisions .opts button{text-align:left}
-#decisions .empty{color:var(--muted);padding:8px 2px}
-#decisions .main{position:sticky;bottom:0;padding-top:8px;background:linear-gradient(transparent,var(--panel) 30%)}
-#decisions .main button{width:100%;font-size:17px;padding:12px}
-#decisions .main .sub{text-align:center;color:var(--muted);font-size:12px;margin-top:4px}
-#decisions .main .bar{height:6px;background:#2a2030;border-radius:4px;overflow:hidden;margin-top:6px}
-#decisions .main .bar span{display:block;height:100%;background:var(--accent)}
+#decisions{position:fixed;right:12px;top:12px;bottom:12px;width:340px;display:flex;flex-direction:column;padding:12px 12px 12px;z-index:20}
+#decisions .head{display:flex;align-items:center;gap:8px;padding:2px 4px 10px;font-weight:800;font-size:15px;color:#f6d39a;user-select:none}
+#decisions .head .cnt{background:var(--accent);color:#3a2410;border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px;padding:0 6px}
+#decisions .head .chev{display:none;margin-left:auto;width:10px;height:10px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);margin-top:-4px}
+#decisions .cards{flex:1;overflow:auto;overscroll-behavior:contain;padding:0 2px;margin:0 -2px;scrollbar-width:thin;scrollbar-color:rgba(255,235,215,.2) transparent}
+#decisions .card{background:var(--card);border-radius:16px;padding:12px;margin-bottom:10px;animation:pop .25s ease-out}
+#decisions .card .t{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;margin-bottom:4px}
+#decisions .card .ic{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(244,189,98,.16);font-size:17px}
+#decisions .card .b{color:var(--soft);margin-bottom:10px;font-size:13.5px}
+#decisions .opts{display:flex;flex-direction:column;gap:6px}
+#decisions .opts button{display:flex;align-items:center;text-align:left;padding:10px 12px;border-radius:12px}
+#decisions .empty{color:var(--muted);padding:10px 4px}
+#decisions .main{padding-top:10px}
+#decisions .main button{width:100%;font-size:17px;padding:13px;border-radius:14px}
+#decisions .main .sub{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+#decisions .main .bar{height:6px;background:rgba(0,0,0,.25);border-radius:4px;overflow:hidden;margin-top:8px}
+#decisions .main .bar span{display:block;height:100%;background:var(--accent);border-radius:4px}
 #decisions .card.locked{opacity:.45;pointer-events:none}
-@keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pop{from{transform:translateY(6px)}to{transform:none}}
+@media (max-width:760px){
+  #decisions{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:48vh;max-height:48dvh;padding:6px 10px 10px;border-radius:20px 20px 18px 18px;
+    padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  #decisions::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:rgba(255,235,215,.25);margin:2px auto 6px}
+  #decisions .head{padding:0 4px 8px;cursor:pointer}
+  #decisions .head .chev{display:block}
+  #decisions.collapsed .head .chev{transform:rotate(-135deg);margin-top:4px}
+  #decisions.collapsed .cards{display:none}
+  #decisions.collapsed .head{padding-bottom:4px}
+  #decisions .main{padding-top:6px}
+  #decisions .main button{padding:11px;font-size:16px}
+  #decisions .card{padding:10px}
+}
 `;
 
 /** Fiyat seçenekleri (ofisli kurumda biraz yukarı). */
@@ -99,24 +116,45 @@ export class DecisionPanel {
     this.el = document.createElement("div");
     this.el.id = "decisions";
     this.el.className = "pl pl-only";
+    this.headEl = document.createElement("div");
+    this.headEl.className = "head";
     this.cardsEl = document.createElement("div");
+    this.cardsEl.className = "cards";
     this.footerEl = document.createElement("div");
     this.footerEl.className = "main";
-    this.el.append(this.cardsEl, this.footerEl);
+    this.el.append(this.headEl, this.cardsEl, this.footerEl);
     document.body.appendChild(this.el);
-    this.el.addEventListener("pointerdown", (e) => {
-      if ((e.target as HTMLElement).closest("button[data-main]")) {
-        e.preventDefault();
+    // "click": kaydırırken (dokunmatik) yanlışlıkla seçim yapılmasın
+    this.el.addEventListener("click", (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest("button[data-main]")) {
         this.onMain();
         return;
       }
-      const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-card]");
+      if (t.closest(".head")) {
+        this.setCollapsed(!this.collapsed);
+        return;
+      }
+      const b = t.closest<HTMLButtonElement>("button[data-card]");
       if (!b) return;
-      e.preventDefault();
       const card = this.cards[Number(b.dataset.card)];
       card?.options[Number(b.dataset.opt)]?.act();
       this.render(true);
     });
+  }
+
+  private readonly headEl: HTMLDivElement;
+  /** mobil alt sayfa kapalı mı (yalnız başlık ve ana düğme görünür) */
+  private collapsed = false;
+  private lastCardKeys = "";
+  /** sayfa açılıp kapanınca (oda görünür alanı değişir) */
+  onLayout: () => void = () => undefined;
+
+  private setCollapsed(v: boolean): void {
+    if (this.collapsed === v) return;
+    this.collapsed = v;
+    this.el.classList.toggle("collapsed", v);
+    this.onLayout();
   }
 
   /** Karar bekleyen kart sayısı. */
@@ -325,18 +363,24 @@ export class DecisionPanel {
     this.cards = this.build();
     // alt düğme kartlardan ayrı güncellenir (hafta akarken kartlar yeniden çizilip titremesin)
     if (this.footerEl.innerHTML !== this.footer) this.footerEl.innerHTML = this.footer;
-    const key = `${this.cards.map((c) => c.key).join(",")}|${getLocale()}|${this.state.coach.usedThisWeek}|${this.running}`;
+    // mobil sayfa: hafta oynarken kapanır (oda görünsün); yeni karar gelince (ya da olay çıkınca) açılır
+    const cardKeys = this.cards.map((c) => c.key).join(",");
+    const urgent = this.cards.some((c) => c.key.startsWith("ev:"));
+    if ((this.running && !urgent) || !this.cards.length) this.setCollapsed(true);
+    else if (cardKeys !== this.lastCardKeys && this.cards.length) this.setCollapsed(false);
+    this.lastCardKeys = cardKeys;
+    const key = `${cardKeys}|${getLocale()}|${this.state.coach.usedThisWeek}|${this.running}`;
     if (!force && key === this.lastKey) return;
     this.lastKey = key;
-    const body = this.cards.length
+    this.headEl.innerHTML = `<span class="ttl">${tk("play.decisions")}</span>${this.cards.length ? `<span class="cnt">${this.cards.length}</span>` : ""}<span class="chev" aria-hidden="true"></span>`;
+    this.cardsEl.innerHTML = this.cards.length
       ? this.cards
           .map(
-            (c, ci) => `<div class="card ${this.running && !c.key.startsWith("ev:") ? "locked" : ""}"><div class="t">${c.icon} ${c.title}</div><div class="b">${c.body}</div><div class="opts">${c.options
-              .map((o, oi) => `<button data-card="${ci}" data-opt="${oi}" class="${o.primary ? "primary" : ""}">${o.label}${o.hint ? `<span class="hint">${o.hint}</span>` : ""}</button>`)
+            (c, ci) => `<div class="card ${this.running && !c.key.startsWith("ev:") ? "locked" : ""}"><div class="t"><span class="ic">${c.icon}</span><span>${c.title}</span></div><div class="b">${c.body}</div><div class="opts">${c.options
+              .map((o, oi) => `<button data-card="${ci}" data-opt="${oi}" class="${o.primary ? "primary" : ""}"><span>${o.label}</span>${o.hint ? `<span class="hint">${o.hint}</span>` : ""}</button>`)
               .join("")}</div></div>`,
           )
           .join("")
       : `<div class="empty">${tk("play.noDecisions")}</div>`;
-    this.cardsEl.innerHTML = `<h3>${tk("play.decisions")}${this.cards.length ? ` (${this.cards.length})` : ""}</h3>${body}`;
   }
 }

@@ -23,7 +23,7 @@ import { HistoryPanel } from "./ui/historyPanel";
 import { SeasonReportView } from "./ui/seasonReport";
 import { startCareer } from "./sim/funnel";
 import { createRng } from "./core/rng";
-import { injectPlayCss, MOOD_ICON, moodOf, toast } from "./ui/play/common";
+import { injectPlayCss, isMobile, MOOD_ICON, moodOf, toast } from "./ui/play/common";
 import { Autopilot } from "./ui/play/autopilot";
 import { DecisionPanel } from "./ui/play/decisions";
 import { StudentStrip } from "./ui/play/studentStrip";
@@ -51,7 +51,9 @@ function staffSprites(state: GameState): string[] {
 async function boot() {
   const host = document.getElementById("game")!;
   const app = new Application();
-  await app.init({ resizeTo: host, background: "#2b2530", antialias: false, roundPixels: true });
+  // yüksek yoğunluklu ekranda (telefon) cihaz pikseliyle çiz: oda küçük ekrana keskin sığar
+  const dpr = Math.min(3, Math.max(1, window.devicePixelRatio || 1));
+  await app.init({ resizeTo: host, background: "#2b2530", antialias: false, roundPixels: true, resolution: dpr, autoDensity: true });
   host.appendChild(app.canvas);
 
   const base = import.meta.env.BASE_URL;
@@ -76,8 +78,7 @@ async function boot() {
   const world = new Container();
   world.sortableChildren = true;
   app.stage.addChild(world);
-  const camera = new Camera(world, app.canvas);
-  camera.rightInset = 364; // sağ sütun (340 px + kenar boşlukları)
+  const camera = new Camera(world, app.canvas, dpr, host);
 
   // --- simülasyon: kayıt varsa devam et (N tuşu yeni oyun başlatır) ---
   const saved = loadFromStorage();
@@ -110,7 +111,19 @@ async function boot() {
     // odanın arka plan sprite'ı sığacak en büyük yakınlık; duvar tepesinin biraz taşmasına izin ver
     const span = (room.tilesX + room.tilesY) * 64;
     const [w, h] = room.background ? manifest.sprites[room.background].size : [span + 40, span / 2 + 230];
-    camera.bottomInset = document.body.classList.contains("play") ? 110 : 0;
+    // görünür alan: masaüstünde sağ sütun ve alt şerit, telefonda üst çubuk ile alt sayfa + şerit hariç
+    const play = document.body.classList.contains("play");
+    const mobile = play && isMobile();
+    const box = (id: string) => document.getElementById(id)?.getBoundingClientRect();
+    camera.rightInset = play && !mobile ? 364 : 0;
+    camera.topInset = mobile ? (box("phud")?.bottom ?? 0) : 0;
+    // telefonda alt sınır: karar sayfası KAPALIYKEN kaplayacağı yer (başlık + ana düğme) + öğrenci şeridi; sayfa açılınca
+    // odanın alt kısmını örter ama oda o yüzden küçülmez (dikey alan dar)
+    const sheet = document.getElementById("decisions");
+    const part = (sel: string) => (sheet?.querySelector<HTMLElement>(sel)?.offsetHeight ?? 0);
+    const sheetClosed = part(".head") + part(".main") + 30;
+    const strip = box("strip");
+    camera.bottomInset = !play ? 0 : mobile ? sheetClosed + (strip && strip.height > 0 ? strip.height + 6 : 0) + 8 : 110;
     camera.fit(w, h * 0.9);
     camera.centerOn(-room.floorOrigin[0] + w / 2, -room.floorOrigin[1] + h / 2 + 10);
   };
@@ -165,6 +178,7 @@ async function boot() {
     onCompany: () => document.getElementById("business-panel")?.classList.toggle("open"),
     onHistory: () => history.toggle(),
     onDetails: () => setDetails(true),
+    onLayout: () => relayout(),
   });
   const back = document.createElement("button");
   back.id = "back-to-game";
@@ -346,6 +360,24 @@ async function boot() {
     }
   });
   window.addEventListener("resize", centerRoom);
+  // telefon: alt sayfanın yüksekliği şerit/eğitim konumunu belirler; sayfa ya da üst çubuk boyu değişince oda yeniden ortalanır
+  let lastLayout = "";
+  const relayout = () => {
+    const sheet = document.getElementById("decisions");
+    const h = sheet ? Math.round(sheet.getBoundingClientRect().height) : 0;
+    document.documentElement.style.setProperty("--sheet-h", `${h}px`);
+    const key = `${h}|${document.getElementById("phud")?.offsetHeight}|${isMobile()}|${isPlay()}`;
+    if (key === lastLayout) return;
+    lastLayout = key;
+    if (isMobile()) requestAnimationFrame(centerRoom);
+  };
+  const ro = new ResizeObserver(relayout);
+  for (const id of ["decisions", "phud", "strip"]) {
+    const el = document.getElementById(id);
+    if (el) ro.observe(el);
+  }
+  decisions.onLayout = relayout;
+  relayout();
 
   // hata ayıklama: konsoldan durumu incelemek için
   (window as unknown as { __rota: unknown }).__rota = {

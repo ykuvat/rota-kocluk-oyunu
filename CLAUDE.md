@@ -21,7 +21,8 @@ Tasarım belgesi (GDD): Claude Docs'taki "Eğitim Koçluğu Simülasyonu — Mim
 - Denge değerleri ve yerleşimler `src/content` içinde veri olarak durur, render/sim kodunda sabit yazılmaz.
 - Arayüz metinleri `platform/i18n.ts` anahtarlarıyla (tr + en); kodda düz metin yok. Kurum/sınav/marka adları kurgusal.
 - İzometri: 2:1, 1 karo = 1 m = 128×64 px; +x sağ-aşağı, +y sol-aşağı; dikey 1 m ≈ 78 px. Kamera açısı sabit, döndürme yok.
-- Pixel art: `TextureStyle` nearest, `roundPixels`, konumlar tam piksele yuvarlanır; yakınlaştırma yalnız 0.5/1/2/3.
+- Pixel art: `TextureStyle` nearest, `roundPixels`, renderer `resolution` = cihaz piksel oranı; konumlar tam cihaz pikseline yuvarlanır; yakınlaştırma cihaz pikselinde 0.5/1/2/3… (masaüstünde 0.5/1/2/3; CSS'te en çok 3).
+- Arayüz: oyun modu `src/ui/play` (ortak stil `common.ts`); ≤ 760 px telefon düzeni (üst çubuk, açılır-kapanır karar sayfası, kıstırma yakınlaştırma).
 - Çizim sırası: taban izinin ön köşesi (`core/iso.ts → depthKey`); yüzey üstündeki eşyalar `on` ile ebeveyninin hemen ardından.
 
 ## İlerleme

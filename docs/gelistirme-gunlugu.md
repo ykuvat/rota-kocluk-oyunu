@@ -187,6 +187,15 @@ Tarayıcıda baştan oynandı: eğitim adımları, iki hafta, kararların sonucu
 - Karakterlerde bekleme: animasyon kareleri varsa `AnimatedSprite`, yoksa (Buse dahil) kodla nefes — ayaklar sabit 1 piksel uzama. Buse'nin çizimine dokunulmadı.
 - Vite artık `art/`, `tools/`, `docs/` klasörlerini izlemiyor (indirilen ZIP kilidi sunucuyu çökertiyordu).
 
+## Mobil düzen ve yumuşak arayüz (2026-10-17)
+
+Kullanıcı (telefon ekran görüntüleri): oyun menülerin arkasında görünmüyor; menüler hâlâ "program" gibi.
+
+- **Telefon (≤ 760 px):** üstte ince bilgi çubuğu (tarih, para, itibar; hedefler 🎯 ile açılır), altta açılır-kapanır **karar sayfası** (hafta oynarken kapanır, yeni karar gelince açılır, başlığa dokununca aç/kapa), öğrenci şeridi sayfanın üstünde (boşken gizli), eğitim balonu üstte. Kurum paneli tam ekran sayfa. Ayrıntılı (⚙) mod telefonda gizli.
+- **Keskin piksel, küçük ekran:** renderer cihaz piksel oranıyla çiziyor; yakınlaştırma katları cihaz pikselinde tam sayı (telefonda 1/dpr gibi CSS katları). Oda telefona keskin sığıyor. Kamera ölçüyü tuval yerine kaptan alıyor (yeniden boyutlanma sırası); iki parmakla kıstırma yakınlaştırma.
+- **Yumuşak görünüm:** Nunito yazı tipi, yarı saydam buzlu cam paneller, 16–20 px köşeler, büyük harfli başlık yok, hap düğmeler (fiyat sağda), kart simgesi yuvarlak rozet, sıcak degrade ana düğme; haftalık özet ve eğitim balonu aynı dilde.
+- Dokunmatikte kaydırırken yanlış seçim olmasın diye kart ve şerit düğmeleri `pointerdown` yerine `click`. Eğitim metinleri yön içermiyor ("sağdaki" yerine "Kararlar bölümündeki").
+
 ## M4 — Personel rolleri ve şubeler / Aşama 4 (2026-10-17)
 
 Şema v11 (personel rolü, `branches`, `lastBranchHour`; eski ekip yardımcı koç olur).

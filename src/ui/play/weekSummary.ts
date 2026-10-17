@@ -10,15 +10,16 @@ import { fmt, MOOD_ICON, moodOf, parentFace } from "./common";
 import type { DecisionRecord } from "./decisions";
 
 const css = `
-#wsum{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,10,20,.55);z-index:35}
-#wsum .box{width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;padding:18px 20px;background:var(--panel);border:1px solid var(--accent);border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
-#wsum h2{margin:0 0 4px;font-size:20px;color:#ffd98a}
-#wsum h4{margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-#wsum .line{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--line)}
+#wsum{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,12,24,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:35;padding:12px}
+#wsum .box{width:min(520px,100%);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px 22px;background:var(--panel-solid);border:1px solid var(--line);border-radius:22px;box-shadow:0 16px 50px rgba(0,0,0,.5);animation:pop .25s ease-out}
+#wsum h2{margin:0 0 4px;font-size:21px;font-weight:800;color:#ffdc9a}
+#wsum h4{margin:14px 0 6px;font-size:14px;font-weight:800;color:#f6d39a}
+#wsum .line{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;margin-bottom:4px;background:var(--card);border-radius:12px}
 #wsum .ok{color:var(--good)}
 #wsum .bad{color:var(--bad)}
-#wsum .foot{display:flex;justify-content:flex-end;margin-top:14px}
-#wsum .foot button{font-size:16px;padding:10px 18px}
+#wsum .foot{display:flex;justify-content:flex-end;margin-top:16px}
+#wsum .foot button{font-size:16px;padding:12px 22px;border-radius:14px}
+@media (max-width:760px){#wsum .box{padding:16px}#wsum .foot button{width:100%}}
 `;
 
 interface Snapshot {

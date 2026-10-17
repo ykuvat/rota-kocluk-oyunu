@@ -14,22 +14,34 @@ import type { StateStat, Student } from "../../sim/student";
 import { moodLabel, moodOf, MOOD_ICON, parentFace, toast } from "./common";
 
 const css = `
-#strip{position:fixed;left:12px;right:364px;bottom:12px;display:flex;gap:8px;overflow-x:auto;padding:8px;background:var(--panel);border-radius:12px;min-height:58px;align-items:stretch}
-#strip .st{flex:none;width:150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px;cursor:pointer}
-#strip .st:hover,#strip .st.sel{border-color:var(--accent)}
-#strip .st .n{font-weight:700}
+#strip{position:fixed;left:12px;right:364px;bottom:12px;display:flex;gap:8px;overflow-x:auto;padding:8px;min-height:58px;align-items:stretch;z-index:15;
+  scrollbar-width:none;overscroll-behavior-x:contain}
+#strip::-webkit-scrollbar{display:none}
+#strip .st{flex:none;width:170px;background:var(--card);border:2px solid transparent;border-radius:14px;padding:7px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+#strip .st:hover{background:var(--card-hi)}
+#strip .st.sel{border-color:var(--accent);background:var(--card-hi)}
+#strip .st .n{font-weight:800}
 #strip .st .m{font-size:20px;float:right;line-height:1}
 #strip .st .h{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#strip .empty{color:var(--muted);padding:8px}
-#strip .st{width:170px}
-#strip .gb{height:6px;background:#2a2030;border-radius:4px;overflow:hidden;margin-top:5px}
-#strip .gb span{display:block;height:100%}
-#strip .gl{font-size:11px;color:var(--muted);margin-top:2px}
-#stpop{position:fixed;bottom:120px;width:300px;padding:12px;background:var(--panel);border:1px solid var(--accent);border-radius:12px;z-index:25}
-#stpop .t{font-weight:700;font-size:16px}
+#strip .empty{color:var(--muted);padding:8px 10px;align-self:center}
+#strip .gb{height:6px;background:rgba(0,0,0,.28);border-radius:4px;overflow:hidden;margin-top:6px}
+#strip .gb span{display:block;height:100%;border-radius:4px}
+#strip .gl{font-size:11px;color:var(--muted);margin-top:3px}
+#stpop{position:fixed;bottom:120px;width:310px;padding:14px;z-index:25;background:var(--panel-solid)}
+#stpop .t{font-weight:800;font-size:17px}
 #stpop .row{margin:4px 0}
-#stpop .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-#stpop button.on{background:var(--accent);color:#2a1d12}
+#stpop .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#stpop .btns button{display:inline-flex;align-items:center}
+#stpop button.on{background:var(--accent);color:#3a2410}
+@media (max-width:760px){
+  #strip{left:8px;right:8px;bottom:calc(var(--sheet-h,120px) + 14px);min-height:0;padding:6px;border-radius:16px}
+  #strip:has(.empty){display:none}
+  #strip .st{width:128px;padding:6px 8px}
+  #strip .st .gl{display:none}
+  #strip .st .h{font-size:11px}
+  #stpop{left:8px!important;right:8px;width:auto;bottom:calc(var(--sheet-h,120px) + 14px)}
+  #stpop .det{display:none}
+}
 `;
 
 /** Görüşme konusu: en az tanınan alan (oyuncu konu seçmez). */
@@ -65,13 +77,13 @@ export class StudentStrip {
     this.pop.style.display = "none";
     document.body.appendChild(this.pop);
 
-    this.el.addEventListener("pointerdown", (e) => {
+    this.el.addEventListener("click", (e) => {
       const c = (e.target as HTMLElement).closest<HTMLElement>("[data-st]");
       if (!c) return;
       this.selected = this.selected === c.dataset.st ? null : c.dataset.st!;
       this.render(true);
     });
-    this.pop.addEventListener("pointerdown", (e) => {
+    this.pop.addEventListener("click", (e) => {
       const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-a]");
       if (!b || !this.selected) return;
       e.preventDefault();
@@ -171,7 +183,7 @@ export class StudentStrip {
       <div class="btns">
         <button data-a="chat">${tk("play.chat")}<span class="hint">${tf("play.hours", { h: 1 })}</span></button>
         <button data-a="parent" ${par.lastMeetingWeek === week ? "disabled" : ""}>${tk("play.meetParent")}<span class="hint">${tf("play.hours", { h: 1 })}</span></button>
-        <button data-a="details" class="ghost">${tk("play.details")}</button>
+        <button data-a="details" class="ghost det">${tk("play.details")}</button>
         <button data-a="close" class="ghost">✕</button>
       </div>`;
   }

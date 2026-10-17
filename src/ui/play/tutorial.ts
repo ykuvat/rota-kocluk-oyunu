@@ -5,15 +5,22 @@ import { getLocale, tk } from "../../platform/i18n";
 import type { GameState } from "../../sim/state";
 
 const css = `
-#tut{position:fixed;left:50%;transform:translateX(-50%);top:14px;width:min(560px,calc(100vw - 760px));min-width:320px;z-index:30;
-  display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:#fff6e6;color:#2a1d2e;border-radius:14px;
-  border:3px solid #f0b85a;box-shadow:0 8px 24px rgba(0,0,0,.4);font:15px/1.45 system-ui,sans-serif}
+#tut{position:fixed;left:50%;transform:translateX(-50%);top:14px;width:min(520px,calc(100vw - 760px));min-width:320px;z-index:30;
+  display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:#fff7ea;color:#3a2a3c;border-radius:20px;
+  box-shadow:0 0 0 3px rgba(244,189,98,.85),0 12px 30px rgba(10,5,15,.4);font:600 15px/1.5 "Nunito",system-ui,sans-serif}
 #tut img{width:48px;image-rendering:pixelated;flex:none}
 #tut .txt{flex:1}
+#tut b{color:#a85a12}
 #tut .btns{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
-#tut button{font:600 13px system-ui;border-radius:8px;padding:6px 10px;cursor:pointer;border:1px solid #c79a4c;background:#f0b85a;color:#2a1d12}
-#tut button.skip{background:transparent;border-color:transparent;color:#8a7a8f}
-.tut-glow{box-shadow:0 0 0 3px #f0b85a,0 0 24px 6px rgba(240,184,90,.7)!important;border-radius:12px}
+#tut button{font:800 13px "Nunito",system-ui;border-radius:12px;padding:7px 14px;cursor:pointer;border:0;background:linear-gradient(180deg,#f8ca78,#e9a14a);color:#3a2410;box-shadow:0 2px 0 #b97a2e}
+#tut button.skip{background:transparent;box-shadow:none;color:#8a7a8f}
+.tut-glow{box-shadow:0 0 0 3px #f4bd62,0 0 24px 6px rgba(244,189,98,.6)!important}
+@media (max-width:760px){
+  #tut{left:8px;right:8px;transform:none;top:8px;width:auto;min-width:0;padding:10px 12px;gap:10px;font-size:13.5px;border-radius:18px}
+  #tut.low{top:auto;bottom:calc(var(--sheet-h,120px) + 14px)}
+  #tut img{width:30px}
+  #tut .btns{margin-top:4px}
+}
 `;
 
 const KEY = "rota.tutorial.v1";
@@ -99,6 +106,8 @@ export class Tutorial {
       return;
     }
     this.el.style.display = "flex";
+    // telefonda üst bilgi kutusunu anlatan adım aşağıda durur (kutuyu örtmesin)
+    this.el.classList.toggle("low", st.glow === "#phud");
     this.el.innerHTML = `${this.buse ? `<img src="${this.buse}" alt="">` : ""}<div class="txt">${tk(st.text)}
       <div class="btns"><button class="skip" data-t="skip">${tk("tut.skip")}</button>${st.done ? "" : `<button data-t="next">${tk(this.step === STEPS.length - 1 ? "tut.start" : "tut.ok")}</button>`}</div></div>`;
     if (st.glow) {
