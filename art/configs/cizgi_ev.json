@@ -1,0 +1,14 @@
+{
+  "_note": "Çizgi film tarz denemesi (Game Dev Tycoon benzeri): ev odası + Buse + 3 öğrenci. Kaynak: Gemini, art/inbox/cizgi (c1 boş oda, c2 karakterli; fark extract_diff --threshold 20). Oda 3x3 karo; ölçek zeminin 808 px genişliği = 384 oyun pikseli; dikey sıkıştırma 0.867 (Gemini ~1.73:1 çizdi).",
+  "out_dir": "art/sprites/cartoon/home",
+  "meta_name": "_meta.json",
+  "resolution": 2,
+  "items": [
+    {"name": "room_home_cartoon", "kind": "room", "source": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "scale": 0.4752, "squash": 0.867,
+     "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
+    {"name": "char_buse_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/buse.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [262,588], "scale": 0.4752, "floor_rgb": [238, 165, 80]},
+    {"name": "char_student_anxious_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/anxious.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [414,558], "scale": 0.4752, "floor_rgb": [238, 165, 80]},
+    {"name": "char_student_messy_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/messy.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [546,531], "scale": 0.4752, "floor_rgb": [238, 165, 80], "floor_zone": 0.3},
+    {"name": "char_student_quiet_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/quiet.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [665,618], "scale": 0.4752, "floor_rgb": [238, 165, 80]}
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "source": "art\\configs\\cizgi_ev.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "room_home_cartoon",
+      "size": [
+        409,
+        375
+      ],
+      "anchor": [
+        204,
+        374
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        204.3,
+        168.1
+      ],
+      "source_box": [
+        82,
+        64,
+        942,
+        974
+      ]
+    },
+    {
+      "name": "char_buse_cartoon_se",
+      "size": [
+        62,
+        176
+      ],
+      "anchor": [
+        31,
+        170
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        9,
+        7,
+        136,
+        364
+      ]
+    },
+    {
+      "name": "char_student_anxious_cartoon_se",
+      "size": [
+        47,
+        144
+      ],
+      "anchor": [
+        23,
+        139
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        11,
+        12,
+        105,
+        305
+      ]
+    },
+    {
+      "name": "char_student_messy_cartoon_se",
+      "size": [
+        53,
+        158
+      ],
+      "anchor": [
+        26,
+        153
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        17,
+        10,
+        124,
+        332
+      ]
+    },
+    {
+      "name": "char_student_quiet_cartoon_se",
+      "size": [
+        56,
+        157
+      ],
+      "anchor": [
+        28,
+        151
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        23,
+        11,
+        136,
+        329
+      ]
+    }
+  ]
+}

@@ -7,6 +7,9 @@ import type { Container } from "pixi.js";
  */
 export const ZOOM_STEPS = [0.5, 1, 2, 3, 4, 5, 6, 8, 9] as const;
 
+/** Çizgi film tarzı (yumuşak ölçekleme) için CSS yakınlık katları. */
+export const SMOOTH_STEPS = [0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1, 1.15, 1.3, 1.5, 1.75, 2, 2.5, 3] as const;
+
 /** Arayüzün (CSS pikseli) en fazla yakınlığı. */
 const MAX_CSS_ZOOM = 3;
 
@@ -20,10 +23,17 @@ export class Camera {
   /**
    * @param dpr cihaz piksel oranı (renderer çözünürlüğü)
    * @param frame boyutu ölçülen kap (tuval yeniden boyutlanması pencere olayından sonra gelebilir; kap her zaman günceldir)
+   * @param smooth çizgi film tarzı: yumuşak ölçeklenen görsellerde ara katlar da serbest
    */
-  constructor(private readonly world: Container, private readonly view: HTMLElement, private readonly dpr = 1, private readonly frame: HTMLElement = view) {
-    this.steps = ZOOM_STEPS.map((s) => s / dpr).filter((z) => z <= MAX_CSS_ZOOM);
-    this.zoomIndex = Math.min(this.steps.length - 1, this.steps.indexOf(1 / dpr) + 1);
+  constructor(
+    private readonly world: Container,
+    private readonly view: HTMLElement,
+    private readonly dpr = 1,
+    private readonly frame: HTMLElement = view,
+    smooth = false,
+  ) {
+    this.steps = smooth ? [...SMOOTH_STEPS] : ZOOM_STEPS.map((s) => s / dpr).filter((z) => z <= MAX_CSS_ZOOM);
+    this.zoomIndex = smooth ? SMOOTH_STEPS.indexOf(1) : Math.min(this.steps.length - 1, this.steps.indexOf(1 / dpr) + 1);
     this.bindInput();
   }
 

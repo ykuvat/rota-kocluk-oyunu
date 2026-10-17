@@ -123,3 +123,17 @@ PixelLab (ücretsiz plan). Character Creator → Create from Text → Humanoid �
 - Yeni araç **	ools/sprite_cleanup.py**: pixelnorm çıktısında ince çıkıntıları (--despur: saç ucuna yapışan duvar/zemin kırıntısı), kopuk parçaları, gerekirse alttaki açık halı parçalarını (--strip-light-bottom) siler; gölgeyi düzgün bir elips olarak yeniden çizer ve boş alt satırları kırpar (çapa alt-orta; boş satır karakteri havada gösterir). Sıra: pixelnorm → sprite_cleanup.
 - Sprite'lar rt/sprites/characters/staff/char_staff_{secretary,counselor,teacher}_se (53×129, 50×135, 57×125). Odada personel yuvaları (Placement.minStaff) önce her rolden birer kişiyle dolar; sprite content/staff.ts → ROLE_SPRITE. Semt ofisi 2, merkez 3 yuva.
 - **Bilinen kusurlar:** rehberin bacak arasında birkaç açık piksel; tek görünüm (SE, aynası SW), yürüme karesi yok.
+
+## Çizgi film tarz denemesi (2026-10-17)
+
+Kullanıcı Game Dev Tycoon benzeri temiz çizgi film görünümü istedi ("pixel art ile hata mı ettik?"). Deneme yalnız ev odasında; ofisler pixel art kaldı. Oyunda HUD'daki 🎨 düğmesi ya da adreste `?stil=cizgi` / `?stil=piksel` ile geçiş.
+
+| Kaynak | İstek | Sonuç |
+| --- | --- | --- |
+| art/inbox/cizgi/c1_ev_odasi_v1.jpg | Game Dev Tycoon tarzı, 3×3 m ev çalışma odası, iki arka duvar, mobilya arka duvarlarda, zemin ortası boş | Kabul (1024 px) |
+| art/inbox/cizgi/c2_ev_karakterler_v1.jpg | Aynı odaya Buse + 3 öğrenci (önceki tasarımlarına sadık) | Kabul |
+
+- Kesim: `extract_diff.py c1 c2 art/inbox/cizgi/kesit_t20 --names buse,anxious,messy,quiet --pick ... --threshold 20`; açık zemindeki beyaz ayakkabılar farkta kayboldu.
+- Yeni araç **`tools/cartoon_cut.py`** (konfig `art/configs/cizgi_ev.json`): oda arka planı kırpılıp saydamlaştırılır, dikeyde 0,867 sıkıştırılır (Gemini ~1,73:1 çizdi), zemin köşelerinden floorOrigin hesaplanır (`floor_corners.py`). Karakterlerde fark maskesi özgün görselden koyu kontur + kapatma + doldurma ile tamamlanır (ayakkabılar geri gelir), boş odayla aynı kalan pikseller (arkadaki raf) atılır, gölge yumuşak elips. Hepsi **2x çözünürlük** (`resolution: 2`) ve **yumuşak ölçekleme** (`smooth`): manifest bu alanları taşır, oyun dokuyu doğrusal filtreyle yükler, kamera çizgi film tarzında ara yakınlıkları da kullanır (telefonda oda ekranı doldurur).
+- Ölçek: zemin genişliği 808 px = 3 karo (384 oyun pikseli) → 0,4752. Karakterler bu ölçekte 140–170 px (Gemini kişileri odaya göre iri çiziyor; Game Dev Tycoon'daki gibi tombul durur).
+- **Deneme sınırları:** mobilya arka plana gömülü (karakterler yalnız mobilyanın önünde durur), öğrencilerin tek görünümü var, yardımcı koç/uzmanlar ve ofisler çizgi film değil. Kalıcı geçişte oda boş üretilip mobilya "ekle + fark" ile ayrı sprite yapılmalı.

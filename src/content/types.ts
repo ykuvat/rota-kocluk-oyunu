@@ -6,6 +6,10 @@ export interface SpriteInfo {
   /** Sprite içindeki alt-orta çapa (px). */
   anchor: [number, number];
   footprint: [number, number] | null;
+  /** dosya pikselinin dünya pikseline oranı (çizgi film sprite'ları 2x yazılır); yoksa 1 */
+  resolution?: number;
+  /** yumuşak (doğrusal) ölçekleme: çizgi film tarzı; yoksa pixel art (en yakın komşu) */
+  smooth?: boolean;
 }
 
 export interface SpriteManifest {

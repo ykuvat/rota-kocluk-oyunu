@@ -22,7 +22,8 @@ const walk = (dir) => {
     const meta = JSON.parse(readFileSync(p, "utf8"));
     const folder = relative(dst, dir).replaceAll("\\", "/");
     for (const s of meta.sprites) {
-      sprites[s.name] = { url: `assets/sprites/${folder}/${s.name}.png`, size: s.size, anchor: s.anchor, footprint: s.footprint ?? null };
+      sprites[s.name] = { url: `assets/sprites/${folder}/${s.name}.png`, size: s.size, anchor: s.anchor, footprint: s.footprint ?? null,
+        ...(s.resolution ? { resolution: s.resolution } : {}), ...(s.smooth ? { smooth: true } : {}) };
     }
   }
 };

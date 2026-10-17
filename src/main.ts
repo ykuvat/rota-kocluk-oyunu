@@ -1,6 +1,8 @@
 import { Application, Assets, Container, Texture, TextureStyle } from "pixi.js";
 import { BALANCE } from "./content/balance";
 import { homeStudio } from "./content/rooms/homeStudio";
+import { homeStudioCartoon } from "./content/rooms/homeStudioCartoon";
+import { getArtStyle, setArtStyle } from "./platform/artStyle";
 import { officeCentral, officeDistrict } from "./content/rooms/offices";
 import type { RoomDef, SpriteManifest } from "./content/types";
 import { tileToScreen } from "./core/iso";
@@ -40,6 +42,9 @@ TextureStyle.defaultOptions.scaleMode = "nearest";
  */
 const MS_PER_GAME_HOUR_RUNNING = 24;
 
+/** Görsel tarz (deneme): pixel art ya da çizgi film; HUD'daki 🎨 ile değişir. */
+const artStyle = getArtStyle();
+
 /** Odadaki personel yuvaları için sprite sırası: önce her rolden birer kişi (çeşitlilik), sonra kalanlar işe alınma sırasıyla. */
 function staffSprites(state: GameState): string[] {
   const members = state.staff.members;
@@ -60,7 +65,7 @@ async function boot() {
   const manifest: SpriteManifest = await (await fetch(`${base}assets/sprites/manifest.json`)).json();
   availableSprites = new Set(Object.keys(manifest.sprites));
 
-  const rooms = [homeStudio, officeDistrict, officeCentral];
+  const rooms = [homeStudio, homeStudioCartoon, officeDistrict, officeCentral];
   const needed = new Set(rooms.flatMap((r) => [...(r.background ? [r.background] : []), ...r.placements.map((p) => p.sprite)]));
   // öğrenci karakterleri ve bekleme kareleri (varsa)
   for (const name of Object.keys(manifest.sprites)) if (name.startsWith("char_student_")) needed.add(name);
@@ -71,14 +76,16 @@ async function boot() {
     [...needed].map(async (name) => {
       const info = manifest.sprites[name];
       if (!info) throw new Error(`manifest'te sprite yok: ${name}`);
-      textures.set(name, await Assets.load<Texture>(`${base}${info.url}`));
+      // çizgi film sprite'ları: 2x dosya, yumuşak ölçekleme; pixel art: en yakın komşu (varsayılan)
+      const src = `${base}${info.url}`;
+      textures.set(name, await Assets.load<Texture>(info.smooth || info.resolution ? { src, data: { resolution: info.resolution ?? 1, scaleMode: info.smooth ? "linear" : "nearest" } } : src));
     }),
   );
 
   const world = new Container();
   world.sortableChildren = true;
   app.stage.addChild(world);
-  const camera = new Camera(world, app.canvas, dpr, host);
+  const camera = new Camera(world, app.canvas, dpr, host, artStyle === "cartoon");
 
   // --- simülasyon: kayıt varsa devam et (N tuşu yeni oyun başlatır) ---
   const saved = loadFromStorage();
@@ -178,6 +185,12 @@ async function boot() {
     onCompany: () => document.getElementById("business-panel")?.classList.toggle("open"),
     onHistory: () => history.toggle(),
     onDetails: () => setDetails(true),
+    artStyle,
+    onStyle: () => {
+      setArtStyle(artStyle === "cartoon" ? "pixel" : "cartoon");
+      saveToStorage(state);
+      location.href = location.pathname; // ?stil= parametresi seçimi ezmesin
+    },
     onLayout: () => relayout(),
   });
   const back = document.createElement("button");
@@ -399,6 +412,9 @@ const STUDENT_LOOKS: Record<string, string[]> = {
 };
 let availableSprites = new Set<string>();
 function studentSprite(archetype: string, id: string): string {
+  // çizgi film tarzı: arşetipin çizgi film görünümü varsa o
+  const cartoon = STUDENT_LOOKS[archetype]?.[0]?.replace(/_se$/, "_cartoon_se");
+  if (artStyle === "cartoon" && cartoon && availableSprites.has(cartoon)) return cartoon;
   const looks = (STUDENT_LOOKS[archetype] ?? []).filter((n) => availableSprites.has(n));
   if (!looks.length) return STUDENT_LOOKS[archetype]?.[0] ?? "";
   const n = Number(id.replace(/\D/g, "")) || 0;
@@ -408,7 +424,8 @@ function studentSprite(archetype: string, id: string): string {
 function roomFor(state: GameState): RoomDef {
   if (state.office === "central") return officeCentral;
   if (state.office === "district") return officeDistrict;
-  return homeStudio;
+  // tarz denemesi yalnız ev odasını kapsıyor; ofisler pixel art kalır
+  return artStyle === "cartoon" && availableSprites.has(homeStudioCartoon.background!) ? homeStudioCartoon : homeStudio;
 }
 
 /** Yeni oyun (Aşama 1): öğrenci yok, kişisel çevreden iki aday. İlk öğrenciyi bulmak oyuncuya kalmış. */

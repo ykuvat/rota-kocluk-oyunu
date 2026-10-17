@@ -35,7 +35,9 @@ const css = `
   #phud .wk{display:none}
   #phud .bal{margin-top:2px}
   #phud .money{font-size:19px}
-  #phud .menu button{padding:5px 8px}
+  #phud .menu{gap:2px;flex:none}
+  #phud .menu button{padding:5px 7px}
+  #phud .date .wd{display:none}
   #phud .menu .det{display:none}
   #phud .gbtn{display:inline-block}
   #phud:not(.gopen) .season,#phud:not(.gopen) .goals{display:none}
@@ -50,6 +52,9 @@ export interface HudControls {
   onDetails(): void;
   /** HUD yüksekliği değişti (mobilde hedefler açılıp kapandı): kamera yeniden ortalansın */
   onLayout?(): void;
+  /** görsel tarz denemesi: şu anki tarz ve değiştir */
+  artStyle?: string;
+  onStyle?(): void;
 }
 
 export class PlayHud {
@@ -73,6 +78,7 @@ export class PlayHud {
       if (a === "history") this.c.onHistory();
       if (a === "details") this.c.onDetails();
       if (a === "goals") this.el.classList.toggle("gopen");
+      if (a === "style") this.c.onStyle?.();
       this.render(true);
       this.c.onLayout?.();
     });
@@ -95,11 +101,12 @@ export class PlayHud {
       return q.money ? tf("quest.reward.money", { v: fmt(q.money) }) : tf("quest.reward.trust", { v: q.trust ?? 0 });
     };
     this.el.innerHTML = `
-      <div class="top"><span class="date">${tk(`day.${cal.weekday}`)} · ${cal.day}.${cal.month}.${cal.year}</span>
+      <div class="top"><span class="date"><span class="wd">${tk(`day.${cal.weekday}`)} · </span>${cal.day}.${cal.month}.${cal.year}</span>
         <span class="wk">${tf("play.week", { n: cal.weekIndex + 1 })}</span>
         <div class="menu">
           <button data-a="goals" class="gbtn ghost" title="${tk("play.goals")}">🎯${goals.length ? ` ${goals.length}` : ""}</button>
           ${company ? `<button data-a="company">${tk("play.company")}</button>` : ""}
+          ${this.c.onStyle ? `<button data-a="style" class="ghost" title="${tk(this.c.artStyle === "cartoon" ? "play.style.toPixel" : "play.style.toCartoon")}">🎨</button>` : ""}
           <button data-a="history" class="ghost">${tk("play.history")}</button>
           <button data-a="details" class="ghost det" title="${tk("play.details")}">⚙</button>
         </div></div>

@@ -15,6 +15,7 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 ## Kararlar
 - Oyuncuya hesap yaptırılmaz; kart dili, görünür sonuç (kullanıcı geri bildirimi).
 - **Buse'nin çizimi değiştirilmez**; hareket yalnız konum/aynalama/1 px adım-nefes ile.
+- Görsel tarz kararı bekliyor: çizgi film (Game Dev Tycoon benzeri) denemesi ev odasında hazır (🎨 / `?stil=cizgi`); kullanıcı onaylarsa tüm görseller `tools/cartoon_cut.py` hattıyla yenilenir.
 - PixelLab öğrencileri reddedildi ("çok kötü"); karakterler Gemini fark yöntemiyle üretilir.
 - Ücretli işlem/hesap açma kullanıcıya ait.
 
