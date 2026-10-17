@@ -93,5 +93,8 @@ export const STAFF = {
   quitChance: 0.35,
 } as const;
 
-export const STAFF_FIRST_NAMES = ["Elif", "Mert", "Zeynep", "Can", "Ayşe", "Emre", "Deniz", "Selin", "Burak", "İrem", "Kaan", "Nehir"] as const;
+/** Rol sprite'ının cinsiyeti (isim buna göre seçilir): yardımcı koç ve rehber erkek, sekreter ve branş öğretmeni kadın çizildi. */
+export const ROLE_GENDER: Record<StaffRole, "f" | "m"> = { coach: "m", secretary: "f", counselor: "m", teacher: "f" };
+export const STAFF_FIRST_NAMES_F = ["Elif", "Zeynep", "Ayşe", "Selin", "İrem", "Nehir", "Gizem", "Burcu"] as const;
+export const STAFF_FIRST_NAMES_M = ["Mert", "Can", "Emre", "Burak", "Kaan", "Onur", "Serkan", "Tolga"] as const;
 export const STAFF_LAST_NAMES = ["Arslan", "Kara", "Öztürk", "Aydın", "Polat", "Kılıç", "Erdem", "Yalçın", "Taş", "Güneş"] as const;

@@ -1,11 +1,14 @@
 {
-  "_note": "Çizgi film tarz denemesi (Game Dev Tycoon benzeri): ev odası + Buse + 3 öğrenci. Kaynak: Gemini, art/inbox/cizgi (c1 boş oda, c2 karakterli; fark extract_diff --threshold 20). Oda 3x3 karo; ölçek zeminin 808 px genişliği = 384 oyun pikseli; dikey sıkıştırma 0.867 (Gemini ~1.73:1 çizdi).",
+  "_note": "Çizgi film tarz denemesi (Game Dev Tycoon benzeri): ev odası + Buse + 3 öğrenci. Kaynak: Gemini, art/inbox/cizgi (c1 boş oda, c2 karakterli, c3 seans masalı oda = arka plan, c5_* Buse + öğrenci seansta, c6 Buse masada çalışıyor: aynı kırpmayla tam oda varyantları; fark extract_diff --threshold 20). Oda 3x3 karo; ölçek zeminin 808 px genişliği = 384 oyun pikseli; dikey sıkıştırma 0.867 (Gemini ~1.73:1 çizdi).",
   "out_dir": "art/sprites/cartoon/home",
   "meta_name": "_meta.json",
   "resolution": 2,
   "items": [
-    {"name": "room_home_cartoon", "kind": "room", "source": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "scale": 0.4752, "squash": 0.867,
-     "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
+    {"name": "room_home_cartoon", "kind": "room", "source": "art/inbox/cizgi/c3_ev_masa_v1.jpg", "scale": 0.4752, "squash": 0.867, "box": [82, 64, 942, 974], "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
+    {"name": "room_home_cartoon_s_anxious", "kind": "room", "source": "art/inbox/cizgi/c5_seans_anxious_v1.jpg", "scale": 0.4752, "squash": 0.867, "box": [82, 64, 942, 974], "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
+    {"name": "room_home_cartoon_s_messy", "kind": "room", "source": "art/inbox/cizgi/c5_seans_messy_v1.jpg", "scale": 0.4752, "squash": 0.867, "box": [82, 64, 942, 974], "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
+    {"name": "room_home_cartoon_s_quiet", "kind": "room", "source": "art/inbox/cizgi/c5_seans_quiet_v1.jpg", "scale": 0.4752, "squash": 0.867, "box": [82, 64, 942, 974], "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
+    {"name": "room_home_cartoon_desk", "kind": "room", "source": "art/inbox/cizgi/c6_buse_calisiyor_v1.jpg", "scale": 0.4752, "squash": 0.867, "box": [82, 64, 942, 974], "floor": {"left": [108, 705], "right": [916, 705], "bottom": [511, 938]}},
     {"name": "char_buse_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/buse.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [262,588], "scale": 0.4752, "floor_rgb": [238, 165, 80]},
     {"name": "char_student_anxious_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/anxious.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [414,558], "scale": 0.4752, "floor_rgb": [238, 165, 80]},
     {"name": "char_student_messy_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_t20/messy.png", "after": "art/inbox/cizgi/c2_ev_karakterler_v1.jpg", "before": "art/inbox/cizgi/c1_ev_odasi_v1.jpg", "box": [546,531], "scale": 0.4752, "floor_rgb": [238, 165, 80], "floor_zone": 0.3},

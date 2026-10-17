@@ -76,6 +76,9 @@ def do_room(it: dict, res: int, out_dir: Path) -> dict:
     mask = ndimage.binary_fill_holes(largest(ndimage.binary_opening(mask, iterations=2)))
     ys, xs = np.nonzero(mask)
     x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    if it.get("box"):
+        # aynı odanın poz varyantları aynı kırpmayla: oyunda birbirinin yerine geçtiklerinde kaymasınlar
+        x0, y0, x1, y1 = it["box"]
     im = soft_rgba(src[y0:y1, x0:x1], mask[y0:y1, x0:x1])
     sx, sy = it["scale"], it["scale"] * it.get("squash", 1.0)
     lw, lh = round((x1 - x0) * sx), round((y1 - y0) * sy)

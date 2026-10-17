@@ -3,6 +3,7 @@ import { BALANCE } from "./content/balance";
 import { homeStudio } from "./content/rooms/homeStudio";
 import { homeStudioCartoon } from "./content/rooms/homeStudioCartoon";
 import { getArtStyle, setArtStyle } from "./platform/artStyle";
+import { roomLife } from "./ui/roomLife";
 import { officeCentral, officeDistrict } from "./content/rooms/offices";
 import type { RoomDef, SpriteManifest } from "./content/types";
 import { tileToScreen } from "./core/iso";
@@ -67,6 +68,8 @@ async function boot() {
 
   const rooms = [homeStudio, homeStudioCartoon, officeDistrict, officeCentral];
   const needed = new Set(rooms.flatMap((r) => [...(r.background ? [r.background] : []), ...r.placements.map((p) => p.sprite)]));
+  // odanın poz varyantları (seans, masa başı): manifest'te varsa
+  for (const r of rooms) for (const n of [...Object.values(r.poses?.session ?? {}), ...(r.poses?.desk ? [r.poses.desk] : [])]) if (manifest.sprites[n]) needed.add(n);
   // öğrenci karakterleri ve bekleme kareleri (varsa)
   for (const name of Object.keys(manifest.sprites)) if (name.startsWith("char_student_")) needed.add(name);
   // personelin rol görünümleri (sprite'ı olmayan rol yuvanın varsayılan sprite'ıyla çizilir)
@@ -94,12 +97,14 @@ async function boot() {
   // oda: ofis kiralanınca sahne değişir; ekip değişince de yeniden kurulur (yardımcı koçlar odada görünür)
   let room = roomFor(state);
   let staffShown = staffSprites(state);
-  /** öğrencinin odadaki görünümü: arşetipe göre karakter, ruh hâli simgesi */
+  /** odadaki hayat için: hafta oynuyor mu, şeritte seçili öğrenci (sonradan kurulan parçalardan her karede güncellenir) */
+  const life = { running: false, focus: null as string | null };
+  const lifeNow = (r: RoomDef) => roomLife(state, r, life.running, life.focus, (n) => textures.has(n));
+  /** odada ayakta duran öğrenciler (koçluk günü gelenler): arşetipe göre karakter, ruh hâli simgesi */
   const actorsFor = (r: RoomDef): Actor[] => {
     const spots = r.studentSpots ?? [];
-    return state.students
-      .filter((x) => !x.left)
-      .slice(0, spots.length)
+    return lifeNow(r)
+      .visitors.slice(0, spots.length)
       .map((st, i) => {
         const sprite = studentSprite(st.archetype, st.id);
         const frames = Object.keys(manifest.sprites).filter((n) => n.startsWith(`${sprite}_idle_`)).sort();
@@ -123,6 +128,8 @@ async function boot() {
     const mobile = play && isMobile();
     const box = (id: string) => document.getElementById(id)?.getBoundingClientRect();
     camera.rightInset = play && !mobile ? 364 : 0;
+    // geniş masaüstünde sol üstteki bilgi kutusu da odayı örtmesin
+    camera.leftInset = play && !mobile && window.innerWidth >= 1200 ? 364 : 0;
     camera.topInset = mobile ? (box("phud")?.bottom ?? 0) : 0;
     // telefonda alt sınır: karar sayfası KAPALIYKEN kaplayacağı yer (başlık + ana düğme) + öğrenci şeridi; sayfa açılınca
     // odanın alt kısmını örter ama oda o yüzden küçülmez (dikey alan dar)
@@ -138,7 +145,13 @@ async function boot() {
     const next = roomFor(state);
     const staff = staffSprites(state);
     const nextActors = actorsFor(next);
-    if (next === room && staff.join() === staffShown.join() && actorKey(nextActors) === actorKey(actors)) return;
+    const apply = () => {
+      // poz: arka plan varyantı (Buse masada / seansta) ve yürüyen Buse'nin gizlenmesi
+      const l = lifeNow(room);
+      scene.setBackground(textures.get(l.background ?? room.background ?? ""));
+      scene.setWalkerVisible("buse", !l.hideBuse);
+    };
+    if (next === room && staff.join() === staffShown.join() && actorKey(nextActors) === actorKey(actors)) return apply();
     const moved = next !== room;
     const gridOn = scene.grid.visible;
     world.removeChild(scene);
@@ -149,6 +162,7 @@ async function boot() {
     scene = new RoomScene(room, manifest, textures, staff, actors, onActorTap);
     scene.grid.visible = gridOn;
     world.addChild(scene);
+    apply();
     if (moved) centerRoom();
   };
 
@@ -249,7 +263,7 @@ async function boot() {
       // kayıttan devam edilen oyunda geçmiş haftalar da sayılır
       weeksPlayed: () => Math.max(weeksPlayed, calendarAt(state.hour).weekIndex),
     },
-    manifest.sprites.char_buse_idle_se ? `${base}${manifest.sprites.char_buse_idle_se.url}` : null,
+    ((s) => (s ? `${base}${s.url}` : null))(manifest.sprites[artStyle === "cartoon" && manifest.sprites.char_buse_cartoon_se ? "char_buse_cartoon_se" : "char_buse_idle_se"]),
     !saved,
   );
 
@@ -292,6 +306,8 @@ async function boot() {
   const refresh = () => {
     view.zoom = camera.zoom;
     view.paused = !running;
+    life.running = running;
+    life.focus = strip.selectedId;
     syncRoom();
     autopilot.tick();
     // oyun modunda olanlar hafta sonu ekranında anlatılır; anlık bildirim yalnız ayrıntı modunda
@@ -430,7 +446,8 @@ function roomFor(state: GameState): RoomDef {
 
 /** Yeni oyun (Aşama 1): öğrenci yok, kişisel çevreden iki aday. İlk öğrenciyi bulmak oyuncuya kalmış. */
 function newGame(): GameState {
-  const state = createState(20260907, BALANCE.coach.weeklyHours);
+  // her yeni oyun farklı tohumla başlar (sim içinde saat okunmaz; tohum burada, arayüzde seçilir)
+  const state = createState((Date.now() % 2_147_483_647) >>> 0, BALANCE.coach.weeklyHours);
   const rng = createRng(state.rng);
   startCareer(state, rng);
   state.rng = rng.state();

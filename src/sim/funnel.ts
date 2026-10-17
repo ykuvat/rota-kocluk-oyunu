@@ -1,7 +1,7 @@
 // Aday hunisi ve itibar (GDD E2, E6). Kanal → aday → tanışma görüşmesi → kayıt.
 // İlk öğrenciyi bulmak garanti değildir: fiyat, güven ve kaynak kayıt olasılığını belirler.
 
-import { ARCHETYPES, FIRST_NAMES, LAST_NAMES } from "../content/archetypes";
+import { ARCHETYPES, firstNames, LAST_NAMES } from "../content/archetypes";
 import { COACHING, FUNNEL, REPUTATION, SEASONALITY, type LeadSource } from "../content/business";
 import { calendarAt, HOURS_PER_DAY } from "./calendar";
 import type { Rng } from "../core/rng";
@@ -70,12 +70,26 @@ function normal(rng: Rng): number {
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
+/** Kurumda (öğrenci ya da aday) aynı ad-soyad iki kez görünmesin; birkaç denemede bulunamazsa son seçim kalır. */
+function uniqueName(state: GameState, first: readonly string[], rng: Rng): string {
+  const taken = new Set([...state.students.filter((s) => !s.left).map((s) => s.name), ...state.leads.map((l) => l.name)]);
+  let name = "";
+  for (let i = 0; i < 8; i++) {
+    name = `${first[rng.int(0, first.length - 1)]} ${LAST_NAMES[rng.int(0, LAST_NAMES.length - 1)]}`;
+    if (!taken.has(name)) break;
+  }
+  return name;
+}
+
 export function makeLead(state: GameState, source: LeadSource, rng: Rng): Lead {
   const ids = Object.keys(ARCHETYPES);
+  // arşetip önce: isim, arşetipin çizildiği cinsiyete uysun
+  const archetype = ids[rng.int(0, ids.length - 1)];
+  const names = firstNames(ARCHETYPES[archetype].gender);
   const lead: Lead = {
     id: `l${state.nextLeadId++}`,
-    name: `${FIRST_NAMES[rng.int(0, FIRST_NAMES.length - 1)]} ${LAST_NAMES[rng.int(0, LAST_NAMES.length - 1)]}`,
-    archetype: ids[rng.int(0, ids.length - 1)],
+    name: uniqueName(state, names, rng),
+    archetype,
     source,
     willingness: Math.round(Math.max(2_500, FUNNEL.willingnessMean + normal(rng) * FUNNEL.willingnessSd) / 100) * 100,
     grade: rng.next() < GRADES.eleventhShareByMonth[calendarAt(state.hour).month - 1] ? 11 : 12,

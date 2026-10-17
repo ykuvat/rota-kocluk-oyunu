@@ -73,6 +73,11 @@ export interface RoomDef {
   workSpots?: WorkSpot[];
   /** Mobilyaların arasından geçmemek için yürüyüşlerin uğradığı açık zemin noktası. */
   hub?: { x: number; y: number };
+  /**
+   * Arka planın poz varyantları (aynı kırpma ve ızgara): seans masasında Buse + öğrenci (arşetipe göre) ve
+   * Buse masada çalışıyor. Varyant gösterilirken yürüyen Buse gizlenir.
+   */
+  poses?: { session?: Record<string, string>; desk?: string };
 }
 
 export interface WorkSpot {

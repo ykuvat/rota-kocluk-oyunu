@@ -28,9 +28,39 @@ export class RoomScene extends Container {
   /** öğrenciler arada etrafa bakar (kısa süre ters yöne döner) */
   private readonly fidgets: { s: Sprite; base: number; next: number; until: number }[] = [];
 
+  private bg: Sprite | null = null;
+  /** arka plan geçişinde eski görüntü (üstte, saydamlaşarak kaybolur) */
+  private fading: Sprite | null = null;
+
+  /**
+   * Arka planı aynı odanın poz varyantıyla değiştirir (Buse masada, seans masasında öğrenciyle...).
+   * Varyantlar aynı kırpma ve ızgarayla üretildiği için yer değişmez; geçiş kısa bir kararmayla yumuşar.
+   */
+  setBackground(tex: Texture | undefined): void {
+    if (!this.bg || !tex || this.bg.texture === tex) return;
+    this.fading?.destroy();
+    const old = new Sprite(this.bg.texture);
+    old.position.copyFrom(this.bg.position);
+    this.addChildAt(old, this.getChildIndex(this.bg) + 1);
+    this.fading = old;
+    this.bg.texture = tex;
+  }
+
+  /** Yürüyen karakteri (ör. Buse) gizle/göster: oturma pozu arka plandayken ikinci bir Buse görünmesin. */
+  setWalkerVisible(id: string, v: boolean): void {
+    for (const w of this.walkers) if (w.label === id) w.setVisible(v);
+  }
+
   /** Her karede çağrılır (saniye). */
   update(dt: number): void {
     this.time += dt;
+    if (this.fading) {
+      this.fading.alpha -= dt / 0.3;
+      if (this.fading.alpha <= 0) {
+        this.fading.destroy();
+        this.fading = null;
+      }
+    }
     for (const b of this.breathers) {
       const up = Math.sin((this.time + b.phase) * 2.2) > 0.35;
       b.s.scale.y = up ? (b.h + 1) / b.h : 1;
@@ -67,6 +97,7 @@ export class RoomScene extends Container {
       const bg = new Sprite(textures.get(room.background));
       bg.position.set(-room.floorOrigin[0], -room.floorOrigin[1]);
       this.addChild(bg);
+      this.bg = bg;
     } else if (room.procedural) {
       this.addChild(drawProceduralRoom(room.tilesX, room.tilesY, room.procedural));
     }

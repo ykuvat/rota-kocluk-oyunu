@@ -92,6 +92,11 @@ export class StudentStrip {
     });
   }
 
+  /** Şeritte seçili öğrenci (odada onunla seans gösterilir). */
+  get selectedId(): string | null {
+    return this.selected;
+  }
+
   /** Odadaki karaktere tıklanınca: kartını aç. */
   select(id: string): void {
     this.selected = id;

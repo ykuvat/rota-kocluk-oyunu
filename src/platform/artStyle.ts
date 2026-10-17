@@ -1,4 +1,4 @@
-// Görsel tarz seçimi (deneme): "pixel" (mevcut) ya da "cartoon" (çizgi film). Tarayıcıda saklanır;
+// Görsel tarz seçimi: "cartoon" (çizgi film, varsayılan) ya da "pixel" (ilk tarz). Tarayıcıda saklanır;
 // adres çubuğunda ?stil=cizgi / ?stil=piksel ile de seçilebilir.
 
 export type ArtStyle = "pixel" | "cartoon";
@@ -10,9 +10,10 @@ export function getArtStyle(): ArtStyle {
     const q = new URLSearchParams(location.search).get("stil");
     if (q === "cizgi" || q === "cartoon") return "cartoon";
     if (q === "piksel" || q === "pixel") return "pixel";
-    return localStorage.getItem(KEY) === "cartoon" ? "cartoon" : "pixel";
+    // varsayılan çizgi film (kullanıcının hedeflediği görünüm); pixel art 🎨 ile seçilebilir
+    return localStorage.getItem(KEY) === "pixel" ? "pixel" : "cartoon";
   } catch {
-    return "pixel";
+    return "cartoon";
   }
 }
 

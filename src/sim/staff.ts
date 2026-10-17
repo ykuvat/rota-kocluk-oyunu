@@ -2,7 +2,7 @@
 // Yardımcı koçlara öğrenci atanır; uzmanlar (sekreter, rehber, branş öğretmeni) kurumun tamamına haftalık etki verir.
 
 import { TOPICS } from "../content/curriculum";
-import { ROLE_IDS, ROLE_SKILL_REF, ROLES, SPECIALISTS, STAFF, STAFF_FIRST_NAMES, STAFF_LAST_NAMES, type StaffRole } from "../content/staff";
+import { ROLE_IDS, ROLE_SKILL_REF, ROLES, SPECIALISTS, STAFF, ROLE_GENDER, STAFF_FIRST_NAMES_F, STAFF_FIRST_NAMES_M, STAFF_LAST_NAMES, type StaffRole } from "../content/staff";
 import type { Rng } from "../core/rng";
 import { calendarAt, HOURS_PER_DAY } from "./calendar";
 import { payFromBusinessFirst, post } from "./economy";
@@ -85,6 +85,12 @@ function pickRole(state: GameState, rng: Rng): StaffRole {
   return "coach";
 }
 
+/** Rolün çizildiği cinsiyete uygun ilk ad. */
+function pickName(role: StaffRole, rng: Rng): string {
+  const names = ROLE_GENDER[role] === "f" ? STAFF_FIRST_NAMES_F : STAFF_FIRST_NAMES_M;
+  return names[rng.int(0, names.length - 1)];
+}
+
 function makeCandidate(state: GameState, rng: Rng): Candidate {
   const role = pickRole(state, rng);
   const skill = Math.round(clamp(30 + rng.next() * 60));
@@ -96,7 +102,7 @@ function makeCandidate(state: GameState, rng: Rng): Candidate {
   const askSalary = round250(marketSalary((lo + hi) / 2, role) * (0.95 + rng.next() * 0.15));
   return {
     id: `c${state.staff.nextId++}`,
-    name: `${STAFF_FIRST_NAMES[rng.int(0, STAFF_FIRST_NAMES.length - 1)]} ${STAFF_LAST_NAMES[rng.int(0, STAFF_LAST_NAMES.length - 1)]}`,
+    name: `${pickName(role, rng)} ${STAFF_LAST_NAMES[rng.int(0, STAFF_LAST_NAMES.length - 1)]}`,
     role,
     skill,
     skillLo: lo,

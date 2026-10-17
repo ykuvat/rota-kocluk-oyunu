@@ -187,6 +187,13 @@ Tarayıcıda baştan oynandı: eğitim adımları, iki hafta, kararların sonucu
 - Karakterlerde bekleme: animasyon kareleri varsa `AnimatedSprite`, yoksa (Buse dahil) kodla nefes — ayaklar sabit 1 piksel uzama. Buse'nin çizimine dokunulmadı.
 - Vite artık `art/`, `tools/`, `docs/` klasörlerini izlemiyor (indirilen ZIP kilidi sunucuyu çökertiyordu).
 
+## Oda yaşamı, isim-cinsiyet, çizgi film varsayılan (2026-10-17)
+
+- **Çizgi film tarzı varsayılan** (🎨 / `?stil=piksel` ile pixel art). Ev odası arka planına seans masası eklendi.
+- **Öğrenciler odada sürekli durmuyor** (`ui/roomLife.ts`, `content/visits.ts`): her öğrencinin haftalık koçluk günü var (kimlikten türetilir). Hafta oynarken gündüz o günün öğrencisi Buse'yle **seans masasında oturur**, aynı gün gelen diğerleri bekler; kimse gelmezse Buse odada dolaşır; gece ve eğitim (sertifika) saatlerinde Buse **masasında çalışır/ders çalışır**. Hafta dururken şeritte seçili öğrenciyle (yoksa ilkiyle) seans görünür; eğitim sürüyorsa masa başı.
+- Pozlar, aynı kırpma ve ızgarayla üretilmiş **tam oda varyantları** (`RoomDef.poses`); geçişte 0,3 sn kararma (`RoomScene.setBackground`). Üst katman denendi: Gemini masa başı görselinde odayı yeniden çizdiği için fark kesimi tutmadı.
+- **İsim ↔ görünüm:** arşetiplere cinsiyet (kaygılı kız, dağınık ve sessiz erkek), personel rollerine sprite cinsiyeti; adlar buna göre seçilir. Eski kayıtlarda uyumsuz adlar yüklemede düzelir (`platform/save.ts → fixNameGenders`). Aynı ad-soyad iki kez çıkmaz. Yeni oyun her seferinde farklı tohumla başlar. Testler: 112 (`tests/names.test.ts`).
+
 ## Mobil düzen ve yumuşak arayüz (2026-10-17)
 
 Kullanıcı (telefon ekran görüntüleri): oyun menülerin arkasında görünmüyor; menüler hâlâ "program" gibi.

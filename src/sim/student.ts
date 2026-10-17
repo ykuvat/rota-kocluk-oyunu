@@ -1,6 +1,6 @@
 // Öğrenci modeli (GDD D1–D3). Saf veri + saf fonksiyonlar; durum JSON olarak serileştirilebilir.
 
-import { ARCHETYPES, FIRST_NAMES, LAST_NAMES, type Range } from "../content/archetypes";
+import { ARCHETYPES, firstNames, LAST_NAMES, type Range } from "../content/archetypes";
 import { BALANCE } from "../content/balance";
 import { ECONOMY } from "../content/business";
 import { TOPIC_BY_ID, TOPICS } from "../content/curriculum";
@@ -103,7 +103,7 @@ export function generateStudent(id: string, archetypeId: string, rng: Rng, week 
   };
   return {
     id,
-    name: `${FIRST_NAMES[rng.int(0, FIRST_NAMES.length - 1)]} ${LAST_NAMES[rng.int(0, LAST_NAMES.length - 1)]}`,
+    name: `${firstNames(a.gender)[rng.int(0, firstNames(a.gender).length - 1)]} ${LAST_NAMES[rng.int(0, LAST_NAMES.length - 1)]}`,
     archetype: archetypeId,
     personality: {
       conscientiousness: round1(pick(rng, a.personality.conscientiousness)),

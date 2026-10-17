@@ -2,10 +2,13 @@
 // her değer [min, max] aralığından tohumlu rastgeleyle çekilir.
 
 export type Range = [number, number];
+export type Gender = "f" | "m";
 
 export interface ArchetypeDef {
   id: string;
   nameKey: string;
+  /** görünüm (sprite) ve isim için: arşetipin karakter çizimi bu cinsiyette */
+  gender: Gender;
   personality: { conscientiousness: Range; neuroticism: Range; openness: Range; learningSpeed: Range };
   state: {
     motivation: Range;
@@ -26,6 +29,7 @@ export const ARCHETYPES: Record<string, ArchetypeDef> = {
   anxious_perfectionist: {
     id: "anxious_perfectionist",
     nameKey: "archetype.anxious_perfectionist",
+    gender: "f",
     personality: { conscientiousness: [70, 90], neuroticism: [70, 90], openness: [40, 60], learningSpeed: [0.9, 1.1] },
     state: {
       motivation: [55, 70], selfEfficacy: [30, 45], anxiety: [65, 85], goalOwnership: [60, 75],
@@ -37,6 +41,7 @@ export const ARCHETYPES: Record<string, ArchetypeDef> = {
   talented_messy: {
     id: "talented_messy",
     nameKey: "archetype.talented_messy",
+    gender: "m",
     personality: { conscientiousness: [20, 40], neuroticism: [25, 45], openness: [65, 85], learningSpeed: [1.2, 1.4] },
     state: {
       motivation: [45, 60], selfEfficacy: [60, 75], anxiety: [20, 35], goalOwnership: [35, 50],
@@ -48,6 +53,7 @@ export const ARCHETYPES: Record<string, ArchetypeDef> = {
   quiet_drifter: {
     id: "quiet_drifter",
     nameKey: "archetype.quiet_drifter",
+    gender: "m",
     personality: { conscientiousness: [40, 55], neuroticism: [45, 65], openness: [35, 55], learningSpeed: [0.85, 1.05] },
     state: {
       motivation: [25, 40], selfEfficacy: [30, 45], anxiety: [40, 55], goalOwnership: [15, 30],
@@ -59,5 +65,9 @@ export const ARCHETYPES: Record<string, ArchetypeDef> = {
 };
 
 /** Kurgusal öğrenci adları (iki dilde de Türkçe kalır). */
-export const FIRST_NAMES = ["Mert", "Zeynep", "Ece", "Can", "Defne", "Emir", "Elif", "Kaan", "Selin", "Arda", "Nehir", "Berk"];
+export const FIRST_NAMES_F = ["Zeynep", "Ece", "Defne", "Elif", "Selin", "Nehir", "Ada", "Duru", "Asya", "İpek"];
+export const FIRST_NAMES_M = ["Mert", "Can", "Emir", "Kaan", "Arda", "Berk", "Efe", "Yusuf", "Deniz", "Ali"];
+export const FIRST_NAMES = [...FIRST_NAMES_F, ...FIRST_NAMES_M];
+/** Cinsiyete uygun ilk ad listesi. */
+export const firstNames = (g: Gender) => (g === "f" ? FIRST_NAMES_F : FIRST_NAMES_M);
 export const LAST_NAMES = ["Aydın", "Kaya", "Şahin", "Çelik", "Yıldız", "Öztürk", "Arslan", "Doğan", "Kurt", "Koç"];

@@ -2,6 +2,8 @@
 // Şimdilik tarayıcı deposu (localStorage, tek yuva); ileride IndexedDB + birden çok yuva + dosyaya dışa aktarma.
 
 import { BALANCE } from "../content/balance";
+import { ARCHETYPES, firstNames } from "../content/archetypes";
+import { ROLE_GENDER, STAFF_FIRST_NAMES_F, STAFF_FIRST_NAMES_M } from "../content/staff";
 import { ECONOMY } from "../content/business";
 import { createEconomy } from "../sim/economy";
 import { createMarketing, createReputation } from "../sim/funnel";
@@ -99,7 +101,29 @@ export function migrate(raw: Record<string, unknown>): GameState {
     v = Number(s.version);
   }
   if (v > STATE_VERSION) throw new Error(`kayıt daha yeni bir sürümden (${v})`);
-  return s as unknown as GameState;
+  const state = s as unknown as GameState;
+  fixNameGenders(state);
+  return state;
+}
+
+/**
+ * Eski kayıtlarda isimler cinsiyetten bağımsız seçiliyordu (kız çizimine "Mert" gibi). Görünümle uyuşmayan ilk adı
+ * kimlikten türetilen uygun bir adla değiştirir; uyumlu kayıtta hiçbir şey değişmez (her yüklemede güvenle çalışır).
+ */
+function fixNameGenders(state: GameState): void {
+  const pick = (list: readonly string[], id: string) => list[[...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % list.length];
+  const fix = (name: string, list: readonly string[], id: string) => {
+    const [first, ...rest] = name.split(" ");
+    return list.includes(first) ? name : [pick(list, id), ...rest].join(" ");
+  };
+  for (const p of [...state.students, ...state.leads]) {
+    const g = ARCHETYPES[p.archetype]?.gender;
+    if (g) p.name = fix(p.name, firstNames(g), p.id);
+  }
+  for (const m of [...state.staff.members, ...state.staff.candidates]) {
+    const role = m.role ?? "coach";
+    m.name = fix(m.name, ROLE_GENDER[role] === "f" ? STAFF_FIRST_NAMES_F : STAFF_FIRST_NAMES_M, m.id);
+  }
 }
 
 export function serialize(state: GameState): string {

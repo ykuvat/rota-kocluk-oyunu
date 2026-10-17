@@ -60,6 +60,16 @@ export class Walker {
     this.place(0);
   }
 
+  /** Odada görünüyor mu (oturma pozu arka plandayken yürüyen Buse gizlenir). */
+  setVisible(v: boolean): void {
+    this.s.visible = v;
+    this.icon.visible = v;
+  }
+
+  get label(): string {
+    return this.s.label;
+  }
+
   update(dt: number): void {
     this.t += dt;
     if (this.path.length) {

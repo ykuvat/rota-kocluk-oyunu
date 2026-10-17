@@ -27,6 +27,102 @@
       ]
     },
     {
+      "name": "room_home_cartoon_s_anxious",
+      "size": [
+        409,
+        375
+      ],
+      "anchor": [
+        204,
+        374
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        204.3,
+        168.1
+      ],
+      "source_box": [
+        82,
+        64,
+        942,
+        974
+      ]
+    },
+    {
+      "name": "room_home_cartoon_s_messy",
+      "size": [
+        409,
+        375
+      ],
+      "anchor": [
+        204,
+        374
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        204.3,
+        168.1
+      ],
+      "source_box": [
+        82,
+        64,
+        942,
+        974
+      ]
+    },
+    {
+      "name": "room_home_cartoon_s_quiet",
+      "size": [
+        409,
+        375
+      ],
+      "anchor": [
+        204,
+        374
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        204.3,
+        168.1
+      ],
+      "source_box": [
+        82,
+        64,
+        942,
+        974
+      ]
+    },
+    {
+      "name": "room_home_cartoon_desk",
+      "size": [
+        409,
+        375
+      ],
+      "anchor": [
+        204,
+        374
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        204.3,
+        168.1
+      ],
+      "source_box": [
+        82,
+        64,
+        942,
+        974
+      ]
+    },
+    {
       "name": "char_buse_cartoon_se",
       "size": [
         62,

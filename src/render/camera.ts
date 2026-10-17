@@ -45,6 +45,9 @@ export class Camera {
   /** Sağda arayüzün kapladığı genişlik (px); ortalama bu alanın dışında yapılır. */
   rightInset = 0;
 
+  /** Solda arayüzün kapladığı genişlik (px). */
+  leftInset = 0;
+
   /** Altta arayüzün kapladığı yükseklik (px). */
   bottomInset = 0;
 
@@ -53,14 +56,14 @@ export class Camera {
 
   /** Dünyadaki (wx, wy) noktasını görünür alanın (paneller hariç) ortasına getirir. */
   centerOn(wx: number, wy: number): void {
-    this.x = (this.frame.clientWidth - this.rightInset) / 2 - wx * this.zoom;
+    this.x = this.leftInset + (this.frame.clientWidth - this.leftInset - this.rightInset) / 2 - wx * this.zoom;
     this.y = this.topInset + (this.frame.clientHeight - this.topInset - this.bottomInset) / 2 - wy * this.zoom;
     this.apply();
   }
 
   /** (w × h) dünya pikselini görünür alana sığdıran en büyük yakınlık katını seçer (hiçbiri sığmazsa en küçüğü). */
   fit(w: number, h: number): void {
-    const aw = this.frame.clientWidth - this.rightInset - 16;
+    const aw = this.frame.clientWidth - this.leftInset - this.rightInset - 16;
     const ah = this.frame.clientHeight - this.topInset - this.bottomInset - 16;
     let best = 0;
     this.steps.forEach((z, i) => {
