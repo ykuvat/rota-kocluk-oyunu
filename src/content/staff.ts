@@ -27,6 +27,13 @@ export const ROLES: Record<StaffRole, RoleDef> = {
 export const ROLE_IDS = Object.keys(ROLES) as StaffRole[];
 
 /** Odada personelin rolüne göre görünümü (sanat: art/configs/p5_yardimci.json, p7_*.json). */
+export const ROLE_SPRITE_CARTOON: Record<StaffRole, string> = {
+  coach: "char_assistant_cartoon_se",
+  secretary: "char_staff_secretary_cartoon_se",
+  counselor: "char_staff_counselor_cartoon_se",
+  teacher: "char_staff_teacher_cartoon_se",
+};
+
 export const ROLE_SPRITE: Record<StaffRole, string> = {
   coach: "char_assistant_idle_se",
   secretary: "char_staff_secretary_se",

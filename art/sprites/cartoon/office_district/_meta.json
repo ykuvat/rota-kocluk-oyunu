@@ -1,0 +1,206 @@
+{
+  "source": "art\\configs\\cizgi_semt.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "room_office_district_cartoon",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "room_office_district_cartoon_s_anxious",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "room_office_district_cartoon_s_messy",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "room_office_district_cartoon_s_quiet",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "room_office_district_cartoon_desk",
+      "size": [
+        430,
+        390
+      ],
+      "anchor": [
+        215,
+        389
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        214.3,
+        176.9
+      ],
+      "source_box": [
+        60,
+        60,
+        964,
+        990
+      ]
+    },
+    {
+      "name": "char_assistant_cartoon_se",
+      "size": [
+        50,
+        149
+      ],
+      "anchor": [
+        25,
+        144
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        8,
+        8,
+        109,
+        312
+      ]
+    },
+    {
+      "name": "char_staff_secretary_cartoon_se",
+      "size": [
+        51,
+        148
+      ],
+      "anchor": [
+        25,
+        143
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        8,
+        70,
+        112,
+        370
+      ]
+    },
+    {
+      "name": "char_staff_counselor_cartoon_se",
+      "size": [
+        52,
+        157
+      ],
+      "anchor": [
+        26,
+        152
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        110,
+        12,
+        215,
+        331
+      ]
+    },
+    {
+      "name": "char_staff_teacher_cartoon_se",
+      "size": [
+        54,
+        164
+      ],
+      "anchor": [
+        27,
+        159
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "source_box": [
+        8,
+        8,
+        118,
+        343
+      ]
+    }
+  ]
+}

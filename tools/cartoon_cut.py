@@ -38,10 +38,21 @@ BG = np.array([203, 203, 203])
 SHADOW = np.array([106, 133, 130])
 
 
+PICK: tuple[int, int] | None = None  # do_char çalışırken: seçilecek parçanın içindeki nokta (kesit koordinatı)
+
+
 def largest(mask: np.ndarray) -> np.ndarray:
     lab, n = ndimage.label(mask, structure=np.ones((3, 3)))
     if n <= 1:
         return mask
+    if PICK is not None:
+        # yan yana duran iki kişiden belirtileni: noktayı içeren ya da ona en yakın parça
+        x, y = PICK
+        k = int(lab[y, x])
+        if k == 0:
+            idx = ndimage.distance_transform_edt(lab == 0, return_indices=True)[1]
+            k = int(lab[idx[0][y, x], idx[1][y, x]])
+        return lab == k
     sizes = ndimage.sum(mask, lab, range(1, n + 1))
     return lab == (int(np.argmax(sizes)) + 1)
 
@@ -98,6 +109,8 @@ def do_room(it: dict, res: int, out_dir: Path) -> dict:
 
 
 def do_char(it: dict, res: int, out_dir: Path) -> dict:
+    global PICK
+    PICK = tuple(it["pick"]) if it.get("pick") else None
     src = np.asarray(Image.open(it["source"]).convert("RGB")).astype(int)
     h = src.shape[0]
     obj = (np.abs(src - BG).sum(-1) > 18) & (np.abs(src - SHADOW).sum(-1) > 12)

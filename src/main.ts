@@ -2,6 +2,7 @@ import { Application, Assets, Container, Texture, TextureStyle } from "pixi.js";
 import { BALANCE } from "./content/balance";
 import { homeStudio } from "./content/rooms/homeStudio";
 import { homeStudioCartoon } from "./content/rooms/homeStudioCartoon";
+import { officeDistrictCartoon } from "./content/rooms/officesCartoon";
 import { getArtStyle, setArtStyle } from "./platform/artStyle";
 import { roomLife } from "./ui/roomLife";
 import { officeCentral, officeDistrict } from "./content/rooms/offices";
@@ -13,7 +14,7 @@ import { Floaters } from "./render/floaters";
 import { RoomScene, spriteTop, type Actor } from "./render/RoomScene";
 import { calendarAt } from "./sim/calendar";
 import { createState, type GameState, type SimEvent } from "./sim/state";
-import { ROLE_IDS, ROLE_SPRITE } from "./content/staff";
+import { ROLE_IDS, ROLE_SPRITE, ROLE_SPRITE_CARTOON } from "./content/staff";
 import { clearStorage, loadFromStorage, saveToStorage } from "./platform/save";
 import { advance } from "./sim/step";
 import { applyCommand, type Command } from "./sim/commands";
@@ -51,7 +52,7 @@ function staffSprites(state: GameState): string[] {
   const members = state.staff.members;
   const firsts = ROLE_IDS.map((r) => members.find((m) => m.role === r)).filter((m) => m !== undefined);
   const rest = members.filter((m) => !firsts.includes(m));
-  return [...firsts, ...rest].map((m) => ROLE_SPRITE[m.role]);
+  return [...firsts, ...rest].map((m) => (artStyle === "cartoon" ? ROLE_SPRITE_CARTOON : ROLE_SPRITE)[m.role]);
 }
 
 async function boot() {
@@ -66,14 +67,14 @@ async function boot() {
   const manifest: SpriteManifest = await (await fetch(`${base}assets/sprites/manifest.json`)).json();
   availableSprites = new Set(Object.keys(manifest.sprites));
 
-  const rooms = [homeStudio, homeStudioCartoon, officeDistrict, officeCentral];
+  const rooms = [homeStudio, homeStudioCartoon, officeDistrict, officeDistrictCartoon, officeCentral];
   const needed = new Set(rooms.flatMap((r) => [...(r.background ? [r.background] : []), ...r.placements.map((p) => p.sprite)]));
   // odanın poz varyantları (seans, masa başı): manifest'te varsa
   for (const r of rooms) for (const n of [...Object.values(r.poses?.session ?? {}), ...(r.poses?.desk ? [r.poses.desk] : [])]) if (manifest.sprites[n]) needed.add(n);
   // öğrenci karakterleri ve bekleme kareleri (varsa)
   for (const name of Object.keys(manifest.sprites)) if (name.startsWith("char_student_")) needed.add(name);
   // personelin rol görünümleri (sprite'ı olmayan rol yuvanın varsayılan sprite'ıyla çizilir)
-  for (const name of Object.values(ROLE_SPRITE)) if (manifest.sprites[name]) needed.add(name);
+  for (const name of [...Object.values(ROLE_SPRITE), ...Object.values(ROLE_SPRITE_CARTOON)]) if (manifest.sprites[name]) needed.add(name);
   const textures = new Map<string, Texture>();
   await Promise.all(
     [...needed].map(async (name) => {
@@ -439,7 +440,7 @@ function studentSprite(archetype: string, id: string): string {
 
 function roomFor(state: GameState): RoomDef {
   if (state.office === "central") return officeCentral;
-  if (state.office === "district") return officeDistrict;
+  if (state.office === "district") return artStyle === "cartoon" && availableSprites.has(officeDistrictCartoon.background!) ? officeDistrictCartoon : officeDistrict;
   // tarz denemesi yalnız ev odasını kapsıyor; ofisler pixel art kalır
   return artStyle === "cartoon" && availableSprites.has(homeStudioCartoon.background!) ? homeStudioCartoon : homeStudio;
 }

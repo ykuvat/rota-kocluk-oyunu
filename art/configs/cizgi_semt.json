@@ -1,0 +1,17 @@
+{
+  "_note": "Çizgi film semt ofisi ve personel. Kaynak Gemini (art/inbox/cizgi/d*): d0 boş ofis (seans masalı) = arka plan; d2_* Buse + öğrenci seansta; d3 Buse masada; d4 dört personel ayakta (fark d0 -> d4). d1 ilk üretim, zum farklı olduğu için kullanılmadı. Ölçek ev odasıyla aynı (0.4752; karakterler odalar arasında aynı boyda) -> zemin 3x3 karo; dikey sıkıştırma 0.882. Sağ köşe su sebiliyle örtülü: simetrik varsayıldı.",
+  "out_dir": "art/sprites/cartoon/office_district",
+  "meta_name": "_meta.json",
+  "resolution": 2,
+  "items": [
+    {"name": "room_office_district_cartoon", "kind": "room", "source": "art/inbox/cizgi/d0_semt_bos_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "room_office_district_cartoon_s_anxious", "kind": "room", "source": "art/inbox/cizgi/d2_semt_seans_anxious_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "room_office_district_cartoon_s_messy", "kind": "room", "source": "art/inbox/cizgi/d2_semt_seans_messy_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "room_office_district_cartoon_s_quiet", "kind": "room", "source": "art/inbox/cizgi/d2_semt_seans_quiet_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "room_office_district_cartoon_desk", "kind": "room", "source": "art/inbox/cizgi/d3_semt_masa_v1.jpg", "scale": 0.4752, "squash": 0.882, "box": [60, 60, 964, 990], "floor": {"left": [107, 711], "right": [915, 711], "bottom": [511, 940]}},
+    {"name": "char_assistant_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_ofis/coach.png", "after": "art/inbox/cizgi/d4_semt_personel_v1.jpg", "before": "art/inbox/cizgi/d0_semt_bos_v1.jpg", "box": [415, 413], "scale": 0.4752, "floor_rgb": [229, 151, 68]},
+    {"name": "char_staff_secretary_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_ofis/secretary.png", "after": "art/inbox/cizgi/d4_semt_personel_v1.jpg", "before": "art/inbox/cizgi/d0_semt_bos_v1.jpg", "box": [518, 366], "pick": [63, 171], "erase": [[112, 0, 222, 401]], "scale": 0.4752, "floor_rgb": [229, 151, 68]},
+    {"name": "char_staff_counselor_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_ofis/counselor.png", "after": "art/inbox/cizgi/d4_semt_personel_v1.jpg", "before": "art/inbox/cizgi/d0_semt_bos_v1.jpg", "box": [518, 366], "pick": [161, 100], "erase": [[0, 0, 110, 401]], "scale": 0.4752, "floor_rgb": [229, 151, 68]},
+    {"name": "char_staff_teacher_cartoon_se", "kind": "char", "source": "art/inbox/cizgi/kesit_ofis/teacher.png", "after": "art/inbox/cizgi/d4_semt_personel_v1.jpg", "before": "art/inbox/cizgi/d0_semt_bos_v1.jpg", "box": [792, 582], "scale": 0.4752, "floor_rgb": [229, 151, 68]}
+  ]
+}
