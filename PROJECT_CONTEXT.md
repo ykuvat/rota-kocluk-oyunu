@@ -24,10 +24,9 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 ## Açık sorunlar
 - Karakterler yalnız SE (ve aynası SW) görünümlü; kuzeye yürürken de önden görünür. Yürüme kareleri yok.
 - Öğrenci kesitlerinde kenarda birkaç turuncu zemin pikseli.
-- İlk sezon hedef tutturma düşük (%21); güven oturmuş kurumda ~99'da doyuyor. Yaşam olaylarıyla good bot 3. sezon tutturma 0,51 (testin alt sınırı 0,5). 16 tohumda "pasif ilk yıl batar" 0,44 (eşik 0,5).
+- Denge (2026-10-25, 16 tohum): good tutturma 0,32/0,68/0,74, lean 0,32/0,67/0,69; güven ≤ 95 (veli memnuniyeti dinlenme düzeyi üstünde geri çekilir, `parent.satisfactionRest/Decay`). Sınırda: passive 1. sezon iflas 0,50 (eşik 0,50), good 2. sezon güven 94,4 (eşik 95). Ayrıntı: docs/gelistirme-gunlugu.md.
 - Merkez ofis seramik derzleri ızgarayla çakışmıyor.
 - Şubelerin ayrı sahnesi yok; personel yuvası semt 2, merkez 3 (fazlası odada görünmez).
-- Güven ~99'da doyduğu için kalite yatırımı (branş, rehber) gelire dolaylı dönmüyor; büyüme şubelerden geliyor.
 
 ## Sıradaki
 - Merkez ofis: sessiz öğrenci seansı ve masa başı pozu (Gemini sınırı sıfırlanınca; aynı sohbette m2 -> m3). Şube sahnesi.

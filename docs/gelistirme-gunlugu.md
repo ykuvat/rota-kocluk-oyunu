@@ -277,3 +277,22 @@ Uzman etkisi beceri / 60 ile ölçeklenir; uzmanlar yer (ofis + şube) başına 
 - Ölçüm (12 tohum, 3. sezon): good hitRate 0,51 (önce ~0,57), lean 0,59. Değişiklik bilerek zorlaştırıyor: bot sinyal→çare eşlemesiyle oynuyor, çeşitlilik onu yanıltıyor. `FULLGAME_SEEDS=16` ile "pasif ilk yıl batar ≥ 0,5" 0,44'te kalıyor; olaylar ve çekiliş kapalıyken de aynı (bu değişiklikten bağımsız).
 - `tests/lifeEvents.test.ts`: dağınık ve sessiz öğrencide 20 haftada en az 3 farklı sinyal üreten neden; süren olay varken ikincisi yok.
 - Ayarlar (☰, `ui/play/settings.ts`): dil (kalıcı, `platform/prefs.ts`), görsel tarz, kaydet, rehberi yeniden göster, ayrıntılı paneller (masaüstü), yeni oyun (sayfa içi onay). Önceden yalnız klavye kısayolu vardı. Telefonda rehber balonu üst çubuğun altında (`--hud-h`).
+
+## Denge düzeltmesi (2026-10-25)
+Sorun: 1. sezon tutturma ~%20, güven 2.–3. sezonda 92–99'da doyuyor, kalite yatırımı görünmüyor, pasif oyuncu 16 tohumda %44 batıyor. Ölçüm: `FULLGAME_SEEDS=16`, 12 ve 20 ile doğrulandı.
+- `balance.ts` parent: `expectationFloor` 40 → 55, `meetingStaleFactor` 0,5 → 0,25; yeni `satisfactionRest` 60 / `satisfactionDecay` 0,1 (veli memnuniyeti dinlenme düzeyinin üstünde haftalık %10 geri çekilir; `sim/parent.ts` tek satır. Plan dışı: yalnız taban/ÜYS ayarı lean botun güvenini 97–99'da bırakıyordu).
+- `business.ts`: `trustConvergence` 0,25 → 0,15.
+- `season.ts`: `trustPerSuccess` 3 → 2, `trustCap` 12 → 4, `targetBase` 24 → 22, `targetPerExpectation` 0,35 → 0,32.
+- `staff.ts`: `teacher.students` 12 → 18, `teacher.mastery` 3 → 6, `counselor.anxiety` −5 → −8, `counselor.motivation` 3 → 5, `STAFF.idealCaseload` 8 → 10, `qualityDivisor` 8 → 10 (büyüyen kurum ölçek cezasını daha az yiyor).
+
+| 16 tohum | önce | sonra |
+|---|---|---|
+| good hitRate s1 / s3 | 0,20 / 0,51 | 0,32 / 0,74 |
+| lean hitRate s3 | 0,59 | 0,69 |
+| good trust s2 / s3 | 93,7 / 92,5 | 94,4 / 89,6 |
+| lean trust s2 / s3 | 95,6 / 98,8 | 91,2 / 92,0 |
+| passive s1 bankrupt | 0,44 | 0,50 |
+| good worth s3 | 721k | 1.045k |
+| lean worth s3 | 521k | 588k |
+
+Ayrıntı ve adım adım ölçüm: `.kuvat/kor-rapor.md`. Not: passive iflas oranı 0,50 sınırda (12 tohum 0,58, 20 tohum 0,50).

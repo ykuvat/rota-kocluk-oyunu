@@ -15,12 +15,12 @@ export const UYS = {
   examDayAnxiety: 8,
   /** velinin hedef neti = taban + beklenti × çarpan */
   // 18 → 24: 3 sezon botunda iyi oyuncu 2. sezondan itibaren %100 tutturuyordu
-  targetBase: 24,
-  targetPerExpectation: 0.35,
+  targetBase: 22,
+  targetPerExpectation: 0.32,
   /** sonuçların kuruma etkisi */
-  trustPerSuccess: 3,
+  trustPerSuccess: 2,
   trustPerMiss: -2,
-  trustCap: 12,
+  trustCap: 4,
   awarenessPerSuccess: 3,
   /** hedefini tutturan ailenin yaz kaydı dönemi tavsiye olasılığı */
   referralChance: 0.5,

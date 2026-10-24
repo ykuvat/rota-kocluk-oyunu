@@ -66,6 +66,8 @@ export function updateParentWeekly(s: Student, week: number): ParentOutcome {
   const sinceMeeting = par.lastMeetingWeek === null ? week + 1 : week - par.lastMeetingWeek;
   if (needsContact && sinceMeeting >= p.contactWeeks) d += p.noContactPenalty;
   if (par.style === "distant") d *= 0.5; // ilgisiz veli az tepki verir
+  // memnuniyet tavanda doymasın: dinlenme düzeyinin üstünde haftalık geri çekilme (denge: iyi sonuç da veliyi %100'de tutmaz)
+  d -= Math.max(0, par.satisfaction - p.satisfactionRest) * p.satisfactionDecay;
   par.satisfaction = round1(clamp(par.satisfaction + d));
 
   if (needsContact && par.satisfaction < p.pressureBelow) {

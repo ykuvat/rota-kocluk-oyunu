@@ -89,7 +89,7 @@ export const REPUTATION = {
   awarenessDecay: 0.05,
   awarenessPerLead: 1.5,
   /** Güven: aktif öğrencilerin veli memnuniyeti ortalamasına doğru haftalık yakınsama; ayrılan her öğrenci ceza */
-  trustConvergence: 0.25,
+  trustConvergence: 0.15,
   trustPerLeave: -8,
   startTrust: 45,
 } as const;

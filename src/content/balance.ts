@@ -88,6 +88,9 @@ export const BALANCE = {
     initialSatisfaction: 58,
     /** algılanan gelişim − beklenti farkının haftalık memnuniyete etkisi */
     gapWeight: 0.08,
+    /** dinlenme düzeyinin üstündeki memnuniyet her hafta bu oranda geri çekilir (tavanda doyma) */
+    satisfactionRest: 60,
+    satisfactionDecay: 0.1,
     masteryDeltaWeight: 5, // 4 haftalık ortalama ustalık artışı başına
     complianceCenter: 0.6,
     complianceWeight: 50,
@@ -100,9 +103,9 @@ export const BALANCE = {
     meetingSatisfaction: 8,
     /** son görüşmeden bu kadar hafta geçmeden yapılan görüşme yarım etki eder */
     meetingFreshWeeks: 4,
-    meetingStaleFactor: 0.5,
+    meetingStaleFactor: 0.25,
     meetingExpectationAdjust: -4,
-    expectationFloor: 40,
+    expectationFloor: 55,
     /** memnuniyetsiz kaygılı/talepkâr veli çocuğa baskı yapar */
     pressureBelow: 50,
     pressureAnxiety: 2,

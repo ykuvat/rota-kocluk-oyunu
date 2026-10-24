@@ -58,17 +58,17 @@ export const SPECIALISTS = {
   counselor: {
     /** bir rehber öğretmenin haftada ilgilenebildiği öğrenci (en kaygılılardan başlar) */
     students: 16,
-    anxiety: -5,
-    motivation: 3,
+    anxiety: -8,
+    motivation: 5,
     parentWeekly: 0.8,
     /** tercih danışmanlığı kabulüne logit katkısı */
     preference: 0.8,
   },
   teacher: {
     /** bir branş öğretmeninin haftalık etüt kapasitesi (en zayıf öğrencilerden başlar) */
-    students: 12,
+    students: 18,
     /** en zayıf ön koşul konusuna haftalık ustalık (azalan getiriyle) */
-    mastery: 3,
+    mastery: 6,
     /** etüde alınan her öğrencinin ailesinden haftalık etüt ücreti (₺) */
     weeklyFee: 350,
   },
@@ -78,7 +78,7 @@ export const STAFF = {
   /** tam zamanlı haftalık saat */
   weeklyHours: 40,
   /** her koç için ideal vaka sayısı; üstünde o koçun öğrencilerinde takip kalitesi düşer */
-  idealCaseload: 8,
+  idealCaseload: 10,
   /** işveren maliyeti (SGK + vergi) brüt maaş üstüne */
   employerCostRate: 0.225,
   /** işten çıkarmada kıdem/ihbar (ay maaşı) */
@@ -89,7 +89,7 @@ export const STAFF = {
   /** beceri tahmini belirsizliği (± puan), oyuncu adayı yalnız aralık olarak görür */
   skillFog: 15,
   /** takip kalitesi: (beceri − 60) / bölen kadar haftalık güven/motivasyon etkisi */
-  qualityDivisor: 8,
+  qualityDivisor: 10,
   /** haftalık veli memnuniyeti etkisi: (beceri − 60) / bölen */
   parentQualityDivisor: 20,
   /** moral: maaş piyasanın altındaysa ve vaka fazlaysa düşer; eşiğin altında istifa riski */
