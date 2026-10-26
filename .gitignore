@@ -7,3 +7,4 @@ __pycache__/
 # reddedilen PixelLab denemeleri ve indirilen arşivler (kaynak değil)
 art/inbox/pixellab/
 *.zip
+.playwright-mcp/
