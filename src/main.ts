@@ -192,7 +192,7 @@ async function boot() {
   const business = new BusinessPanel(state, feedback);
   const inbox = new InboxPanel(state, feedback);
   const history = new HistoryPanel(state);
-  const report = new SeasonReportView(state, () => panel.render(true));
+  const report = new SeasonReportView(state, () => panel.render(true), () => startNewGame());
   const autopilot = new Autopilot(state);
   const decisions = new DecisionPanel(state);
   const summary = new WeekSummary(state, () => undefined);

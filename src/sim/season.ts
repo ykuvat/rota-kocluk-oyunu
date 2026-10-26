@@ -1,7 +1,9 @@
 // Sezon döngüsü: Haziran'da ÜYS → sonuçlar, kurum itibarı, mezuniyet, sezon raporu → yeni sezon.
 // Öğrenciler 12. sınıftır; sınavdan sonra mezun olur, kurum yaz kayıt dalgasıyla yeni sezona hazırlanır.
 
+import { CAREER } from "../content/career";
 import { GRADES, UYS } from "../content/season";
+import { careerResult, type CareerResult } from "./career";
 import type { Rng } from "../core/rng";
 import { calendarAt, HOURS_PER_DAY, type CalendarInfo } from "./calendar";
 import type { TxCategory } from "./economy";
@@ -45,6 +47,8 @@ export interface SeasonReport {
   stage: number;
   staff: number;
   certs: number;
+  /** Yalnız final sezonunun (CAREER.seasons) raporunda dolu; eski kayıtlarda ve önceki sezonlarda yok. */
+  career?: CareerResult;
 }
 
 export interface SeasonState {
@@ -133,9 +137,11 @@ export function runFinalExam(state: GameState, rng: Rng): SeasonReport {
 
   const report = buildReport(state, results, active.length - sitters.length, ourRate);
   const season = state.season;
+  if (season.index === CAREER.seasons - 1) report.career = careerResult(state, ourRate);
   season.reports.push(report);
   season.pendingReport = report;
   emit(state, "seasonEnded", { season: season.index, graduated: results.length, hits });
+  if (report.career) emit(state, "careerEnded", { tier: report.career.tier, done: report.career.done });
 
   // yeni sezon
   season.index++;

@@ -18,7 +18,7 @@ export const STATE_VERSION = 11;
 export const NOTABLE = new Set([
   "studentEnrolled", "studentLeft", "parentWarning", "eventArrived", "eventResolved", "eventExpired", "eventFollowUp",
   "certEarned", "stageReached", "branchOpened", "staffHired", "staffQuit", "staffFired", "personalDebt", "coachOverloaded",
-  "examResult", "seasonEnded", "studentPromoted", "preferenceOpened", "preferenceClosed", "preferenceSold", "preferenceLost", "rivalMove", "rivalsBeaten", "rivalsLastPlace", "gameOver", "questDone",
+  "examResult", "seasonEnded", "studentPromoted", "preferenceOpened", "preferenceClosed", "preferenceSold", "preferenceLost", "rivalMove", "rivalsBeaten", "rivalsLastPlace", "gameOver", "questDone", "careerEnded",
 ]);
 export const HISTORY_LIMIT = 300;
 

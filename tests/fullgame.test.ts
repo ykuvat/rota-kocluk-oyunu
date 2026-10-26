@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import { averageRuns, formatTable } from "./bot";
 
 // 3 sezonluk tam oyun (≈ 2,8 yıl oyun zamanı). Tohum sayısı FULLGAME_SEEDS ile artırılabilir.
@@ -32,5 +32,11 @@ describe("tam oyun dengesi: 3 sezon", () => {
     expect(v(good, 2, "branches")).toBeGreaterThan(0.5);
     expect(v(good, 2, "worth")).toBeGreaterThan(v(lean, 2, "worth"));
     expect(v(lean, 2, "hitRate")).toBeGreaterThan(0.5);
+    // kariyer finali: makul oyuncu çoğunlukla Altın; kısa yol, pasiflik ve şubesiz oyun Altın değil
+    expect(v(good, 2, "gold")).toBeGreaterThanOrEqual(0.5);
+    expect(v(cheap, 2, "gold")).toBe(0);
+    expect(v(passive, 2, "gold")).toBe(0);
+    expect(v(lean, 2, "gold")).toBe(0);
   }, 180_000);
 });
+

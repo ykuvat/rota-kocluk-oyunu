@@ -1,4 +1,4 @@
-// Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
+﻿// Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
 // Strateji "good": makul oyuncu (sinyal okur, veliyle görüşür, büyür, ofis ve ekip kurar).
 // Strateji "lean": "good" gibi ama uzman almaz, şube açmaz (uzman/şube tuzak mı diye karşılaştırma).
 // Strateji "passive": aday kabul eder, program yazar, başka hiçbir şey yapmaz.
@@ -58,6 +58,8 @@ export interface SeasonMetrics {
   prefIncome: number;
   minWorth: number;
   bankrupt: number;
+  /** final kademesi (0 Koç … 3 Altın); final sezonu değilse -1 */
+  tier: number;
 }
 
 function price(state: GameState, strategy: Strategy): number {
@@ -176,9 +178,9 @@ export function playGame(seed: number, strategy: Strategy, seasons = 3): SeasonM
       const m: SeasonMetrics = {
         season: out.length, active: 0, graduated: 0, hitRate: null, avgNet: null, personal: state.economy.personal,
         business: state.economy.business, worth: state.economy.personal + state.economy.business, trust: state.reputation.trust,
-        stage: state.stage, staff: 0, specialists: 0, branches: state.branches.length, certs: state.coach.certs.length, leftEarly: 0, debtWeeks, prefIncome: 0, minWorth, bankrupt: 1,
+        stage: state.stage, staff: 0, specialists: 0, branches: state.branches.length, certs: state.coach.certs.length, leftEarly: 0, debtWeeks, prefIncome: 0, minWorth, bankrupt: 1, tier: -1,
       };
-      while (out.length < seasons) out.push({ ...m, season: out.length });
+      while (out.length < seasons) out.push({ ...m, season: out.length, tier: out.length === seasons - 1 ? 0 : -1 });
       break;
     }
     daily(state, strategy, day);
@@ -214,6 +216,7 @@ export function playGame(seed: number, strategy: Strategy, seasons = 3): SeasonM
         prefIncome,
         minWorth,
         bankrupt: 0,
+        tier: r.career ? r.career.done : -1,
       });
       debtWeeks = 0;
       minWorth = Infinity;
@@ -251,6 +254,7 @@ export function averageRuns(strategy: Strategy, seeds: number[], seasons = 3) {
       certs: m((x) => x.certs),
       leftEarly: m((x) => x.leftEarly),
       prefIncome: m((x) => x.prefIncome),
+      ...(i === seasons - 1 ? { coach: m((x) => (x.tier === 0 ? 1 : 0)), bronze: m((x) => (x.tier === 1 ? 1 : 0)), silver: m((x) => (x.tier === 2 ? 1 : 0)), gold: m((x) => (x.tier === 3 ? 1 : 0)) } : {}),
     });
   }
   return per;
@@ -260,3 +264,5 @@ export function formatTable(name: string, rows: Record<string, number | string>[
   const f = (v: number | string) => (typeof v === "number" ? (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString("tr-TR") : v.toFixed(2)) : v);
   return [`== ${name}`, ...rows.map((r) => Object.entries(r).map(([k, v]) => `${k}=${f(v)}`).join("  "))].join("\n");
 }
+
+

@@ -300,3 +300,8 @@ Ayrıntı ve adım adım ölçüm: `.kuvat/kor-rapor.md`. Not: passive iflas ora
 - Oyun modunda "Adaylar" sekmesi "İşletme" oldu: öğrenci yeri çubuğu, bekleyen aday sayısı (adaylar Kararlar kartlarında), haftalık koç saati puantajı (takip/çevre/içerik/boş; aşımda çizgili kırmızı), Çevre (Açık/Kapalı), İçerik (0/2/4/6 sa), Reklam (0/1.000/2.500/5.000 ₺) kartları; her kartta ne işe yaradığı ve bedeli. Kasa ve cep yan yana, aktarma düğmeleri açıklamalı. Sayı kutusu yok, dokunma hedefi ≥ 44 px.
 - Kayıttaki ara değerler (ör. içerik 3 sa) değiştirilmez; en yakın segment seçili görünür ve "şu anki ayar" notu çıkar.
 - Ayrıntı modunda eski görünüm aynen. Ayaz uyguladı, Börü denetledi (A1–A7 GEÇTİ).
+
+## Kariyer hedefi (2026-10-26)
+
+3. sezon ÜYS raporuna `career` eklenir: Başarı (ourRate >= 0,60), Güven (>= 85), Büyüme (>= 1 şube); tutturulan kart sayısı kademeyi belirler (Koç/Bronz/Gümüş/Altın). Eşikler `content/career.ts`; mantık `sim/career.ts`. Olay `careerEnded`. Denge ve kayıt şeması değişmedi.
+Ölçüm (16 tohum, 3. sezon kademe oranları coach/bronze/silver/gold): good 0/0/0,44/0,56; lean 0,13/0,13/0,75/0; passive 1/0/0/0; cheap 1/0/0/0; greedy 0,69/0,25/0,06/0. fullgame iddiaları: good Altın >= 0,5; cheap, passive, lean Altın 0.

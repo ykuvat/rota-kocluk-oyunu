@@ -8,6 +8,8 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 - Simülasyon: öğrenci, veli, ekonomi, huni, olaylar, sertifika, ofis, personel (yardımcı koç, sekreter, rehber, branş öğretmeni), şubeler (Aşama 4), ÜYS/sezon, tercih dönemi, rakipler, iflas. Kayıt şeması v11. 109 test (3 sezonluk denge botu dahil).
 - Görsel: ev stüdyosu + semt (4×4) / merkez (5×5) ofis arka planları; Buse, yardımcı koç, sekreter, rehber, branş öğretmeni, 3 öğrenci (Gemini, "Buse'li odaya ekle + fark" yöntemi). Buse ve yardımcı koçlar odada iş noktaları arasında yürür (`render/walkers.ts`, `RoomDef.workSpots/hub`), öğrenciler `studentSpots`'ta durur, arada etrafa bakar.
 
+- Kariyer: 3 sezon; 3. ÜYS'de final (karne + mühür): Başarı %60, Güven 85, Büyüme 1 şube → Koç/Bronz/Gümüş/Altın; `src/content/career.ts`, `src/sim/career.ts`. Devam et ile oyun sürer.
+
 ## Yayın
 - Depo: github.com/ykuvat/rota-kocluk-oyunu (herkese açık). Oynanabilir: https://ykuvat.github.io/rota-kocluk-oyunu/
 - `main`'e gönderim → `.github/workflows/pages.yml`: `npm ci`, `npm test`, `BASE_PATH=/<depo>/ npm run build`, Pages'e yayın. `art/sprites` commit'te olmalı (derleme sprite'ları oradan senkronlar).
