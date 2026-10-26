@@ -11,7 +11,8 @@ import { applyCommand, type CommandResult } from "../../sim/commands";
 import { averageInsight, causesLastWeek, dominantCauseLastWeek, SIGNALS, weeklySignals } from "../../sim/insight";
 import { stat, type MissCause, type Student } from "../../sim/student";
 import { activeLifeEvent } from "../../sim/lifeEvents";
-import { parentSignals } from "../../sim/parent";
+import { parentCallSignals } from "../../sim/parent";
+import { isStaffHandled } from "../../sim/staffDecisions";
 import { coachHours, findStudent, type GameState } from "../../sim/state";
 import { BRANCHES, CERTS } from "../../content/growth";
 import { SPECIALISTS, type StaffRole } from "../../content/staff";
@@ -340,7 +341,8 @@ export class DecisionPanel {
     }
 
     for (const st of s.students) {
-      if (st.left) continue;
+      // yardımcı koçuna atanmış öğrencinin müdahale ve veli işini koç yürütür (hafta sonu özetinde görünür)
+      if (st.left || isStaffHandled(s, st)) continue;
       // öğrencinin haftalık kararı: geçen haftanın sinyalleri ve üç olası çare
       const signals = weeklySignals(st);
       const key = `st:${st.id}:${week}`;
@@ -381,7 +383,7 @@ export class DecisionPanel {
 
       // huzursuz veli
       const pkey = `par:${st.id}:${week}`;
-      const psig = parentSignals(st, week).filter((x) => x === "signal.parentCalls" || x === "signal.parentCold" || x === "signal.parentComparesSibling");
+      const psig = parentCallSignals(st, week);
       if (psig.length && st.parent.lastMeetingWeek !== week && !this.dismissed.has(pkey)) {
         cards.push({
           key: pkey,

@@ -1,4 +1,4 @@
-﻿// Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
+// Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
 // Strateji "good": makul oyuncu (sinyal okur, veliyle görüşür, büyür, ofis ve ekip kurar).
 // Strateji "lean": "good" gibi ama uzman almaz, şube açmaz (uzman/şube tuzak mı diye karşılaştırma).
 // Strateji "passive": aday kabul eder, program yazar, başka hiçbir şey yapmaz.
@@ -17,6 +17,7 @@ import { startCareer } from "../src/sim/funnel";
 import { activeCount, branchBlocker, capacity, placesMonthly } from "../src/sim/growth";
 import { weeklySignals } from "../src/sim/insight";
 import { caseload, coaches, membersOf } from "../src/sim/staff";
+import { isStaffHandled } from "../src/sim/staffDecisions";
 import { coachHours, createState, type GameState } from "../src/sim/state";
 import { advance } from "../src/sim/step";
 
@@ -95,7 +96,7 @@ function daily(state: GameState, strategy: Strategy, day: number): void {
       const s = state.students.find((x) => x.id === r.id)!;
       // ekibe dağıt: Buse'nin yükü idealdeyse boş kapasitesi olan yardımcıya
       if (smart && caseload(state, undefined) >= 7) {
-        const m = coaches(state).find((x) => caseload(state, x.id) < STAFF.idealCaseload);
+        const m = coaches(state).filter((x) => caseload(state, x.id) < STAFF.idealCaseload).sort((a, b) => b.skill - a.skill)[0];
         if (m) applyCommand(state, { type: "assignCoach", studentId: s.id, coachId: m.id });
       }
     }
@@ -111,7 +112,8 @@ function weekly(state: GameState, strategy: Strategy, week: number): void {
   const smart = strategy !== "passive";
   for (const s of state.students.filter((x) => !x.left)) {
     if (!s.program.length || (smart && week % 4 === 0)) applyCommand(state, { type: "setProgram", studentId: s.id, blocks: balancedProgram(s) });
-    if (!smart) continue;
+    // atanmış öğrencinin müdahale ve veli işini yardımcı koç yürütür; oyuncu gibi bot da karışmaz
+    if (!smart || isStaffHandled(state, s)) continue;
     const sig = weeklySignals(s)[0];
     if (sig && SIGNAL_TO_IV[sig]) applyCommand(state, { type: "intervene", studentId: s.id, intervention: SIGNAL_TO_IV[sig] });
     if (week % 3 === 0) applyCommand(state, { type: "parentMeeting", studentId: s.id });

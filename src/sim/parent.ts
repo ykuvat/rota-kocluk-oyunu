@@ -103,6 +103,10 @@ export function parentSignals(s: Student, week: number): string[] {
   return out;
 }
 
+/** Karar kartı / yardımcı koç görüşmesi için sayılan veli sinyalleri. */
+export const parentCallSignals = (s: Student, week: number): string[] =>
+  parentSignals(s, week).filter((x) => x === "signal.parentCalls" || x === "signal.parentCold" || x === "signal.parentComparesSibling");
+
 export function satisfactionWord(v: number): string {
   return v >= 70 ? "parent.happy" : v >= 45 ? "parent.unsure" : v >= 25 ? "parent.uneasy" : "parent.angry";
 }

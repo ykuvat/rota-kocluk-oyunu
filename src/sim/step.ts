@@ -19,6 +19,7 @@ import { seasonHourly } from "./season";
 import { preferenceHourly } from "./market";
 import { checkQuests } from "./quests";
 import { pruneMarket } from "./marketEffects";
+import { staffWeeklyDecisions } from "./staffDecisions";
 import { expireLeads, updateReputation, weeklyPlanning } from "./funnel";
 import type { StateStat } from "./student";
 import { pruneExpired } from "./modifiers";
@@ -109,6 +110,8 @@ export function advance(state: GameState, hours: number): void {
       refreshCandidates(state, rng);
       // yeni hafta: koç saatlerini sıfırla, öğrenci takibini ve pazarlamayı planla, adayları üret
       weeklyPlanning(state, rng);
+      // atanmış öğrencilerin müdahale ve veli işini yardımcı koçlar yürütür
+      staffWeeklyDecisions(state, rng);
       // uzmanların bu haftaki işi (sekreter, rehber, branş öğretmeni)
       specialistsWeekly(state);
     }

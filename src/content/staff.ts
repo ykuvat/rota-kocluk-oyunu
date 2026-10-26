@@ -100,6 +100,15 @@ export const STAFF = {
   quitChance: 0.35,
 } as const;
 
+/** Yardımcı koçun kendi öğrencilerinin haftalık müdahale ve veli kararı: doğru çareyi seçme olasılığı beceriyle artar. */
+export const DELEGATION = {
+  /** bu beceride isabet `hitLow`, bu beceride `hitHigh`; arası doğrusal */
+  skillLow: 30,
+  skillHigh: 90,
+  hitLow: 0.4,
+  hitHigh: 0.85,
+} as const;
+
 /** Rol sprite'ının cinsiyeti (isim buna göre seçilir): yardımcı koç ve rehber erkek, sekreter ve branş öğretmeni kadın çizildi. */
 export const ROLE_GENDER: Record<StaffRole, "f" | "m"> = { coach: "m", secretary: "f", counselor: "m", teacher: "f" };
 export const STAFF_FIRST_NAMES_F = ["Elif", "Zeynep", "Ayşe", "Selin", "İrem", "Nehir", "Gizem", "Burcu"] as const;

@@ -8,3 +8,4 @@ __pycache__/
 art/inbox/pixellab/
 *.zip
 .playwright-mcp/
+art/3d/vendor/

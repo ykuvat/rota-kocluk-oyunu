@@ -3,11 +3,11 @@
 
 import { ARCHETYPES } from "../content/archetypes";
 import { BALANCE } from "../content/balance";
-import { TOPIC_BY_ID, TOPICS } from "../content/curriculum";
+import { TOPIC_BY_ID } from "../content/curriculum";
 import { INSIGHT, INTERVENTIONS, INTERVIEW_TOPICS, type InterventionId } from "../content/interventions";
 import { createRng } from "../core/rng";
-import { calendarAt, HOURS_PER_DAY } from "./calendar";
-import { addInsight, dominantCauseLastWeek } from "./insight";
+import { calendarAt } from "./calendar";
+import { addInsight } from "./insight";
 import { holdParentMeeting } from "./parent";
 import { ECONOMY, FUNNEL } from "../content/business";
 import { transfer } from "./economy";
@@ -19,7 +19,8 @@ import { declinePreference, preferenceSession } from "./market";
 import { marketConversion } from "./marketEffects";
 import { conversionProbability, enrollFromLead } from "./funnel";
 import { emit, findStudent, spendCoachHours, type GameState } from "./state";
-import { generateStudent, stat, sustainableHours, type ProgramBlock, type StateStat, type Student } from "./student";
+import { applyIntervention } from "./intervention";
+import { generateStudent, stat, type ProgramBlock } from "./student";
 
 export type Command =
   | { type: "addStudent"; archetype: string }
@@ -48,42 +49,6 @@ export type CommandResult =
   | { ok: false; error: string };
 
 const fail = (error: string): CommandResult => ({ ok: false, error });
-
-const round1 = (v: number) => Math.round(v * 10) / 10;
-const clamp = (v: number) => Math.min(100, Math.max(0, v));
-
-/** Programı günlük sürdürülebilir yükün altına indirir: her gün en uzun bloklardan kırpar. */
-export function simplifiedProgram(s: Student, now: number): ProgramBlock[] {
-  const out: ProgramBlock[] = [];
-  for (let d = 0; d < 7; d++) {
-    let left = Math.max(1, Math.floor(sustainableHours(s, now, d) * 2) / 2);
-    for (const b of s.program.filter((x) => x.weekday === d)) {
-      if (left <= 0) break;
-      const hours = Math.min(b.hours, left);
-      out.push({ ...b, hours });
-      left -= hours;
-    }
-  }
-  return out;
-}
-
-/** Ön koşulu en zayıf olan konu (ders desteği buraya yapılır). */
-function weakestFoundation(s: Student): string {
-  const studied = new Set(s.program.map((b) => b.topicId));
-  let best = TOPICS[0].id;
-  let bestGap = -Infinity;
-  for (const t of TOPICS) {
-    if (!studied.has(t.id)) continue;
-    for (const p of [t.id, ...t.prereqs]) {
-      const gap = TOPIC_BY_ID[p].difficulty - (s.mastery[p] ?? 0);
-      if (gap > bestGap) {
-        bestGap = gap;
-        best = p;
-      }
-    }
-  }
-  return best;
-}
 
 export function applyCommand(state: GameState, cmd: Command): CommandResult {
   if ("studentId" in cmd && findStudent(state, cmd.studentId)?.left) return fail("student.left");
@@ -238,46 +203,7 @@ export function applyCommand(state: GameState, cmd: Command): CommandResult {
       if (def.minTrust !== undefined && stat(s, "trust", state.hour).value < def.minTrust) return fail("intervention.lowTrust");
       if (!spendCoachHours(state, def.hours)) return fail("coach.noTime");
 
-      const cause = dominantCauseLastWeek(s);
-      // ilk haftada henüz veri yok: nötr kabul edilir (ceza yok, tam etki yok)
-      const matched = cause !== null && def.targets.includes(cause);
-      const factorFit = cause === null ? 0.75 : matched ? 1 : INSIGHT.mismatchFactor;
-      const source = `iv.${def.id}`;
-      const repeats = s.mods.filter((m) => m.source === source && (m.until ?? 0) > state.hour).length;
-      // aynı hafta üst üste müdahale: etki azalır, belli sayıdan sonra baskıya dönüşür
-      const k = (s.ivThisWeek ?? 0) + 1;
-      s.ivThisWeek = k;
-      const crowd = 1 / (1 + INSIGHT.crowding * (k - 1));
-      if (k > INSIGHT.pressureAfter) {
-        s.base.anxiety = round1(clamp(s.base.anxiety + INSIGHT.pressureAnxiety));
-        s.base.trust = round1(clamp(s.base.trust + INSIGHT.pressureTrust));
-      }
-      const factor = ((factorFit * crowd) / (1 + repeats)) * certEffect(state, "interventionFactor");
-      const until = state.hour + def.durationDays * HOURS_PER_DAY;
-
-      for (const [k, amount] of Object.entries(def.effects) as [StateStat, number][]) {
-        s.mods.push({ stat: k, source, add: round1(amount * factor), until });
-        // doğru teşhis birikir: etkinin bir kısmı kalıcı alışkanlık değişimine dönüşür
-        if (matched) s.base[k] = round1(clamp(s.base[k] + amount * factor * INSIGHT.matchPermanentShare));
-      }
-      for (const [k, amount] of Object.entries(def.baseEffects ?? {}) as [StateStat, number][]) {
-        s.base[k] = round1(clamp(s.base[k] + amount * factor));
-      }
-      if (def.id === "simplifyProgram") s.program = simplifiedProgram(s, state.hour);
-      if (def.id === "subjectSupport") {
-        const topic = weakestFoundation(s);
-        const u = s.mastery[topic] ?? 0;
-        s.mastery[topic] = round1(clamp(u + BALANCE.sessions.subject.masteryBoost * factor * (1 - u / 100) * 2));
-        s.lastStudiedDay[topic] = calendarAt(state.hour).dayIndex;
-      }
-      if (cause !== null) {
-        s.mods.push({
-          stat: "trust",
-          source: matched ? "iv.matched" : "iv.mismatched",
-          add: matched ? INSIGHT.matchTrust : INSIGHT.mismatchTrust,
-          until: state.hour + 14 * HOURS_PER_DAY,
-        });
-      }
+      const { matched, cause } = applyIntervention(state, s, def, certEffect(state, "interventionFactor"));
       emit(state, "intervention", { id: s.id, intervention: def.id, matched, cause });
       return { ok: true, matched };
     }

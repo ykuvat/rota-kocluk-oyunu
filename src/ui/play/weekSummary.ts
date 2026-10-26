@@ -4,7 +4,7 @@
 import { tf, tk } from "../../platform/i18n";
 import { calendarAt } from "../../sim/calendar";
 import type { TxCategory } from "../../sim/economy";
-import type { GameState } from "../../sim/state";
+import { findStudent, type GameState } from "../../sim/state";
 import { isBadNotice, noticeText } from "../notices";
 import { fmt, MOOD_ICON, moodOf, parentFace } from "./common";
 import type { DecisionRecord } from "./decisions";
@@ -103,6 +103,21 @@ export class WeekSummary {
           .join("")
       : `<div class="muted">${tk("week.noDecisions")}</div>`;
 
+    // ekibin kararları: atanmış öğrencilerin müdahale ve veli işini yardımcı koçlar yürüttü
+    const teamHtml = s.history
+      .filter((e) => e.hour > snap.hour && (e.type === "staffIntervention" || e.type === "staffParentMeeting"))
+      .map((e) => {
+        const d = e.data as Record<string, unknown>;
+        const stu = findStudent(s, String(d.id))?.name.split(" ")[0] ?? "";
+        const who = `${stu} · ${String(d.staff ?? "")}`;
+        if (e.type === "staffParentMeeting") return `<div class="line"><span>${who}: ${tk("week.teamParent")}</span><span class="ok">✓</span></div>`;
+        const what = tk(`card.iv.${d.intervention}`);
+        return d.matched
+          ? `<div class="line"><span>${who}: ${what}</span><span class="ok">✓ ${tk("week.worked")}</span></div>`
+          : `<div class="line"><span>${who}: ${what}</span><span class="bad">✗ ${tf("week.missed", { cause: tk(`cause.${d.cause}`) })}</span></div>`;
+      })
+      .join("");
+
     // öğrenciler
     const active = s.students.filter((x) => !x.left);
     const stHtml = active.length
@@ -151,6 +166,7 @@ export class WeekSummary {
 
     this.el.innerHTML = `<div class="box"><h2>${tf("week.title", { n: week })}</h2>
       <h4>${tk("week.yourDecisions")}</h4>${decHtml}
+      ${teamHtml ? `<h4>${tk("week.teamDecisions")}</h4>${teamHtml}` : ""}
       <h4>${tk("week.students")}</h4>${stHtml}
       ${happened ? `<h4>${tk("week.happened")}</h4>${happened}` : ""}
       <h4>${tk("week.moneyTitle")}</h4>${moneyHtml}

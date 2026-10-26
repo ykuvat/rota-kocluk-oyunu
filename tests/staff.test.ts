@@ -61,7 +61,9 @@ describe("personel", () => {
     for (let i = 0; i < 4; i++) applyCommand(s, { type: "addStudent", archetype: "quiet_drifter" });
     for (const st of s.students.slice(0, 3)) applyCommand(s, { type: "assignCoach", studentId: st.id, coachId: m.id });
     advance(s, HOURS_PER_WEEK);
-    expect(m.usedThisWeek).toBe(3 * COACHING.followUpHours);
+    // takip + (sinyal varsa) koçun kendi müdahale ve veli saatleri; hepsi koçun haftalık saatini aşmaz
+    expect(m.usedThisWeek).toBeGreaterThanOrEqual(3 * COACHING.followUpHours);
+    expect(m.usedThisWeek).toBeLessThanOrEqual(STAFF.weeklyHours);
     expect(s.coach.usedThisWeek).toBe(1 * COACHING.followUpHours);
     expect(caseload(s, m.id)).toBe(3);
     expect(s.students[0].mods.some((x) => x.source === "staff.quality" && (x.add ?? 0) > 0)).toBe(true);
