@@ -1,0 +1,88 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: Kararlar
+      - generic [ref=e7]: "2"
+      - generic "Buse'nin bu haftaki koçluk saati. Her seçim saat harcar; saat bitince yeni bir şey yapılamaz, Pazartesi yenilenir." [ref=e8]: ⏱ 50/50 sa boş
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: 👋
+          - generic [ref=e13]: "Yeni aday: Kaan Doğan"
+        - generic [ref=e14]: 12. sınıf · Tanıdık. Ailesi koçluk istiyor; 7 gün içinde karar vermezsen başka yere gider.
+        - generic [ref=e15]:
+          - button "Uygun fiyat 4.500 ₺/ay" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]: Uygun fiyat
+            - generic [ref=e18]: 4.500 ₺/ay
+          - button "Normal fiyat 6.000 ₺/ay" [ref=e19] [cursor=pointer]:
+            - generic [ref=e20]: Normal fiyat
+            - generic [ref=e21]: 6.000 ₺/ay
+          - button "Premium 8.500 ₺/ay" [ref=e22] [cursor=pointer]:
+            - generic [ref=e23]: Premium
+            - generic [ref=e24]: 8.500 ₺/ay
+          - button "Şimdi değil" [ref=e25] [cursor=pointer]
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: 👋
+          - generic [ref=e30]: "Yeni aday: Kaan Şahin"
+        - generic [ref=e31]: 12. sınıf · Tanıdık. Ailesi koçluk istiyor; 7 gün içinde karar vermezsen başka yere gider.
+        - generic [ref=e32]:
+          - button "Uygun fiyat 4.500 ₺/ay" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: Uygun fiyat
+            - generic [ref=e35]: 4.500 ₺/ay
+          - button "Normal fiyat 6.000 ₺/ay" [ref=e36] [cursor=pointer]:
+            - generic [ref=e37]: Normal fiyat
+            - generic [ref=e38]: 6.000 ₺/ay
+          - button "Premium 8.500 ₺/ay" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: Premium
+            - generic [ref=e41]: 8.500 ₺/ay
+          - button "Şimdi değil" [ref=e42] [cursor=pointer]
+    - generic [ref=e44]:
+      - button "▶ Haftayı başlat" [ref=e45] [cursor=pointer]
+      - generic [ref=e46]: 2 karar bekliyor — istersen önce onlara bak
+  - generic [ref=e47]: Henüz öğrencin yok. Kararlar bölümündeki adaylardan biriyle tanış!
+  - generic [ref=e49]:
+    - generic [ref=e76]:
+      - generic [ref=e77]: Pazartesi · 7.9.2026
+      - generic [ref=e78]: 1. hafta
+      - generic [ref=e79]:
+        - button "Geçmiş" [ref=e80] [cursor=pointer]
+        - button "Ayarlar" [ref=e81] [cursor=pointer]: ☰
+    - generic [ref=e82]:
+      - generic [ref=e83]: 💰 25.000 ₺
+      - generic "İtibar" [ref=e84]: ★★☆☆☆
+    - generic [ref=e85]: bu ay -26.020 ₺
+    - generic [ref=e86]: "🎯 Sezon hedefi: öğrencilerin ÜYS'de hedefini tuttursun · 285 gün kaldı"
+    - generic [ref=e87]:
+      - generic [ref=e88]: Hedefler
+      - generic [ref=e89]:
+        - generic [ref=e90]: ○ İlk öğrencini kaydet
+        - generic [ref=e91]: +2.000 ₺
+      - generic [ref=e92]:
+        - generic [ref=e93]: ○ Bir öğrencine haftalık karar ver
+        - generic [ref=e94]: +2 itibar
+      - generic [ref=e95]:
+        - generic [ref=e96]: ○ Bir veliyle tanış
+        - generic [ref=e97]: +2 itibar
+  - generic [ref=e98]:
+    - generic [ref=e99]:
+      - generic [ref=e100]: Ayarlar
+      - button "✕" [ref=e101] [cursor=pointer]
+    - generic [ref=e102]:
+      - generic [ref=e103]: Dil
+      - generic [ref=e104]:
+        - button "Türkçe" [ref=e105] [cursor=pointer]
+        - button "English" [ref=e106] [cursor=pointer]
+    - generic [ref=e107]:
+      - generic [ref=e108]: Görsel tarz
+      - generic [ref=e109]:
+        - button "Çizgi film" [ref=e110] [cursor=pointer]
+        - button "Piksel" [ref=e111] [cursor=pointer]
+    - generic [ref=e112]:
+      - button "💾 Oyunu kaydet" [ref=e113] [cursor=pointer]
+      - button "📘 Rehberi yeniden göster" [ref=e114] [cursor=pointer]
+      - button "🔍 Ayrıntılı paneller (eski görünüm)" [ref=e115] [cursor=pointer]
+      - button "🗑 Yeni oyun" [ref=e116] [cursor=pointer]
+  - generic [ref=e73]:
+    - text: "Merhaba, ben Buse! Üniversite sınavına (ÜYS) hazırlanan öğrencilere koçluk yapacağım. İlk işim öğrenci bulmak: Kararlar bölümündeki aday kartında bir fiyat seç. Fiyat ne kadar uygunsa aile o kadar kolay kabul eder."
+    - button "Eğitimi geç" [ref=e75] [cursor=pointer]

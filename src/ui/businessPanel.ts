@@ -1,6 +1,6 @@
 // İşletme paneli (sol alt): adaylar, pazarlama, para. Durumu yalnız komutlarla değiştirir.
 
-import { COACHING, ECONOMY } from "../content/business";
+import { COACHING, ECONOMY, FUNNEL } from "../content/business";
 import { BRANCHES, CERTS, OFFICES, STAGES } from "../content/growth";
 import { errorText, roleDesc } from "./play/decisions";
 import { activeCount, branchBlocker, branchTrust, capacity } from "../sim/growth";
@@ -30,9 +30,50 @@ const css = `
 #business-panel .prog{flex:1}
 #business-panel .pbar{height:8px;background:rgba(0,0,0,.3);border-radius:4px;overflow:hidden;margin-top:4px}
 #business-panel .pbar span{display:block;height:100%;background:#f4bd62;border-radius:4px}
+/* oyun modu "İşletme" sekmesi: kartlar, büyük adımlı seçimler, haftalık saat puantajı */
+body.play #business-panel.open .bz{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+body.play #business-panel.open .bz .cd{background:var(--card);border-radius:14px;padding:12px 14px;min-width:0}
+body.play #business-panel.open .bz .cd h4{margin:0 0 4px;font-size:15px;font-weight:800;color:var(--ink)}
+body.play #business-panel.open .bz .what{margin:0 0 10px;color:var(--soft);font-size:13px}
+body.play #business-panel.open .bz .note{margin:8px 0 0;font-size:13px;color:var(--muted)}
+body.play #business-panel.open .bz .note.bad{color:var(--bad)}
+body.play #business-panel.open .bz h3{margin:6px 0 0}
+body.play #business-panel.open .bz .seg{display:flex;gap:6px}
+body.play #business-panel.open .bz .seg button{flex:1 1 0;min-width:0;min-height:44px;padding:8px 4px;white-space:nowrap}
+body.play #business-panel.open .bz .seg button.on{background:var(--accent);color:#3a2410}
+body.play #business-panel.open .bz .row2{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+body.play #business-panel.open .bz .row2 b{font-size:15px}
+body.play #business-panel.open .bz .cap{height:10px;background:rgba(0,0,0,.28);border-radius:6px;overflow:hidden;margin-top:6px}
+body.play #business-panel.open .bz .cap span{display:block;height:100%;background:var(--accent);border-radius:6px}
+body.play #business-panel.open .bz .cap.full span{background:var(--bad)}
+body.play #business-panel.open .bz .hrs{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin:10px 0 8px}
+body.play #business-panel.open .bz .hrs i{display:block;aspect-ratio:1;border-radius:3px;background:rgba(255,240,225,.10);transition:background .25s}
+body.play #business-panel.open .bz .hrs i.f{background:var(--accent)}
+body.play #business-panel.open .bz .hrs i.n{background:var(--good)}
+body.play #business-panel.open .bz .hrs i.c{background:var(--soft)}
+body.play #business-panel.open .bz .hrs i.x{background:repeating-linear-gradient(45deg,var(--bad) 0 3px,transparent 3px 6px);outline:1px solid var(--bad)}
+body.play #business-panel.open .bz .lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--soft)}
+body.play #business-panel.open .bz .lg span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--k)}
+body.play #business-panel.open .bz .acc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.play #business-panel.open .bz .acc > div{background:rgba(0,0,0,.18);border-radius:12px;padding:10px 12px;min-width:0}
+body.play #business-panel.open .bz .acc .v{display:block;font-size:19px;font-weight:800;color:var(--ink);margin:2px 0}
+body.play #business-panel.open .bz .acc .v.neg{color:var(--bad)}
+body.play #business-panel.open .bz .acc small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+body.play #business-panel.open .bz .mv{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+body.play #business-panel.open .bz .mv button{min-height:44px;text-align:left}
+body.play #business-panel.open .tabs button{min-height:40px}
+@media (max-width:760px){body.play #business-panel.open .bz .seg button{font-size:13px}}
+@media (prefers-reduced-motion:reduce){body.play #business-panel.open .bz .hrs i{transition:none}}
 `;
 
 const fmt = (v: number) => Math.round(v).toLocaleString("tr-TR");
+
+/** Oyun modunda büyük adımlı pazarlama seçenekleri. */
+const ORGANIC_STEPS = [0, 2, 4, 6] as const;
+const PAID_STEPS = [0, 1_000, 2_500, 5_000] as const;
+/** Kayıttaki değere en yakın seçenek (değer kendiliğinden değiştirilmez, yalnız "on" gösterilir). */
+const nearest = (steps: readonly number[], v: number) => steps.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+const isPlay = () => document.body.classList.contains("play");
 
 export class BusinessPanel {
   private readonly el: HTMLDivElement;
@@ -98,6 +139,16 @@ export class BusinessPanel {
       case "paid":
         cmd = { type: "setMarketing", networkActive: m.networkActive, organicHours: m.organicHours, paidBudget: Math.max(0, m.paidBudget + Number(d.delta)) };
         break;
+      // oyun modu: segment düğmeleri doğrudan hedef değeri verir
+      case "mkNet":
+        cmd = { type: "setMarketing", networkActive: d.v === "1", organicHours: m.organicHours, paidBudget: m.paidBudget };
+        break;
+      case "mkOrg":
+        cmd = { type: "setMarketing", networkActive: m.networkActive, organicHours: Number(d.v), paidBudget: m.paidBudget };
+        break;
+      case "mkPaid":
+        cmd = { type: "setMarketing", networkActive: m.networkActive, organicHours: m.organicHours, paidBudget: Number(d.v) };
+        break;
       case "draw":
         cmd = { type: "transfer", amount: 5_000 };
         break;
@@ -141,17 +192,26 @@ export class BusinessPanel {
   render(force = false): void {
     const s = this.state;
     const m = s.marketing;
-    const key = `${this.tab}|${s.hour}|${s.leads.length}|${s.coach.usedThisWeek}|${m.organicHours}|${m.paidBudget}|${m.networkActive}|${getLocale()}`;
+    const play = isPlay();
+    // oyun modunda bakiye, kapasite ve takipçi de görünür: değişince yeniden çizilsin
+    const extra = play
+      ? `|p|${s.economy.business}|${s.economy.personal}|${capacity(s)}|${activeCount(s)}|${m.networkLeft}|${Math.round(m.followers)}|${coachHours(s)}`
+      : "";
+    const key = `${this.tab}|${s.hour}|${s.leads.length}|${s.coach.usedThisWeek}|${m.organicHours}|${m.paidBudget}|${m.networkActive}|${getLocale()}${extra}`;
     if (!force && key === this.lastKey) return;
     this.lastKey = key;
     // odakta bir fiyat kutusu varsa yazarken yeniden çizme
     if (!force && this.el.contains(document.activeElement) && document.activeElement?.tagName === "INPUT") return;
 
-    const tabs = `<div class="tabs"><button data-act="tab" data-tab="biz" class="${this.tab === "biz" ? "on" : ""}">${tk("biz.leads")}</button>
+    const tabs = `<div class="tabs"><button data-act="tab" data-tab="biz" class="${this.tab === "biz" ? "on" : ""}">${tk(play ? "bizp.tab" : "biz.leads")}</button>
       <button data-act="tab" data-tab="growth" class="${this.tab === "growth" ? "on" : ""}">${tk("growth.title")}</button>
       <button data-act="close" class="x" aria-label="✕">✕</button></div>`;
     if (this.tab === "growth") {
       this.el.innerHTML = tabs + this.growthHtml();
+      return;
+    }
+    if (play) {
+      this.el.innerHTML = tabs + this.playBizHtml();
       return;
     }
 
@@ -181,6 +241,93 @@ export class BusinessPanel {
         <button data-act="paid" data-delta="250">+</button></div>
       <div class="row muted">${tk("biz.capacity")}: ${caseload(s, undefined)} × ${COACHING.followUpHours} ${tk("panel.hours")} (${tk("hud.coachHours")} ${coachHours(s)})</div>
       <div class="row"><button data-act="draw">${tk("biz.draw")}</button><button data-act="deposit">${tk("biz.deposit")}</button></div>`;
+  }
+
+  /** Oyun modu "İşletme" sekmesi: kapasite + haftalık saat puantajı, pazarlama kartları, para, tercih/rakip. */
+  private playBizHtml(): string {
+    const s = this.state;
+    const m = s.marketing;
+
+    // haftalık saat puantajı: her kare bir koç saati
+    const total = coachHours(s);
+    const follow = caseload(s, undefined) * COACHING.followUpHours;
+    const net = m.networkActive && m.networkLeft > 0 ? FUNNEL.networkHours : 0;
+    const content = m.organicHours;
+    const planned = follow + net + content;
+    const over = Math.max(0, planned - total);
+    const cells: string[] = [];
+    for (let i = 0; i < Math.max(total, planned); i++) {
+      const c = i >= total ? "x" : i < follow ? "f" : i < follow + net ? "n" : i < planned ? "c" : "";
+      cells.push(`<i class="${c}"></i>`);
+    }
+    const legend = `<div class="lg"><span style="--k:var(--accent)">${tf("bizp.follow", { h: follow })}</span>
+      <span style="--k:var(--good)">${tf("bizp.network", { h: net })}</span><span style="--k:var(--soft)">${tf("bizp.content", { h: content })}</span>
+      <span style="--k:rgba(255,240,225,.22)">${tf("bizp.free", { h: Math.max(0, total - planned) })}</span></div>`;
+
+    const active = activeCount(s);
+    const cap = capacity(s);
+    const full = active >= cap;
+    const leads = s.leads.length ? tf("bizp.leadsWaiting", { n: s.leads.length }) : tk("bizp.leadsNone");
+    const week = `<div class="cd">
+      <div class="row2"><h4>${tk("bizp.seats")}</h4><b>${tf("bizp.seatsVal", { n: active, max: cap })}</b></div>
+      <div class="cap ${full ? "full" : ""}" role="img" aria-label="${tf("bizp.seatsVal", { n: active, max: cap })}"><span style="width:${Math.min(100, Math.round((active / Math.max(1, cap)) * 100))}%"></span></div>
+      ${full ? `<p class="note bad">${tk("bizp.full")}</p>` : ""}<p class="note">${leads}</p>
+      <h4 style="margin-top:14px">${tk("bizp.week")}</h4><p class="what">${tk("bizp.weekHint")}</p>
+      <div class="hrs" aria-hidden="true">${cells.join("")}</div>${legend}
+      ${over ? `<p class="note bad">${tf("bizp.over", { h: over })}</p>` : ""}</div>`;
+
+    // segment düğmeleri: kayıttaki değer seçeneklerden biri değilse en yakını "on"
+    const seg = (act: string, steps: readonly number[], cur: number, label: (v: number) => string) => {
+      const on = nearest(steps, cur);
+      return `<div class="seg" role="group">${steps
+        .map((v) => `<button data-act="${act}" data-v="${v}" class="${v === on ? "on" : ""}" aria-pressed="${v === on}">${label(v)}</button>`)
+        .join("")}</div>`;
+    };
+    const offStep = (steps: readonly number[], cur: number, text: string) => (steps.includes(cur) ? "" : `<p class="note">${tf("bizp.current", { v: text })}</p>`);
+
+    const netCard = `<div class="cd"><h4>${tk("bizp.netTitle")}</h4><p class="what">${tk("bizp.netWhat")}</p>
+      <div class="seg" role="group"><button data-act="mkNet" data-v="1" class="${m.networkActive ? "on" : ""}" aria-pressed="${m.networkActive}">${tk("bizp.on")}</button>
+      <button data-act="mkNet" data-v="0" class="${m.networkActive ? "" : "on"}" aria-pressed="${!m.networkActive}">${tk("bizp.off")}</button></div>
+      <p class="note">${m.networkLeft > 0 ? tf("bizp.netLeft", { n: m.networkLeft }) : tk("bizp.netEmpty")}</p></div>`;
+    const orgCard = `<div class="cd"><h4>${tk("bizp.contentTitle")}</h4><p class="what">${tk("bizp.contentWhat")}</p>
+      ${seg("mkOrg", ORGANIC_STEPS, m.organicHours, (v) => tf("bizp.hoursOpt", { h: v }))}
+      ${offStep(ORGANIC_STEPS, m.organicHours, tf("bizp.hoursOpt", { h: m.organicHours }))}
+      <p class="note">${tf("bizp.followers", { n: fmt(m.followers) })}</p></div>`;
+    const paidCard = `<div class="cd"><h4>${tk("bizp.adsTitle")}</h4><p class="what">${tk("bizp.adsWhat")}</p>
+      ${seg("mkPaid", PAID_STEPS, m.paidBudget, (v) => `${fmt(v)} ₺`)}
+      ${offStep(PAID_STEPS, m.paidBudget, `${fmt(m.paidBudget)} ₺`)}
+      ${m.paidBudget > 0 ? `<p class="note">${tf("bizp.adsMonth", { v: fmt(m.paidBudget * 4.3) })}</p>` : ""}</div>`;
+
+    const e = s.economy;
+    const money = `<div class="cd"><div class="acc">
+      <div><small>${tk("bizp.bizAcc")}</small><span class="v ${e.business < 0 ? "neg" : ""}">${fmt(e.business)} ₺</span><small>${tk("bizp.bizAccWhat")}</small></div>
+      <div><small>${tk("bizp.meAcc")}</small><span class="v ${e.personal < 0 ? "neg" : ""}">${fmt(e.personal)} ₺</span><small>${tk("bizp.meAccWhat")}</small></div></div>
+      ${e.personal < 0 ? `<p class="note bad">${tk("bizp.debt")}</p>` : ""}
+      <div class="mv"><button data-act="draw">${tk("bizp.draw")}</button><button data-act="deposit">${tk("bizp.deposit")}</button></div></div>`;
+
+    return `<div class="bz">${week}<h3>${tk("bizp.marketing")}</h3>${netCard}${orgCard}${paidCard}
+      <h3>${tk("bizp.money")}</h3>${money}${this.playPrefHtml()}${this.playRivalHtml()}</div>`;
+  }
+
+  /** Tercih dönemi özeti (talepler Kararlar kartlarında; burada fiyat kutusu yok). */
+  private playPrefHtml(): string {
+    const s = this.state;
+    const p = s.preference;
+    if (!p) return "";
+    if (!p.open) return `<h3>${tk("pref.title")}</h3><div class="cd"><p class="note" style="margin:0">${tf("pref.waiting", { n: Math.ceil((p.opensAt - s.hour) / HOURS_PER_DAY) })}</p></div>`;
+    const left = Math.max(0, Math.ceil((p.closesAt - s.hour) / HOURS_PER_DAY));
+    return `<h3>${tk("pref.title")}</h3><div class="cd"><div class="row2"><b>${tf("pref.summary", { sold: p.sold, income: fmt(p.income) })}</b>
+      <span class="muted">${tf("pref.closes", { n: left })}</span></div>
+      <p class="note">${p.requests.length ? tf("bizp.prefOpen", { n: p.requests.length }) : tk("pref.none")}</p></div>`;
+  }
+
+  private playRivalHtml(): string {
+    const s = this.state;
+    const live = s.market.effects.filter((e) => e.until > s.hour);
+    if (!live.length) return "";
+    return `<h3>${tk("rival.effects")}</h3>${live
+      .map((e) => `<div class="cd"><p class="note" style="margin:0;color:var(--soft)">${tf(`rival.effect.${e.kind}`, { rival: e.rival, n: Math.ceil((e.until - s.hour) / (7 * HOURS_PER_DAY)) })}</p></div>`)
+      .join("")}`;
   }
 
   private growthHtml(): string {

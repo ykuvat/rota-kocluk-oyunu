@@ -296,3 +296,7 @@ Sorun: 1. sezon tutturma ~%20, güven 2.–3. sezonda 92–99'da doyuyor, kalite
 | lean worth s3 | 521k | 588k |
 
 Ayrıntı ve adım adım ölçüm: `.kuvat/kor-rapor.md`. Not: passive iflas oranı 0,50 sınırda (12 tohum 0,58, 20 tohum 0,50).
+## Kurum paneli: İşletme sekmesi (2026-10-26)
+- Oyun modunda "Adaylar" sekmesi "İşletme" oldu: öğrenci yeri çubuğu, bekleyen aday sayısı (adaylar Kararlar kartlarında), haftalık koç saati puantajı (takip/çevre/içerik/boş; aşımda çizgili kırmızı), Çevre (Açık/Kapalı), İçerik (0/2/4/6 sa), Reklam (0/1.000/2.500/5.000 ₺) kartları; her kartta ne işe yaradığı ve bedeli. Kasa ve cep yan yana, aktarma düğmeleri açıklamalı. Sayı kutusu yok, dokunma hedefi ≥ 44 px.
+- Kayıttaki ara değerler (ör. içerik 3 sa) değiştirilmez; en yakın segment seçili görünür ve "şu anki ayar" notu çıkar.
+- Ayrıntı modunda eski görünüm aynen. Ayaz uyguladı, Börü denetledi (A1–A7 GEÇTİ).
