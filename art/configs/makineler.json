@@ -1,0 +1,16 @@
+{
+  "_note": "Ofis makineleri (Gemini 3.1 Pro, ofislerle aynı sohbet): otomat, kahve otomatı, fotokopi, çalışma kabini. Arkada silik bir duvar var ve otomat kahve makinesinin önünde: her nesne kendi kutusunda kesilir. Boy: Buse çizgi film ~170 oyun pikseli (~1,65 m) -> ~103 px/m.",
+  "source": "art/inbox/cizgi2/o3_makineler_v1.jpg",
+  "out_dir": "art/sprites/cartoon/office2",
+  "meta_name": "_meta_machines.json",
+  "resolution": 2,
+  "floor_at": [1023, 1500],
+  "opening": 2,
+  "tolerance": 38,
+  "items": [
+    {"name": "obj_machine_vending_cartoon_se", "pick": [340, 942], "box": [100, 490, 584, 1420], "height": 186},
+    {"name": "obj_machine_coffee_cartoon_se", "pick": [800, 800], "box": [565, 372, 985, 1160], "erase": [[565, 590, 588, 1160], [565, 372, 590, 418]], "height": 186},
+    {"name": "obj_machine_printer_cartoon_se", "pick": [1200, 1000], "box": [1036, 575, 1379, 1262], "height": 132},
+    {"name": "obj_machine_studyBooth_cartoon_se", "pick": [1660, 1100], "box": [1380, 575, 1965, 1485], "erase": [[1905, 1430, 1965, 1500]], "height": 216}
+  ]
+}

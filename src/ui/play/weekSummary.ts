@@ -160,8 +160,11 @@ export class WeekSummary {
     const spend = (Object.keys(s.economy.totals) as TxCategory[]).filter((k) => !OWNER.includes(k)).reduce((a, k) => a + Math.min(0, delta(k)), 0);
     const worth = s.economy.personal + s.economy.business;
     const change = worth - snap.worth;
+    const machineNet = delta("machines") + delta("machineUpkeep");
+    const machineLine = s.machines.length || machineNet ? `<div class="line"><span>${tk("week.machines")}</span><span class="${machineNet >= 0 ? "ok" : "bad"}">${machineNet >= 0 ? "+" : ""}${fmt(machineNet)} ₺</span></div>` : "";
     const moneyHtml = `<div class="line"><span>${tk("week.income")}</span><span class="ok">+${fmt(income)} ₺</span></div>
       <div class="line"><span>${tk("week.spend")}</span><span class="bad">${fmt(spend)} ₺</span></div>
+      ${machineLine}
       <div class="line"><span><b>${tk("week.net")}</b></span><b class="${change >= 0 ? "ok" : "bad"}">${change >= 0 ? "+" : ""}${fmt(change)} ₺</b></div>`;
 
     this.el.innerHTML = `<div class="box"><h2>${tf("week.title", { n: week })}</h2>

@@ -11,8 +11,8 @@ import { createMarket, type MarketState } from "./marketEffects";
 import type { PreferenceState } from "./market";
 import type { Student } from "./student";
 
-/** Şema sürümü. Değişince platform/save.ts'e göç eklenir. 2: veli · 3: ekonomi, huni, itibar, öğrenci ücreti · 4: olaylar, koç saat cezaları · 5: sertifikalar, aşama, ofis · 6: personel · 7: bildirim geçmişi, sezon ve ÜYS · 8: sınıf düzeyi, tercih dönemi, rakip pazarı · 9: iflas (oyun sonu) · 10: hedef görevleri · 11: personel rolleri, şubeler. */
-export const STATE_VERSION = 11;
+/** Şema sürümü. Değişince platform/save.ts'e göç eklenir. 2: veli · 3: ekonomi, huni, itibar, öğrenci ücreti · 4: olaylar, koç saat cezaları · 5: sertifikalar, aşama, ofis · 6: personel · 7: bildirim geçmişi, sezon ve ÜYS · 8: sınıf düzeyi, tercih dönemi, rakip pazarı · 9: iflas (oyun sonu) · 10: hedef görevleri · 11: personel rolleri, şubeler · 12: ofis makineleri. */
+export const STATE_VERSION = 12;
 
 /** Oyuncuyu ilgilendiren olaylar ayrıca kalıcı geçmişte tutulur (günlük kırpılsa da kaybolmaz). */
 export const NOTABLE = new Set([
@@ -92,6 +92,8 @@ export interface GameState {
   branches: string[];
   /** son şubenin açıldığı saat (şubeler arası bekleme için) */
   lastBranchHour: number | null;
+  /** ofis makineleri (alış sırasıyla; odada yuvalara bu sırayla yerleşir) */
+  machines: { id: string; def: string; boughtHour: number }[];
   staff: StaffState;
   season: SeasonState;
   /** önemli olayların kalıcı geçmişi (en fazla HISTORY_LIMIT) */
@@ -128,6 +130,7 @@ export function createState(seed: number, weeklyHours: number): GameState {
     office: null,
     branches: [],
     lastBranchHour: null,
+    machines: [],
     staff: createStaff(),
     season: createSeason(0, START_HOUR, {}, REPUTATION.startTrust),
     history: [],

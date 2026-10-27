@@ -2,7 +2,9 @@
 
 import { COACHING, ECONOMY, FUNNEL } from "../content/business";
 import { BRANCHES, CERTS, OFFICES, STAGES } from "../content/growth";
+import { MACHINES, MACHINE_BY_ID, MACHINE_SELL_RATIO } from "../content/machines";
 import { errorText, roleDesc } from "./play/decisions";
+import { machineBlocker, machineNet, machineSlots } from "../sim/machines";
 import { activeCount, branchBlocker, branchTrust, capacity } from "../sim/growth";
 import { STAFF } from "../content/staff";
 import { caseload, visibleSkill } from "../sim/staff";
@@ -61,6 +63,7 @@ body.play #business-panel.open .bz .acc .v.neg{color:var(--bad)}
 body.play #business-panel.open .bz .acc small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
 body.play #business-panel.open .bz .mv{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 body.play #business-panel.open .bz .mv button{min-height:44px;text-align:left}
+body.play #business-panel.open .bz .mach button{min-height:44px;width:100%;text-align:center}
 body.play #business-panel.open .tabs button{min-height:40px}
 @media (max-width:760px){body.play #business-panel.open .bz .seg button{font-size:13px}}
 @media (prefers-reduced-motion:reduce){body.play #business-panel.open .bz .hrs i{transition:none}}
@@ -167,6 +170,12 @@ export class BusinessPanel {
       case "branch":
         cmd = { type: "openBranch", branchId: d.branch! };
         break;
+      case "mBuy":
+        cmd = { type: "buyMachine", def: d.def! };
+        break;
+      case "mSell":
+        cmd = { type: "sellMachine", id: d.mid! };
+        break;
       case "hire":
         cmd = { type: "hireStaff", candidateId: d.cand! };
         break;
@@ -184,6 +193,10 @@ export class BusinessPanel {
       else if (cmd.type === "startCert") {
         const c = CERTS.find((x) => x.id === (cmd as { certId: string }).certId)!;
         this.onFeedback(tf("res.certStarted", { cert: tk(`cert.${c.id}`), n: c.weeks, h: c.hoursPerWeek }), false);
+      } else if (cmd.type === "buyMachine") this.onFeedback(tf("mach.bought", { name: tk(`machine.${cmd.def}`) }), false);
+      else if (cmd.type === "sellMachine") {
+        const def = MACHINE_BY_ID[d.def!];
+        if (def) this.onFeedback(tf("mach.soldMsg", { name: tk(`machine.${def.id}`), v: fmt(def.price * MACHINE_SELL_RATIO) }), false);
       }
     }
     this.render(true);
@@ -195,7 +208,7 @@ export class BusinessPanel {
     const play = isPlay();
     // oyun modunda bakiye, kapasite ve takipçi de görünür: değişince yeniden çizilsin
     const extra = play
-      ? `|p|${s.economy.business}|${s.economy.personal}|${capacity(s)}|${activeCount(s)}|${m.networkLeft}|${Math.round(m.followers)}|${coachHours(s)}`
+      ? `|p|${s.economy.business}|${s.economy.personal}|${capacity(s)}|${activeCount(s)}|${m.networkLeft}|${Math.round(m.followers)}|${coachHours(s)}|${s.machines.map((x) => x.def).join()}`
       : "";
     const key = `${this.tab}|${s.hour}|${s.leads.length}|${s.coach.usedThisWeek}|${m.organicHours}|${m.paidBudget}|${m.networkActive}|${getLocale()}${extra}`;
     if (!force && key === this.lastKey) return;
@@ -306,7 +319,35 @@ export class BusinessPanel {
       <div class="mv"><button data-act="draw">${tk("bizp.draw")}</button><button data-act="deposit">${tk("bizp.deposit")}</button></div></div>`;
 
     return `<div class="bz">${week}<h3>${tk("bizp.marketing")}</h3>${netCard}${orgCard}${paidCard}
-      <h3>${tk("bizp.money")}</h3>${money}${this.playPrefHtml()}${this.playRivalHtml()}</div>`;
+      <h3>${tk("bizp.money")}</h3>${money}${this.machinesHtml()}${this.playPrefHtml()}${this.playRivalHtml()}</div>`;
+  }
+
+  /** Makineler: yuva göstergesi, her makine için kart (ne yapar, bedel, şu anki öğrenci sayısıyla haftalık net), Al / Sat. */
+  private machinesHtml(): string {
+    const s = this.state;
+    const slots = machineSlots(s);
+    if (!slots) return `<h3>${tk("mach.title")}</h3><div class="cd"><p class="note" style="margin:0">${tk("mach.home")}</p></div>`;
+    const students = activeCount(s);
+    const head = `<div class="cd"><div class="row2"><h4>${tk("mach.title")}</h4><b>${tf("mach.slots", { n: s.machines.length, max: slots })}</b></div>
+      <div class="cap ${s.machines.length >= slots ? "full" : ""}" role="img" aria-label="${tf("mach.slots", { n: s.machines.length, max: slots })}"><span style="width:${Math.round((s.machines.length / slots) * 100)}%"></span></div></div>`;
+    const cards = MACHINES.filter((def) => !def.onlyOffice || def.onlyOffice === s.office)
+      .map((def) => {
+        const own = s.machines.find((x) => x.def === def.id);
+        const net = Math.round(machineNet(def, students));
+        const netText = net >= 0 ? tf("mach.net", { v: fmt(net) }) : tf("mach.netNeg", { v: fmt(-net) });
+        const payback = !own && net > 0 ? `<br>${tf("mach.payback", { n: Math.ceil(def.price / net) })}` : "";
+        let action: string;
+        if (own) action = `<button data-act="mSell" data-mid="${own.id}" data-def="${def.id}">${tf("mach.sell", { v: fmt(def.price * MACHINE_SELL_RATIO) })}</button>`;
+        else {
+          const err = machineBlocker(s, def.id);
+          action = err ? `<p class="note bad" style="margin:0">${tk(`error.${err}`)}</p>` : `<button data-act="mBuy" data-def="${def.id}">${tk("mach.buy")} · ${fmt(def.price)} ₺</button>`;
+        }
+        return `<div class="cd mach ${own ? "own" : ""}"><div class="row2"><h4>${tk(`machine.${def.id}`)}</h4>${own ? `<span class="tag ok">✔ ${tk("mach.mine")}</span>` : ""}</div>
+          <p class="what">${tk(`machine.what.${def.id}`)}</p>
+          <p class="note" style="margin:0 0 8px">${tf("mach.price", { v: fmt(def.price), u: fmt(def.upkeepWeekly) })}<br>${netText}${payback}</p>${action}</div>`;
+      })
+      .join("");
+    return `<h3>${tk("mach.title")}</h3>${head}${cards}`;
   }
 
   /** Tercih dönemi özeti (talepler Kararlar kartlarında; burada fiyat kutusu yok). */

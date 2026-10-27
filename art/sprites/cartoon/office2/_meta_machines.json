@@ -1,0 +1,62 @@
+{
+  "source": "art\\configs\\makineler.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "obj_machine_vending_cartoon_se",
+      "size": [
+        101,
+        200
+      ],
+      "anchor": [
+        50,
+        186
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    },
+    {
+      "name": "obj_machine_coffee_cartoon_se",
+      "size": [
+        103,
+        201
+      ],
+      "anchor": [
+        51,
+        186
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    },
+    {
+      "name": "obj_machine_printer_cartoon_se",
+      "size": [
+        70,
+        142
+      ],
+      "anchor": [
+        35,
+        132
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    },
+    {
+      "name": "obj_machine_studyBooth_cartoon_se",
+      "size": [
+        143,
+        237
+      ],
+      "anchor": [
+        71,
+        216
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    }
+  ]
+}

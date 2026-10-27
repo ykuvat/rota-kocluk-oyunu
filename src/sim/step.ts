@@ -14,6 +14,7 @@ import { REPUTATION } from "../content/business";
 import { checkBankruptcy, monthlySettlement, workDayCost } from "./economy";
 import { eventsDaily } from "./events";
 import { officeMonthly, weeklyGrowth } from "./growth";
+import { weeklyMachines } from "./machines";
 import { payroll, refreshCandidates, specialistsWeekly, staffWeekly } from "./staff";
 import { seasonHourly } from "./season";
 import { preferenceHourly } from "./market";
@@ -105,6 +106,7 @@ export function advance(state: GameState, hours: number): void {
       lifeEventsWeekly(state, rng);
       updateReputation(state);
       weeklyGrowth(state);
+      weeklyMachines(state);
       staffWeekly(state, rng);
       pruneMarket(state);
       refreshCandidates(state, rng);

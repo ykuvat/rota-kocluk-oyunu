@@ -69,6 +69,18 @@ export interface RoomDef {
   placements: Placement[];
   /** Öğrencilerin odada durduğu yerler (karo koordinatı); sırayla doldurulur. */
   studentSpots?: { x: number; y: number; flip?: boolean }[];
+  /**
+   * Ofis makinelerinin durduğu karolar (taban izinin arka köşesi, 1 m × 1 m); alınan makineler alış sırasıyla bu yuvalara
+   * yerleşir (`state.machines[i]` → `machineSpots[i]`). Sprite adı `obj_machine_<def>_cartoon_se`; dokusu yoksa çizilmez.
+   */
+  machineSpots?: { x: number; y: number; flip?: boolean }[];
+  /**
+   * Karakterlerin bu odadaki ölçeği (varsayılan 1). Büyük ofislerde mobilya gerçek boyutla daha küçük çizildi;
+   * karakterler de aynı oranda küçülür ki masaya, kapıya göre doğru boyda dursunlar.
+   */
+  charScale?: number;
+  /** Makine sprite'larının bu odadaki ölçeği (varsayılan 1). */
+  machineScale?: number;
   /** Buse ve ekibin iş yaptığı noktalar: oraya yürür, bir süre durur, başında simge belirir. */
   workSpots?: WorkSpot[];
   /** Mobilyaların arasından geçmemek için yürüyüşlerin uğradığı açık zemin noktası. */

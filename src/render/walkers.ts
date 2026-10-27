@@ -38,6 +38,7 @@ export class Walker {
   private t = 0;
   private readonly icon: Text;
   private faceLeft: boolean;
+  private readonly k: number;
 
   constructor(
     private readonly s: Sprite,
@@ -51,6 +52,8 @@ export class Walker {
     this.x = start.x;
     this.y = start.y;
     this.faceLeft = s.scale.x < 0;
+    // odanın karakter ölçeği (RoomDef.charScale): nefes ve yön değişimi bunu korur
+    this.k = Math.abs(s.scale.y) || 1;
     this.wait = 1 + Math.random() * 2;
     this.icon = new Text({ text: "", style: { fontSize: 18, fontFamily: "system-ui, sans-serif" } });
     this.icon.anchor.set(0.5, 1);
@@ -81,10 +84,10 @@ export class Walker {
     // iş başında: nefes + işe göre küçük hareket (yazarken başın 1 px inip kalkması gibi)
     const breath = Math.sin(this.t * 2.2) > 0.35;
     const work = this.spot && Math.sin(this.t * 7) > 0.6 ? 1 : 0;
-    this.s.scale.y = breath ? (this.h + 1) / this.h : 1;
+    this.s.scale.y = this.k * (breath ? (this.h + 1) / this.h : 1);
     this.place(work);
     this.icon.text = this.spot ? this.spot.icon : "";
-    this.icon.position.set(this.s.x, this.s.y - this.h - 4 - Math.round(Math.sin(this.t * 2) * 2));
+    this.icon.position.set(this.s.x, this.s.y - this.h * this.k - 4 - Math.round(Math.sin(this.t * 2) * 2));
   }
 
   private pickNext(): void {
@@ -127,7 +130,7 @@ export class Walker {
       const screenDx = dx - dy;
       if (Math.abs(screenDx) > 0.01) this.faceLeft = screenDx < 0;
     }
-    this.s.scale.y = 1;
+    this.s.scale.y = this.k;
     // adım: her yarım adımda 1 px yukarı
     this.place(Math.sin(this.t * 14) > 0 ? 1 : 0);
     this.icon.text = "";
@@ -135,7 +138,7 @@ export class Walker {
 
   private place(lift: number): void {
     const b = footprintBottom(this.x, this.y, FOOT, FOOT);
-    this.s.scale.x = this.faceLeft ? -1 : 1;
+    this.s.scale.x = this.faceLeft ? -this.k : this.k;
     this.s.position.set(Math.round(b.x + footprintAnchorOffsetX(FOOT, FOOT)), Math.round(b.y) - lift);
     this.s.zIndex = depthKey(this.x, this.y, FOOT, FOOT);
   }

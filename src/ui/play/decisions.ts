@@ -16,7 +16,9 @@ import { isStaffHandled } from "../../sim/staffDecisions";
 import { coachHours, findStudent, type GameState } from "../../sim/state";
 import { BRANCHES, CERTS } from "../../content/growth";
 import { SPECIALISTS, type StaffRole } from "../../content/staff";
-import { branchBlocker } from "../../sim/growth";
+import { activeCount, branchBlocker, placesMonthly } from "../../sim/growth";
+import { MACHINES, MACHINE_OFFER_EVERY_WEEKS } from "../../content/machines";
+import { machineBlocker, machineNet } from "../../sim/machines";
 import { fmtVars } from "../notices";
 import { fmt, hash } from "./common";
 
@@ -477,6 +479,31 @@ export class DecisionPanel {
               act: () => this.feedback(applyCommand(s, { type: "startCert", certId: c.id }), tf("res.certStarted", { cert: tk(`cert.${c.id}`), n: c.weeks, h: c.hoursPerWeek })),
             })),
             { label: tk("play.later"), act: () => this.note(key, tk("res.certLater")) },
+          ],
+        });
+      }
+    }
+
+    // ofis makineleri: boş yuva varsa ve kasa alışı + ay sonu giderini kaldırıyorsa 4 haftada bir öneri
+    if (s.office && week >= 2) {
+      const students = activeCount(s);
+      const can = MACHINES.filter((m) => machineBlocker(s, m.id) === null && s.economy.business >= m.price + placesMonthly(s))
+        .sort((a, b) => a.price / machineNet(a, students) - b.price / machineNet(b, students))
+        .slice(0, 3);
+      const key = `mach:${Math.floor(week / MACHINE_OFFER_EVERY_WEEKS)}`;
+      if (can.length && !this.dismissed.has(key)) {
+        cards.push({
+          key,
+          icon: "🥤",
+          title: tk("play.machineTitle"),
+          body: tk("play.machineBody"),
+          options: [
+            ...can.map((m) => ({
+              label: `${tk(`machine.${m.id}`)}<small class="sm">${tk(`machine.what.${m.id}`)}</small>`,
+              hint: tf("play.machineHint", { price: fmt(m.price), net: fmt(Math.round(machineNet(m, students))) }),
+              act: () => this.feedback(applyCommand(s, { type: "buyMachine", def: m.id }), tf("mach.bought", { name: tk(`machine.${m.id}`) })),
+            })),
+            { label: tk("play.later"), act: () => this.note(key, tk("res.machineLater")) },
           ],
         });
       }

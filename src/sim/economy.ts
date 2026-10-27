@@ -31,7 +31,11 @@ export type TxCategory =
   | "severance"
   | "preferenceCounseling"
   | "questReward"
-  | "tutoring";
+  | "tutoring"
+  | "machines"
+  | "machineUpkeep"
+  | "machinePurchase"
+  | "machineSale";
 
 export interface Transaction {
   hour: number;

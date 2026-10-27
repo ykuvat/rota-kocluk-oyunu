@@ -9,3 +9,4 @@ art/inbox/pixellab/
 *.zip
 .playwright-mcp/
 art/3d/vendor/
+art/3d/src/

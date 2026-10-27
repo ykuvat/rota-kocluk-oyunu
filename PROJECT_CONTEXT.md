@@ -30,7 +30,17 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 - Merkez ofis seramik derzleri ızgarayla çakışmıyor.
 - Şubelerin ayrı sahnesi yok; personel yuvası semt 2, merkez 3 (fazlası odada görünmez).
 
-## Sıradaki
-- Merkez ofis: sessiz öğrenci seansı ve masa başı pozu (Gemini sınırı sıfırlanınca; aynı sohbette m2 -> m3). Şube sahnesi.
-- Buse ve öğrenciler için arka (NE) görünüm ve yürüme kareleri (Gemini fark yöntemi) → yürüyüş animasyonu.
-- Her arşetip için ikinci görünüm (`char_student_<tür>_b_se`).
+- Çizgi film ofisleri ev stüdyosuyla aynı 3×3 karo: ofise taşınınca oda büyümüyor, yalnız masa ekleniyor (kullanıcı şikâyeti 2026-10-26). 3B'de semt 4×4, merkez 5×5 kurulacak.
+
+## GÜNCEL (2026-10-27): 3B REDDEDİLDİ ("rezalet; 2B/2.5B detaylı çizin"). Blender/3B yolu bırakıldı (art/3d, tools/blender commit edilmedi). Görseller Gemini ile detaylı 2B çizgi film.
+- Yapıldı (27.10): gerçek semt (4×4) ve merkez (5×5) ofisleri + makine sprite'ları (docs/varlik-gunlugu.md 'Gerçek ofisler'); ofis makineleri mekaniği (content/machines.ts, kayıt v12). Eski not: 4×4 semt ofisi Gemini'de üretildi (Chrome, gemini.google.com/u/1, sohbet 07029b9d26415c9c, model Pro, referans art/inbox/cizgi/c1_ev_odasi_v1.jpg; istem: aynı nesne boyutu, 4 m × 4 m zemin). Görsel iyi, henüz İNDİRİLMEDİ → indir (D:\Yeni klasör → art/inbox/cizgi/), aynı sohbette 5×5 merkez ofis, sonra cartoon_cut ile kes, RoomDef tilesX/Y 4 ve 5.
+
+## (Eski plan) Sıradaki (3B geçişi, 2026-10-26; kullanıcı onaylı, limit dolarsa 27.10.2026 08:30'a kadar kesintisiz devam)
+- Ekip: Tengri koordine eder; Ayaz Blender (başsız, `blender.exe -b -P`), Kor oyun entegrasyonu, Börü denetim. Görev kayıtları `.kuvat/` (git dışı).
+- 3B paketler `art/3d/vendor/` (git dışı; ham model yeniden dağıtılmaz, depoya yalnız render): Quaternius Universal Base Characters + Universal Animation Library (CC0), Kenney Furniture Kit (CC0), KayKit Furniture Bits (CC0). Betikler `tools/blender/`, .blend kaynak `art/3d/src/` (git dışı), render `art/3d/renders/`.
+- Buse'nin tasarımı korunur (referans `art/sprites/cartoon/home/char_buse_cartoon_se.png`: dalgalı koyu kahve saç, zeytin yeşili parka, krem bluz, açık mavi kot, beyaz ayakkabı, yeşil çanta).
+1. Deneme: Buse (SE idle + 8 kare yürüme + 8 yön) ve 3×3 ev stüdyosu render; `compare.png` ile kullanıcıya göster.
+2. Ofisler 3B: semt 4×4, merkez 5×5 (alan gerçekten büyüsün), personel yuvaları ve çalışma noktaları.
+3. Öğrenciler (3 arşetip, cinsiyet uyumlu) ve personel rolleri 3B; yürüme animasyonu, 8 yön.
+4. Oyuna entegrasyon: ayarlarda yeni "3B" tarzı (`platform/artStyle.ts`), `RoomDef`'ler, yürüyen karakterlerde yön ve kare; beğenilirse varsayılan.
+- Bekleyen: GitHub'a push (af8cf53 kariyer, cb3e580 ekip kararları) — kullanıcı GitHub Desktop'tan basar.

@@ -89,6 +89,8 @@ const MIGRATIONS: Record<number, (s: Raw) => Raw> = {
       staff: { ...staff, members: staff.members.map((m) => ({ ...m, role: "coach" })), candidates: staff.candidates.map((c) => ({ ...c, role: "coach" })) },
     };
   },
+  // 11 → 12: ofis makineleri
+  11: (s) => ({ ...s, version: 12, machines: [] }),
 };
 
 export function migrate(raw: Record<string, unknown>): GameState {

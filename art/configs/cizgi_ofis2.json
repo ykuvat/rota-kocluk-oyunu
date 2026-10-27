@@ -1,0 +1,10 @@
+{
+  "_note": "Gerçek ofisler (2026-10-27, Gemini 3.1 Pro, art/inbox/cizgi2): o1 semt ofisi 4x4 (resepsiyon, bekleme, iş istasyonları, fotokopi, su sebili), o2 merkez ofis 5x5 (tuğla duvar, cam sınıf, dinlenme köşesi, mutfak). İki görsel aynı çerçevede (siluet x 100..1947, alt 1944, 2048 px); Gemini ~1,75:1 çizdi -> squash 0.875. Zemin yüzeyi köşeleri büyütülmüş kesitlerden: sol (140,1380) sağ (1910,1380) alt (1025,1885) -> 1770 px; arka köşe eşyaların arkasında (simetrik varsayıldı). Ölçek = karo × 128 / 1770: semt 4 karo 0.2893, merkez 5 karo 0.3616 (mobilya istemde aynı gerçek boyutla çizildi).",
+  "out_dir": "art/sprites/cartoon/office2",
+  "meta_name": "_meta.json",
+  "resolution": 2,
+  "items": [
+    {"name": "room_office_semt_cartoon", "kind": "room", "source": "art/inbox/cizgi2/o1_semt_ofis_v1.jpg", "scale": 0.2893, "squash": 0.875, "floor": {"left": [140, 1380], "right": [1910, 1380], "bottom": [1025, 1885]}},
+    {"name": "room_office_merkez_cartoon", "kind": "room", "source": "art/inbox/cizgi2/o2_merkez_ofis_v1.jpg", "scale": 0.3616, "squash": 0.875, "floor": {"left": [140, 1380], "right": [1910, 1380], "bottom": [1025, 1885]}}
+  ]
+}

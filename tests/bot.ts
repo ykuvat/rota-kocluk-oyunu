@@ -1,4 +1,4 @@
-// Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
+﻿// Tam oyun denge botu: bir oyuncunun yapacağı kararları komutlarla verir ve sezon bazında ölçer.
 // Strateji "good": makul oyuncu (sinyal okur, veliyle görüşür, büyür, ofis ve ekip kurar).
 // Strateji "lean": "good" gibi ama uzman almaz, şube açmaz (uzman/şube tuzak mı diye karşılaştırma).
 // Strateji "passive": aday kabul eder, program yazar, başka hiçbir şey yapmaz.
@@ -15,6 +15,8 @@ import { calendarAt, HOURS_PER_DAY } from "../src/sim/calendar";
 import { applyCommand } from "../src/sim/commands";
 import { startCareer } from "../src/sim/funnel";
 import { activeCount, branchBlocker, capacity, placesMonthly } from "../src/sim/growth";
+import { MACHINES } from "../src/content/machines";
+import { machineBlocker, machineNet } from "../src/sim/machines";
 import { weeklySignals } from "../src/sim/insight";
 import { caseload, coaches, membersOf } from "../src/sim/staff";
 import { isStaffHandled } from "../src/sim/staffDecisions";
@@ -53,6 +55,7 @@ export interface SeasonMetrics {
   staff: number;
   specialists: number;
   branches: number;
+  machines: number;
   certs: number;
   leftEarly: number;
   debtWeeks: number;
@@ -158,6 +161,18 @@ function weekly(state: GameState, strategy: Strategy, week: number): void {
       if (c && (c.skillLo + c.skillHi) / 2 >= 50 && e.business > reserve + c.askSalary * 4) applyCommand(state, { type: "hireStaff", candidateId: c.id });
     }
   }
+  // ofis makineleri (yalnız "good"): boş yuva varsa ve alış + 3 aylık gider rezervi kasada varsa, en hızlı geri ödeyen önce
+  if (strategy === "good" && state.office && activeCount(state) >= 6) {
+    const monthly = placesMonthly(state) + state.staff.members.reduce((a, m) => a + m.salary * (1 + STAFF.employerCostRate), 0);
+    const n = activeCount(state);
+    const order = [...MACHINES].sort((a, b) => a.price / machineNet(a, n) - b.price / machineNet(b, n));
+    for (const def of order) {
+      if (machineBlocker(state, def.id) === null && e.business > def.price + 3 * monthly) {
+        applyCommand(state, { type: "buyMachine", def: def.id });
+        break;
+      }
+    }
+  }
   // şube: koşullar sağlandıysa sıradaki şube (oyun bunu karar kartıyla önerir)
   const next = BRANCHES.find((b) => !state.branches.includes(b.id));
   if (next && strategy !== "lean" && branchBlocker(state, next.id) === null) applyCommand(state, { type: "openBranch", branchId: next.id });
@@ -180,7 +195,7 @@ export function playGame(seed: number, strategy: Strategy, seasons = 3): SeasonM
       const m: SeasonMetrics = {
         season: out.length, active: 0, graduated: 0, hitRate: null, avgNet: null, personal: state.economy.personal,
         business: state.economy.business, worth: state.economy.personal + state.economy.business, trust: state.reputation.trust,
-        stage: state.stage, staff: 0, specialists: 0, branches: state.branches.length, certs: state.coach.certs.length, leftEarly: 0, debtWeeks, prefIncome: 0, minWorth, bankrupt: 1, tier: -1,
+        stage: state.stage, staff: 0, specialists: 0, branches: state.branches.length, machines: state.machines.length, certs: state.coach.certs.length, leftEarly: 0, debtWeeks, prefIncome: 0, minWorth, bankrupt: 1, tier: -1,
       };
       while (out.length < seasons) out.push({ ...m, season: out.length, tier: out.length === seasons - 1 ? 0 : -1 });
       break;
@@ -212,6 +227,7 @@ export function playGame(seed: number, strategy: Strategy, seasons = 3): SeasonM
         staff: state.staff.members.length,
         specialists: state.staff.members.filter((m) => m.role !== "coach").length,
         branches: state.branches.length,
+        machines: state.machines.length,
         certs: state.coach.certs.length,
         leftEarly: r.leftEarly,
         debtWeeks,
@@ -253,6 +269,7 @@ export function averageRuns(strategy: Strategy, seeds: number[], seasons = 3) {
       staff: m((x) => x.staff),
       specialists: m((x) => x.specialists),
       branches: m((x) => x.branches),
+      machines: m((x) => x.machines),
       certs: m((x) => x.certs),
       leftEarly: m((x) => x.leftEarly),
       prefIncome: m((x) => x.prefIncome),

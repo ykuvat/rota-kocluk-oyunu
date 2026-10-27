@@ -1,0 +1,54 @@
+{
+  "source": "art\\configs\\cizgi_ofis2.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "room_office_semt_cartoon",
+      "size": [
+        535,
+        459
+      ],
+      "anchor": [
+        267,
+        458
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        267.6,
+        188.4
+      ],
+      "source_box": [
+        100,
+        130,
+        1948,
+        1945
+      ]
+    },
+    {
+      "name": "room_office_merkez_cartoon",
+      "size": [
+        669,
+        574
+      ],
+      "anchor": [
+        334,
+        573
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true,
+      "floor_origin": [
+        334.5,
+        235.5
+      ],
+      "source_box": [
+        100,
+        130,
+        1949,
+        1944
+      ]
+    }
+  ]
+}

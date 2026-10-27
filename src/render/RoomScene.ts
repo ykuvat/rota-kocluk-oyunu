@@ -1,6 +1,7 @@
 import { AnimatedSprite, Container, Graphics, Sprite, Text, Texture } from "pixi.js";
 import { depthKey, footprintAnchorOffsetX, footprintBottom, tileToScreen } from "../core/iso";
 import type { Placement, ProceduralRoom, RoomDef, SpriteManifest } from "../content/types";
+import { machineSprite } from "../content/machines";
 import { SpotBook, Walker } from "./walkers";
 
 /** Yerleşim için çizim sırası anahtarları; bir yüzeyin üstündekiler o yüzeyin hemen ardından çizilir. */
@@ -22,7 +23,7 @@ export class RoomScene extends Container {
   readonly grid: Graphics;
   private readonly objects = new Container();
   /** nefes alan karakterler: çizime dokunmadan, ayaklar sabit 1 px uzayıp kısalır */
-  private readonly breathers: { s: Sprite; h: number; phase: number; flip: number }[] = [];
+  private readonly breathers: { s: Sprite; h: number; k: number; phase: number; flip: number }[] = [];
   private time = 0;
   private readonly walkers: Walker[] = [];
   /** öğrenciler arada etrafa bakar (kısa süre ters yöne döner) */
@@ -63,7 +64,7 @@ export class RoomScene extends Container {
     }
     for (const b of this.breathers) {
       const up = Math.sin((this.time + b.phase) * 2.2) > 0.35;
-      b.s.scale.y = up ? (b.h + 1) / b.h : 1;
+      b.s.scale.y = b.k * (up ? (b.h + 1) / b.h : 1);
     }
     for (const w of this.walkers) w.update(dt);
     for (const f of this.fidgets) {
@@ -76,7 +77,7 @@ export class RoomScene extends Container {
   }
 
   private breathe(s: Sprite, id: string, h: number): void {
-    this.breathers.push({ s, h, phase: (Math.abs(hashId(id)) % 100) / 30, flip: s.scale.x });
+    this.breathers.push({ s, h, k: Math.abs(s.scale.y) || 1, phase: (Math.abs(hashId(id)) % 100) / 30, flip: s.scale.x });
   }
   get objectsLayer(): Container {
     return this.objects;
@@ -90,6 +91,8 @@ export class RoomScene extends Container {
     staff: string[] = [],
     actors: Actor[] = [],
     onActorTap?: (id: string) => void,
+    /** alınmış makinelerin tanımları, alış sırasıyla (bkz. `RoomDef.machineSpots`) */
+    machines: string[] = [],
   ) {
     super();
 
@@ -119,7 +122,9 @@ export class RoomScene extends Container {
       if (!info) throw new Error(`manifest'te sprite yok: ${sprite}`);
       const s = new Sprite(textures.get(sprite));
       s.anchor.set(info.anchor[0] / info.size[0], info.anchor[1] / info.size[1]);
-      if (p.flip) s.scale.x = -1;
+      // karakterler odanın ölçeğinde (büyük ofiste mobilya küçük çizildi; karakter de ona uysun)
+      const kp = sprite.startsWith("char_") ? (room.charScale ?? 1) : 1;
+      s.scale.set(p.flip ? -kp : kp, kp);
       const bottom = footprintBottom(p.x, p.y, p.fx, p.fy);
       // tam piksele yuvarla: pixel art titremesin
       s.position.set(Math.round(bottom.x + footprintAnchorOffsetX(p.fx, p.fy)), Math.round(bottom.y - (p.lift ?? 0)));
@@ -130,6 +135,24 @@ export class RoomScene extends Container {
         this.walkers.push(new Walker(s, { x: p.x, y: p.y }, info.size[1], room.workSpots, room.hub, book, this.objects));
       } else if (sprite.startsWith("char_")) this.breathe(s, p.id, info.size[1]);
     }
+
+    // ofis makineleri: alış sırasıyla yuvalara; sprite ya da doku yoksa (sanat henüz gelmediyse) çizilmez
+    machines.forEach((def, i) => {
+      const spot = room.machineSpots?.[i];
+      const name = machineSprite(def);
+      const info = manifest.sprites[name];
+      const tex = textures.get(name);
+      if (!spot || !info || !tex) return;
+      const s = new Sprite(tex);
+      s.anchor.set(info.anchor[0] / info.size[0], info.anchor[1] / info.size[1]);
+      const km = room.machineScale ?? 1;
+      s.scale.set(spot.flip ? -km : km, km);
+      const bottom = footprintBottom(spot.x, spot.y, 1, 1);
+      s.position.set(Math.round(bottom.x + footprintAnchorOffsetX(1, 1)), Math.round(bottom.y));
+      s.zIndex = depthKey(spot.x, spot.y, 1, 1);
+      s.label = `machine:${def}`;
+      this.objects.addChild(s);
+    });
 
     // öğrenciler: odadaki sabit yerlerde, başlarının üstünde ruh hâli; tıklanınca kartı açılır
     for (const a of actors) {
@@ -144,7 +167,8 @@ export class RoomScene extends Container {
         s.gotoAndPlay(Math.abs(hashId(a.id)) % frames.length);
       }
       s.anchor.set(info.anchor[0] / info.size[0], info.anchor[1] / info.size[1]);
-      if (a.flip) s.scale.x = -1;
+      const ka = room.charScale ?? 1;
+      s.scale.set(a.flip ? -ka : ka, ka);
       const bottom = footprintBottom(a.x, a.y, 0.4, 0.4);
       s.position.set(Math.round(bottom.x + footprintAnchorOffsetX(0.4, 0.4)), Math.round(bottom.y));
       s.zIndex = depthKey(a.x, a.y, 0.4, 0.4);
@@ -161,7 +185,7 @@ export class RoomScene extends Container {
         const t = new Text({ text: a.mood, style: { fontSize: 20, fontFamily: "system-ui, sans-serif" } });
         t.anchor.set(0.5, 1);
         t.resolution = 2;
-        t.position.set(s.x, s.y - info.size[1] - 2);
+        t.position.set(s.x, s.y - info.size[1] * ka - 2);
         t.zIndex = 1e9;
         this.objects.addChild(t);
       }

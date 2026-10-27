@@ -13,7 +13,8 @@ import { ECONOMY, FUNNEL } from "../content/business";
 import { transfer } from "./economy";
 import { resolveEvent } from "./events";
 import { activeCount, capacity, certEffect, conversionBonus, openBranch, rentOffice, startCert } from "./growth";
-import { assignCoach, fireStaff, hireStaff, raiseSalary } from "./staff";
+import { buyMachine, sellMachine } from "./machines";
+import { assignCoach,fireStaff, hireStaff, raiseSalary } from "./staff";
 import { closeReport } from "./season";
 import { declinePreference, preferenceSession } from "./market";
 import { marketConversion } from "./marketEffects";
@@ -36,6 +37,8 @@ export type Command =
   | { type: "startCert"; certId: string }
   | { type: "rentOffice"; officeId: string }
   | { type: "openBranch"; branchId: string }
+  | { type: "buyMachine"; def: string }
+  | { type: "sellMachine"; id: string }
   | { type: "hireStaff"; candidateId: string }
   | { type: "fireStaff"; staffId: string }
   | { type: "raiseSalary"; staffId: string; amount: number }
@@ -90,6 +93,16 @@ export function applyCommand(state: GameState, cmd: Command): CommandResult {
 
     case "openBranch": {
       const err = openBranch(state, cmd.branchId);
+      return err ? fail(err) : { ok: true };
+    }
+
+    case "buyMachine": {
+      const err = buyMachine(state, cmd.def);
+      return err ? fail(err) : { ok: true };
+    }
+
+    case "sellMachine": {
+      const err = sellMachine(state, cmd.id);
       return err ? fail(err) : { ok: true };
     }
 

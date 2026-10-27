@@ -1,5 +1,6 @@
 import { Application, Assets, Container, Texture, TextureStyle } from "pixi.js";
 import { BALANCE } from "./content/balance";
+import { MACHINES, machineSprite } from "./content/machines";
 import { homeStudio } from "./content/rooms/homeStudio";
 import { homeStudioCartoon } from "./content/rooms/homeStudioCartoon";
 import { officeCentralCartoon, officeDistrictCartoon } from "./content/rooms/officesCartoon";
@@ -85,6 +86,8 @@ async function boot() {
   for (const name of Object.keys(manifest.sprites)) if (name.startsWith("char_student_")) needed.add(name);
   // personelin rol görünümleri (sprite'ı olmayan rol yuvanın varsayılan sprite'ıyla çizilir)
   for (const name of [...Object.values(ROLE_SPRITE), ...Object.values(ROLE_SPRITE_CARTOON)]) if (manifest.sprites[name]) needed.add(name);
+  // ofis makineleri (sanatı varsa)
+  for (const m of MACHINES) if (manifest.sprites[machineSprite(m.id)]) needed.add(machineSprite(m.id));
   const textures = new Map<string, Texture>();
   await Promise.all(
     [...needed].map(async (name) => {
@@ -108,6 +111,7 @@ async function boot() {
   // oda: ofis kiralanınca sahne değişir; ekip değişince de yeniden kurulur (yardımcı koçlar odada görünür)
   let room = roomFor(state);
   let staffShown = staffSprites(state);
+  let machinesShown = state.machines.map((m) => m.def);
   /** odadaki hayat için: hafta oynuyor mu, şeritte seçili öğrenci (sonradan kurulan parçalardan her karede güncellenir) */
   const life = { running: false, focus: null as string | null };
   const lifeNow = (r: RoomDef) => roomLife(state, r, life.running, life.focus, (n) => textures.has(n));
@@ -126,7 +130,7 @@ async function boot() {
   let actors = actorsFor(room);
   const actorKey = (a: Actor[]) => a.map((x) => `${x.id}${x.mood}`).join(",");
   const onActorTap = (id: string) => strip.select(id);
-  let scene = new RoomScene(room, manifest, textures, staffShown, actors, onActorTap);
+  let scene = new RoomScene(room, manifest, textures, staffShown, actors, onActorTap, machinesShown);
   world.addChild(scene);
   const floaters = new Floaters();
   world.addChild(floaters);
@@ -156,13 +160,14 @@ async function boot() {
     const next = roomFor(state);
     const staff = staffSprites(state);
     const nextActors = actorsFor(next);
+    const machines = state.machines.map((m) => m.def);
     const apply = () => {
       // poz: arka plan varyantı (Buse masada / seansta) ve yürüyen Buse'nin gizlenmesi
       const l = lifeNow(room);
       scene.setBackground(textures.get(l.background ?? room.background ?? ""));
       scene.setWalkerVisible("buse", !l.hideBuse);
     };
-    if (next === room && staff.join() === staffShown.join() && actorKey(nextActors) === actorKey(actors)) return apply();
+    if (next === room && staff.join() === staffShown.join() && actorKey(nextActors) === actorKey(actors) && machines.join() === machinesShown.join()) return apply();
     const moved = next !== room;
     const gridOn = scene.grid.visible;
     world.removeChild(scene);
@@ -170,7 +175,8 @@ async function boot() {
     room = next;
     staffShown = staff;
     actors = nextActors;
-    scene = new RoomScene(room, manifest, textures, staff, actors, onActorTap);
+    machinesShown = machines;
+    scene = new RoomScene(room, manifest, textures, staff, actors, onActorTap, machines);
     scene.grid.visible = gridOn;
     world.addChild(scene);
     apply();
