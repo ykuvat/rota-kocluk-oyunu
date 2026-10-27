@@ -125,79 +125,79 @@
     {
       "name": "char_assistant_cartoon_se",
       "size": [
-        50,
-        149
+        48,
+        153
       ],
       "anchor": [
-        25,
-        144
+        24,
+        148
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
-        8,
-        8,
+        13,
+        15,
         109,
-        312
+        327
       ]
     },
     {
       "name": "char_staff_secretary_cartoon_se",
       "size": [
-        51,
-        148
+        48,
+        143
       ],
       "anchor": [
-        25,
-        143
+        24,
+        138
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
-        8,
-        70,
-        112,
+        11,
+        80,
+        108,
         370
       ]
     },
     {
       "name": "char_staff_counselor_cartoon_se",
       "size": [
-        52,
-        157
+        50,
+        156
       ],
       "anchor": [
-        26,
-        152
+        25,
+        151
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
         110,
-        12,
-        215,
+        13,
+        211,
         331
       ]
     },
     {
       "name": "char_staff_teacher_cartoon_se",
       "size": [
-        54,
+        49,
         164
       ],
       "anchor": [
-        27,
+        24,
         159
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
-        8,
-        8,
+        20,
+        9,
         118,
         343
       ]

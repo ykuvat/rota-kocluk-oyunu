@@ -153,3 +153,9 @@ Kullanıcı Game Dev Tycoon benzeri temiz çizgi film görünümü istedi ("pixe
 - Makineler: yeni araç `tools/cut_objects.py` (düz zeminde yan yana nesneler; kutu + silme dikdörtgeni + ince çizgi temizliği), `art/configs/makineler.json` → `obj_machine_{vending,coffee,printer,studyBooth}_cartoon_se`. Kahve makinesinin sol kenarında silik bir çizgi kaldı.
 - Makine yerleri: semt ofisinde boş duvar yok → sağ önde fotokopinin önünde sıra; merkezde tuğla duvarda resepsiyon yanı, çalışma masasının başı ve sağ ucu. Gemini'den boş duvar şeritli yeni semt görseli istendi ama görsel aracı o an kapalıydı (günlük sınır) — sonra yapılabilir.
 - Eski çizgi film ofis görselleri (art/sprites/cartoon/office_district, office_central) ve oturma pozları artık kullanılmıyor; yeni ofislerde poz yok (Buse yürür, öğrenciler ayakta).
+
+## Karakter ayakları ve kenar temizliği (2026-10-27)
+- Beyaz ayakkabılar krem zeminde "boş odayla aynı" sayılıp siliniyordu (Buse, sessiz öğrenci ayaksızdı). `cartoon_cut.py` `feet_from`: ayak bandında koyu kontur + paça ile kapalı bölgeler eklenir.
+- `fringe_clean`: kenara değen küçük turuncu zemin / boş odaya benzeyen kırıntılar silinir; `erase` artık en sonda uygulanır; `paint_light` gövde üstüne düşen açık arka plan parçasını boyar.
+- Ev: Buse + 3 öğrenci, semt: yardımcı koç + sekreter temiz. Rehber ve branş öğretmeninin kaynağında bacaklar mobilya arkasında: kesimle tam temizlenmiyor, yeniden çizim gerekir.
+- 3B denemesi (Tripo/Meshy) bırakıldı: Meshy modeli iyiydi ama indirme ücretli.

@@ -138,14 +138,53 @@ def do_char(it: dict, res: int, out_dir: Path) -> dict:
             before = np.asarray(Image.open(it["before"]).convert("RGB")).astype(int)[by:by + src.shape[0], bx:bx + src.shape[1]]
             same = np.abs(after - before).sum(-1) < it.get("same_tol", 30)
             obj &= ~ndimage.binary_opening(same, iterations=1)
-        for x0e, y0e, x1e, y1e in it.get("erase", []):
-            obj[y0e:y1e, x0e:x1e] = False
+        if it.get("feet_from") is not None:
+            # beyaz ayakkabı krem zeminde "boş odayla aynı" sayılıp silinir: ayak bandında koyu konturla
+            # kapalı bölgeler (ayakkabı) doğrudan eklenir
+            band = np.zeros_like(obj)
+            ff = it["feet_from"]  # kaynak satırı ya da (< 1) yükseklik oranı
+            band[int(ff * h) if ff < 1 else ff:] = True
+            # kontur + mevcut gövde (paça) birlikte sınır: ayakkabının üstü paçayla kapanır
+            edge = ((after.sum(-1) < it.get("feet_outline_max", 330)) | obj) & band
+            closed = ndimage.binary_closing(edge, iterations=2)
+            obj |= ndimage.binary_fill_holes(closed) & band
         obj = largest(obj)
         src = after
     obj = ndimage.binary_fill_holes(obj)
+    if it.get("fringe_clean"):
+        # saç/kontur kenarına yapışık turuncu zemin (ahşap) kırıntısı: dış kenara değen küçük turuncu parçalar silinir;
+        # iç bölgedeki ten (yüz, el) kenara değmediği için kalır
+        rgb = src / 255.0
+        mx, mn = rgb.max(-1), rgb.min(-1)
+        sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+        r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+        orange = (r > g) & (g > b) & (sat > 0.38) & (mx > 0.55) & ((r - g) > 0.12) & obj
+        if it.get("before") and it.get("box"):
+            # boş odaya yakın (duvar, raf) kenar pikselleri de kırıntıdır
+            bx, by = it["box"]
+            before = np.asarray(Image.open(it["before"]).convert("RGB")).astype(int)[by:by + src.shape[0], bx:bx + src.shape[1]]
+            orange |= (np.abs(src - before).sum(-1) < it.get("fringe_same_tol", 70)) & obj
+        edge = obj & ~ndimage.binary_erosion(obj, iterations=1)
+        lab, n = ndimage.label(orange)
+        for k in range(1, n + 1):
+            m = lab == k
+            if (m & edge).any() and m.sum() < it.get("fringe_max", 400):
+                obj &= ~m
+        obj = largest(ndimage.binary_opening(obj, iterations=1))
+        # silmenin gövdede açtığı ince yarıklar (saç içinden geçen kol parıltısı) kapansın
+        obj = ndimage.binary_fill_holes(ndimage.binary_closing(obj, iterations=2))
     # gövdeye yapışık 1–3 px'lik kırıntı çizgileri (arka plan konturu) düşsün
     if it.get("final_despur", 2):
         obj = largest(ndimage.binary_opening(obj, iterations=it.get("final_despur", 2)))
+    # elle silinecek dikdörtgenler en sonda: delik doldurma bacak arasındaki zemini geri getirmesin
+    for x0e, y0e, x1e, y1e in it.get("erase", []):
+        obj[y0e:y1e, x0e:x1e] = False
+    if it.get("erase"):
+        obj = largest(obj)
+    # gövdenin önüne düşen arka plan parçası (ör. saçın üstündeki kapı kolu parıltısı): açık pikseller verilen renge
+    for x0p, y0p, x1p, y1p, col in it.get("paint_light", []):
+        reg = src[y0p:y1p, x0p:x1p]
+        reg[reg.sum(-1) > it.get("paint_min", 330)] = col
     ys, xs = np.nonzero(obj)
     x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     s = it["scale"]

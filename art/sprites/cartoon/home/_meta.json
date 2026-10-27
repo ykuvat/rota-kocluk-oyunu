@@ -125,27 +125,27 @@
     {
       "name": "char_buse_cartoon_se",
       "size": [
-        62,
-        176
+        59,
+        181
       ],
       "anchor": [
-        31,
-        170
+        29,
+        175
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
-        9,
-        7,
-        136,
-        364
+        12,
+        12,
+        133,
+        380
       ]
     },
     {
       "name": "char_student_anxious_cartoon_se",
       "size": [
-        47,
+        46,
         144
       ],
       "anchor": [
@@ -158,48 +158,48 @@
       "source_box": [
         11,
         12,
-        105,
+        104,
         305
       ]
     },
     {
       "name": "char_student_messy_cartoon_se",
       "size": [
-        53,
-        158
+        50,
+        157
       ],
       "anchor": [
-        26,
-        153
+        25,
+        152
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
-        17,
-        10,
-        124,
-        332
+        20,
+        11,
+        121,
+        330
       ]
     },
     {
       "name": "char_student_quiet_cartoon_se",
       "size": [
-        56,
-        157
+        53,
+        166
       ],
       "anchor": [
-        28,
-        151
+        26,
+        161
       ],
       "footprint": null,
       "resolution": 2,
       "smooth": true,
       "source_box": [
-        23,
+        24,
         11,
-        136,
-        329
+        132,
+        350
       ]
     }
   ]
