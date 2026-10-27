@@ -28,6 +28,7 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 - Öğrenci kesitlerinde kenarda birkaç turuncu zemin pikseli.
 - Denge (2026-10-25, 16 tohum): good tutturma 0,32/0,68/0,74, lean 0,32/0,67/0,69; güven ≤ 95 (veli memnuniyeti dinlenme düzeyi üstünde geri çekilir, `parent.satisfactionRest/Decay`). Sınırda: passive 1. sezon iflas 0,50 (eşik 0,50), good 2. sezon güven 94,4 (eşik 95). Ayrıntı: docs/gelistirme-gunlugu.md.
 - Merkez ofis seramik derzleri ızgarayla çakışmıyor.
+- Rehber (counselor) ve branş öğretmeni sprite'larında kırıntı / mobilya arkasında kalan bacak var: Gemini'de düz gri zeminde yeniden çizilecek (referans: Buse + iki karakter yan yana; 27.10'da Gemini görsel aracı hata verdi). Kesim için `tools/cut_objects.py`, ayrı `_meta_*.json`; `cizgi_semt.json`'dan iki öğe çıkarılır.
 - Şubelerin ayrı sahnesi yok; personel yuvası semt 2, merkez 3 (fazlası odada görünmez).
 
 - Çizgi film ofisleri ev stüdyosuyla aynı 3×3 karo: ofise taşınınca oda büyümüyor, yalnız masa ekleniyor (kullanıcı şikâyeti 2026-10-26). 3B'de semt 4×4, merkez 5×5 kurulacak.
