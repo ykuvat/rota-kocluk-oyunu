@@ -10,6 +10,10 @@ Kısa süreklilik notu. Ayrıntı: `docs/gelistirme-gunlugu.md` (oynanış, deng
 
 - Kariyer: 3 sezon; 3. ÜYS'de final (karne + mühür): Başarı %60, Güven 85, Büyüme 1 şube → Koç/Bronz/Gümüş/Altın; `src/content/career.ts`, `src/sim/career.ts`. Devam et ile oyun sürer.
 
+## 2026-11-11 cila
+- Açılış ekranı, mevsimli arka plan + parçacıklar, konfeti, para animasyonu, ses efektleri (☰ ayar), hafta sonu "hero" satırı. Ayrıntı: docs/gelistirme-gunlugu.md son bölüm; görev kaydı `.kuvat/gorev-cila.md`.
+- Sistemde artık Git for Windows kurulu (`git` doğrudan çalışır).
+
 ## Yayın
 - Depo: github.com/ykuvat/rota-kocluk-oyunu (herkese açık). Oynanabilir: https://ykuvat.github.io/rota-kocluk-oyunu/
 - `main`'e gönderim → `.github/workflows/pages.yml`: `npm ci`, `npm test`, `BASE_PATH=/<depo>/ npm run build`, Pages'e yayın. `art/sprites` commit'te olmalı (derleme sprite'ları oradan senkronlar).

@@ -1,7 +1,7 @@
 // Sahnede yükselip kaybolan kısa geri bildirimler ("+6.000 ₺", "Yeni öğrenci!", ❤).
 // Her eylemin dünyada görünür bir karşılığı olsun diye; simülasyonu yalnız okur.
 
-import { Container, Text } from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 import type { WorldPoint } from "./RoomScene";
 
 interface Floater {
@@ -11,8 +11,20 @@ interface Floater {
   y0: number;
 }
 
+interface Bit {
+  g: Graphics;
+  vx: number;
+  vy: number;
+  spin: number;
+  age: number;
+  life: number;
+}
+
+const CONFETTI = [0xf4bd62, 0xff8fb1, 0x9be8ae, 0x9fc6ff, 0xfff1c9, 0xe9a14a];
+
 export class Floaters extends Container {
   private items: Floater[] = [];
+  private bits: Bit[] = [];
 
   constructor() {
     super();
@@ -34,7 +46,32 @@ export class Floaters extends Container {
     this.items.push({ t, age: 0, life: 1.8, y0 });
   }
 
+  /** Kutlama: noktadan saçılan konfeti (yeni öğrenci, hedef, taşınma). */
+  burst(at: WorldPoint, count = 26): void {
+    for (let i = 0; i < count; i++) {
+      const g = new Graphics().rect(-3, -1.5, 6, 3).fill(CONFETTI[i % CONFETTI.length]);
+      g.position.set(at.x, at.y);
+      g.rotation = Math.random() * Math.PI;
+      this.addChild(g);
+      const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2;
+      const v = 90 + Math.random() * 150;
+      this.bits.push({ g, vx: Math.cos(a) * v, vy: Math.sin(a) * v, spin: (Math.random() - 0.5) * 14, age: 0, life: 1.1 + Math.random() * 0.6 });
+    }
+  }
+
   update(dtSeconds: number): void {
+    for (const b of this.bits) {
+      b.age += dtSeconds;
+      b.vy += 320 * dtSeconds; // yer çekimi
+      b.vx *= 1 - 1.2 * dtSeconds;
+      b.g.x += b.vx * dtSeconds;
+      b.g.y += b.vy * dtSeconds;
+      b.g.rotation += b.spin * dtSeconds;
+      b.g.scale.x = Math.cos(b.age * 9); // dönerken yassılaşır
+      b.g.alpha = Math.min(1, (b.life - b.age) / 0.35);
+    }
+    for (const b of this.bits.filter((x) => x.age >= x.life)) b.g.destroy();
+    this.bits = this.bits.filter((x) => x.age < x.life);
     for (const f of this.items) {
       f.age += dtSeconds;
       const k = f.age / f.life;

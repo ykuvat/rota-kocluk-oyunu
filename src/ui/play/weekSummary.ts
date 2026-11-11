@@ -12,7 +12,18 @@ import type { DecisionRecord } from "./decisions";
 const css = `
 #wsum{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,12,24,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:35;padding:12px}
 #wsum .box{width:min(520px,100%);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px 22px;background:var(--panel-solid);border:1px solid var(--line);border-radius:22px;box-shadow:0 16px 50px rgba(0,0,0,.5);animation:pop .25s ease-out}
-#wsum h2{margin:0 0 4px;font-size:21px;font-weight:800;color:#ffdc9a}
+#wsum .hero{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,rgba(244,189,98,.2),rgba(244,189,98,.06));border:1px solid rgba(244,189,98,.25)}
+#wsum .hero.good{background:linear-gradient(135deg,rgba(155,232,174,.24),rgba(155,232,174,.06));border-color:rgba(155,232,174,.3)}
+#wsum .hero.bad{background:linear-gradient(135deg,rgba(159,198,255,.2),rgba(159,198,255,.05));border-color:rgba(159,198,255,.25)}
+#wsum .hero .em{font-size:34px;line-height:1;animation:hpop .5s cubic-bezier(.2,1.6,.4,1)}
+#wsum .hero .hl{font-size:20px;font-weight:800;color:#ffdc9a;line-height:1.2}
+#wsum .hero .hs{font-size:12.5px;color:var(--muted)}
+#wsum .hero .hn{margin-left:auto;font-size:20px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#wsum .line{animation:lin .3s ease-out backwards}
+#wsum .line:nth-child(n+2){animation-delay:.04s}#wsum .line:nth-child(n+4){animation-delay:.08s}#wsum .line:nth-child(n+6){animation-delay:.12s}
+@keyframes hpop{from{transform:scale(.3) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes lin{from{transform:translateX(-8px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#wsum .line,#wsum .hero .em{animation:none}}
 #wsum h4{margin:14px 0 6px;font-size:14px;font-weight:800;color:#f6d39a}
 #wsum .line{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;margin-bottom:4px;background:var(--card);border-radius:12px}
 #wsum .line.col{flex-direction:column;gap:2px}
@@ -167,7 +178,15 @@ export class WeekSummary {
       ${machineLine}
       <div class="line"><span><b>${tk("week.net")}</b></span><b class="${change >= 0 ? "ok" : "bad"}">${change >= 0 ? "+" : ""}${fmt(change)} ₺</b></div>`;
 
-    this.el.innerHTML = `<div class="box"><h2>${tf("week.title", { n: week })}</h2>
+    // haftanın havası: öğrencilerin görev tamamlama ortalaması (para ay başında oynadığı için ölçü değil)
+    const rates = active.map((st) => st.history.at(-1)).filter((w) => w && w.assigned).map((w) => w!.done / w!.assigned);
+    const avg = rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null;
+    const tone = avg === null ? "ok" : avg >= 0.7 ? "good" : avg >= 0.45 ? "ok" : "bad";
+    const hero = `<div class="hero ${tone}"><span class="em">${tone === "good" ? "🌟" : tone === "ok" ? "📅" : "🌧️"}</span>
+      <div><div class="hl">${tk(`week.hero.${tone}`)}</div><div class="hs">${tf("week.title", { n: week })}</div></div>
+      <b class="hn ${change >= 0 ? "ok" : "bad"}">${change >= 0 ? "+" : ""}${fmt(change)} ₺</b></div>`;
+
+    this.el.innerHTML = `<div class="box">${hero}
       <h4>${tk("week.yourDecisions")}</h4>${decHtml}
       ${teamHtml ? `<h4>${tk("week.teamDecisions")}</h4>${teamHtml}` : ""}
       <h4>${tk("week.students")}</h4>${stHtml}

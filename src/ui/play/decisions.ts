@@ -131,7 +131,7 @@ const css = `
 #decisions .clue .cl-n{font-size:11.5px;color:var(--muted);margin-top:2px}
 #decisions .clue.closed{background:rgba(255,170,165,.08);border-left-color:var(--bad)}@keyframes pop{from{transform:translateY(6px)}to{transform:none}}
 @media (max-width:760px){
-  #decisions{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:48vh;max-height:48dvh;padding:6px 10px 10px;border-radius:20px 20px 18px 18px;
+  #decisions{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:42vh;max-height:42dvh;padding:6px 10px 10px;border-radius:20px 20px 18px 18px;
     padding-bottom:max(10px,env(safe-area-inset-bottom))}
   #decisions::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:rgba(255,235,215,.25);margin:2px auto 6px}
   #decisions .head{padding:0 4px 8px;cursor:pointer}

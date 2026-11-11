@@ -316,3 +316,12 @@ Düzeltme (K4): smart bot öğrenciyi en yüksek becerili boş yerli koça atar;
 
 Otomat, kahve, baskı ve (yalnız merkez ofiste) çalışma kabini: bir kez alınır, hafta kapanışında gelir ve bakım işletme kasasına işlenir (`sim/machines.ts`, değerler `content/machines.ts`). Yuva: ev 0, semt ofisi 2, merkez 4; her makineden en çok bir tane. Komutlar `buyMachine`, `sellMachine` (satışta alışın %40'ı). Kahve makinesi aktif öğrencilerin velisine haftalık +0,2 memnuniyet verir (tavan 100). Kayıt şeması v12 (`machines: []`). Kategoriler: `machines` (gelir), `machineUpkeep`, `machinePurchase`, `machineSale`.
 Bot: yalnız good, 6+ aktif öğrenci, boş yuva ve kasa > alış + 3 aylık gider iken en hızlı geri ödeyeni alır. Ölçüm (3. sezon, good, makinesiz → makineli; aynı tohumlar): 16 tohumda worth 1.425.237 → 2.054.973, hitRate 0,73 → 0,72, Altın 0,81 → 0,81; passive iflas oranı değişmedi (1,00), lean birebir aynı. 12 tohumda good worth 2.008.871, hitRate 0,72, Altın 0,83. Tüm fullgame iddiaları 12 ve 16 tohumda geçer.
+
+## Elden geçirme ve görsel cila (2026-11-11)
+
+Simülasyon, denge ve kayıt şeması değişmedi; yalnız arayüz ve çizim.
+- Düzeltme: üst kutuda tarih satırı kırılmıyor (hafta bilgisi alt satırda); telefonda karar sayfası açıkken oda sayfanın üstündeki alana sığıyor (sayfa en çok %42); çizgi film tarzında yakınlık adımları inceldi (oda alana daha iyi oturur).
+- Atmosfer (`render/backdrop.ts`): mevsime göre (takvim ayı) renk geçişi, odanın arkasında ışık, süzülen parçacıklar (yaprak, kar, çiçek, ışık zerresi); oda altında gölge.
+- Geri bildirim: bakiye sayarak akar ve parlar; konfeti (yeni öğrenci, hedef, taşınma); hafta sonu ekranında haftanın havası ve sonucu üstte.
+- Açılış ekranı (`ui/play/title.ts`): Devam et / Yeni oyun, dil, KUVAT LABS imzası. Yeni oyun ve tarz değişimindeki yenilemede bir kez atlanır.
+- Ses (`platform/sound.ts`): WebAudio ile üretilen kısa tonlar (dosya yok); ☰ ayarlardan aç/kapa (`rota.sound.v1`).

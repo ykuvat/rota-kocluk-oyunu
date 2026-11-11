@@ -2,6 +2,7 @@
 // Önceden yalnız klavye kısayolları vardı (L, S, N); telefonda hiçbirine ulaşılamıyordu.
 
 import { getLocale, tk, type Locale } from "../../platform/i18n";
+import { play, setSoundOn, soundOn } from "../../platform/sound";
 
 export interface SettingsControls {
   artStyle: string;
@@ -54,6 +55,10 @@ export class SettingsMenu {
       if (a === "close") return this.close();
       if (a === "tr" || a === "en") this.c.onLocale(a);
       if (a === "style") return this.c.onStyle();
+      if (a === "soundOn" || a === "soundOff") {
+        setSoundOn(a === "soundOn");
+        play("good");
+      }
       if (a === "save") {
         this.c.onSave();
         this.saved = true;
@@ -102,6 +107,9 @@ export class SettingsMenu {
       <div class="grp"><div class="lb">${tk("set.style")}</div><div class="seg">
         <button data-s="${cartoon ? "" : "style"}" class="${cartoon ? "on" : ""}">${tk("set.cartoon")}</button>
         <button data-s="${cartoon ? "style" : ""}" class="${cartoon ? "" : "on"}">${tk("set.pixel")}</button></div></div>
+      <div class="grp"><div class="lb">${tk("set.sound")}</div><div class="seg">
+        <button data-s="soundOn" class="${soundOn() ? "on" : ""}">🔊 ${tk("set.soundOn")}</button>
+        <button data-s="soundOff" class="${soundOn() ? "" : "on"}">🔇 ${tk("set.soundOff")}</button></div></div>
       <div class="act">
         <button data-s="save">💾 ${tk("set.save")}</button>${this.saved ? `<div class="ok">✔ ${tk("set.saved")}</div>` : ""}
         <button data-s="tutorial">📘 ${tk("set.tutorial")}</button>

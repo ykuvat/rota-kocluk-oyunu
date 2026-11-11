@@ -11,6 +11,7 @@ import type { RoomDef, SpriteManifest } from "./content/types";
 import { tileToScreen } from "./core/iso";
 import { getLocale, setLocale, tf, tk } from "./platform/i18n";
 import { Camera } from "./render/camera";
+import { Backdrop, seasonOf } from "./render/backdrop";
 import { Floaters } from "./render/floaters";
 import { RoomScene, spriteTop, type Actor } from "./render/RoomScene";
 import { calendarAt } from "./sim/calendar";
@@ -37,6 +38,8 @@ import { WeekSummary } from "./ui/play/weekSummary";
 import { resetTutorial, Tutorial } from "./ui/play/tutorial";
 import { SettingsMenu } from "./ui/play/settings";
 import { loadLocale, saveLocale } from "./platform/prefs";
+import { play } from "./platform/sound";
+import { skipTitleOnce, TitleScreen } from "./ui/play/title";
 
 // pixel art: bulanıklaştırmadan, en yakın komşu ölçekleme
 TextureStyle.defaultOptions.scaleMode = "nearest";
@@ -99,6 +102,8 @@ async function boot() {
     }),
   );
 
+  const backdrop = new Backdrop();
+  app.stage.addChild(backdrop);
   const world = new Container();
   world.sortableChildren = true;
   app.stage.addChild(world);
@@ -146,13 +151,14 @@ async function boot() {
     // geniş masaüstünde sol üstteki bilgi kutusu da odayı örtmesin
     camera.leftInset = play && !mobile && window.innerWidth >= 1200 ? 364 : 0;
     camera.topInset = mobile ? (box("phud")?.bottom ?? 0) : 0;
-    // telefonda alt sınır: karar sayfası KAPALIYKEN kaplayacağı yer (başlık + ana düğme) + öğrenci şeridi; sayfa açılınca
-    // odanın alt kısmını örter ama oda o yüzden küçülmez (dikey alan dar)
+    // telefonda alt sınır: karar sayfası (en az kapalı hâli: başlık + ana düğme) + öğrenci şeridi
     const sheet = document.getElementById("decisions");
     const part = (sel: string) => (sheet?.querySelector<HTMLElement>(sel)?.offsetHeight ?? 0);
     const sheetClosed = part(".head") + part(".main") + 30;
+    // sayfa açıkken de oda görünsün: gerçek yüksekliği kadar yer ayır (üst sınırı CSS'te), oda kalan alana sığar
+    const sheetNow = Math.max(sheetClosed, sheet?.getBoundingClientRect().height ?? 0);
     const strip = box("strip");
-    camera.bottomInset = !play ? 0 : mobile ? sheetClosed + (strip && strip.height > 0 ? strip.height + 6 : 0) + 8 : 110;
+    camera.bottomInset = !play ? 0 : mobile ? sheetNow + (strip && strip.height > 0 ? strip.height + 6 : 0) + 8 : 110;
     camera.fit(w, h * 0.9);
     camera.centerOn(-room.floorOrigin[0] + w / 2, -room.floorOrigin[1] + h / 2 + 10);
   };
@@ -180,7 +186,12 @@ async function boot() {
     scene.grid.visible = gridOn;
     world.addChild(scene);
     apply();
-    if (moved) centerRoom();
+    if (moved) {
+      centerRoom();
+      // yeni mekâna taşınma: kutlama
+      floaters.burst(tileToScreen(room.tilesX / 2, room.tilesY / 2), 44);
+      play("fanfare");
+    }
   };
 
   // --- arayüz: varsayılan sade oyun modu; ⚙ ile eski ayrıntılı paneller (yalnız inceleme) ---
@@ -233,8 +244,25 @@ async function boot() {
   const startNewGame = () => {
     clearStorage();
     resetTutorial();
+    skipTitleOnce();
     location.href = location.pathname;
   };
+  const buseUrl = ((s) => (s ? `${base}${s.url}` : null))(manifest.sprites[artStyle === "cartoon" && manifest.sprites.char_buse_cartoon_se ? "char_buse_cartoon_se" : "char_buse_idle_se"]);
+  const title = new TitleScreen({
+    hasSave: !!saved,
+    saveLine: saved ? tf("title.saveLine", { w: calendarAt(state.hour).weekIndex + 1, n: state.students.filter((s) => !s.left).length }) : "",
+    heroUrl: buseUrl,
+    logoUrl: `${base}brand/kuvat-labs-logo.png`,
+    onLocale: (l) => {
+      setLocale(l);
+      saveLocale(l);
+    },
+    onNewGame: startNewGame,
+  });
+  // düğme sesi: oyun arayüzündeki her düğmede
+  document.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest?.(".pl button, #tut button")) play("click");
+  });
   const settings = new SettingsMenu({
     artStyle,
     onLocale: (l) => {
@@ -244,6 +272,7 @@ async function boot() {
     onStyle: () => {
       setArtStyle(artStyle === "cartoon" ? "pixel" : "cartoon");
       saveToStorage(state);
+      skipTitleOnce();
       location.href = location.pathname; // ?stil= parametresi seçimi ezmesin
     },
     onSave: () => saveToStorage(state),
@@ -295,6 +324,7 @@ async function boot() {
     decisions.running = false;
     decisions.render(true);
     summary.show([...decisions.weekDecisions], decisions.count);
+    play("week");
     decisions.weekDecisions.length = 0;
   };
   const updateFooter = () => {
@@ -324,7 +354,7 @@ async function boot() {
       // kayıttan devam edilen oyunda geçmiş haftalar da sayılır
       weeksPlayed: () => Math.max(weeksPlayed, calendarAt(state.hour).weekIndex),
     },
-    ((s) => (s ? `${base}${s.url}` : null))(manifest.sprites[artStyle === "cartoon" && manifest.sprites.char_buse_cartoon_se ? "char_buse_cartoon_se" : "char_buse_idle_se"]),
+    buseUrl,
     !saved,
   );
 
@@ -337,17 +367,24 @@ async function boot() {
     const at = buseAt();
     switch (e.type) {
       case "studentEnrolled":
+        floaters.burst(at);
+        play("fanfare");
         return floaters.spawn(at, `🎉 ${tk("float.enrolled")}`);
       case "intervention":
+        play(d.matched === false ? "bad" : "good");
         return floaters.spawn(at, d.matched === false ? "💧" : "❤", d.matched === false ? 0x9fc6ff : 0xff8fb1);
       case "parentMeeting":
+        play("good");
         return floaters.spawn(at, `☎ ${tk("float.call")}`, 0xbfe8ff);
       case "mockExam":
         if (d.prev === null) return;
         return floaters.spawn(at, `${Number(d.total) >= Number(d.prev) ? "↗" : "↘"} ${(Number(d.total) - Number(d.prev)).toFixed(1)} net`, Number(d.total) >= Number(d.prev) ? 0x8fe3a0 : 0xff9d9d);
       case "questDone":
+        floaters.burst(at, 18);
+        play("fanfare");
         return floaters.spawn(at, `★ ${tk("float.quest")}`, 0xffd166);
       case "studentLeft":
+        play("bad");
         return floaters.spawn(at, `💔 ${String(d.name ?? "")}`, 0xff9d9d);
     }
   };
@@ -358,7 +395,10 @@ async function boot() {
     for (const e of log.slice(Math.max(seenLog, log.length - 4))) floatFor(e);
     seenLog = log.length;
     const tuition = state.economy.totals.tuition ?? 0;
-    if (tuition > lastTuition) floaters.spawn(buseAt(), `+${Math.round(tuition - lastTuition).toLocaleString("tr-TR")} ₺`, 0xffe39a);
+    if (tuition > lastTuition) {
+      floaters.spawn(buseAt(), `+${Math.round(tuition - lastTuition).toLocaleString("tr-TR")} ₺`, 0xffe39a);
+      play("coin");
+    }
     lastTuition = tuition;
   };
 
@@ -414,6 +454,15 @@ async function boot() {
 
   let acc = 0;
   app.ticker.add((ticker) => {
+    // atmosfer: mevsim takvimden; ışık odanın ekrandaki ortasında
+    backdrop.resize(host.clientWidth, host.clientHeight);
+    backdrop.setSeason(seasonOf(calendarAt(state.hour).month));
+    {
+      const span = (room.tilesX + room.tilesY) * 64;
+      const c = tileToScreen(room.tilesX / 2, room.tilesY / 2);
+      backdrop.setFocus(world.x + c.x * world.scale.x, world.y + (c.y - 40) * world.scale.y, span * world.scale.x);
+    }
+    backdrop.update(ticker.deltaMS / 1000);
     floaters.update(ticker.deltaMS / 1000);
     scene.update(ticker.deltaMS / 1000);
     if (running) {
@@ -445,6 +494,14 @@ async function boot() {
       return; // düzenleyicide yazarken kısayollar çalışmaz
     }
     if ((e.target as HTMLElement).tagName === "INPUT") return;
+    if (title.isOpen) {
+      // açılışta kısayollar oyuna geçmez; Enter/Boşluk oyuna başlatır
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        title.close();
+      }
+      return;
+    }
     if (e.key === "g" || e.key === "G") scene.grid.visible = !scene.grid.visible;
     if (e.key === "l" || e.key === "L") {
       const l = getLocale() === "tr" ? "en" : "tr";
@@ -495,6 +552,7 @@ async function boot() {
     advance: (h: number) => advance(state, h),
     cmd: (c: Command) => applyCommand(state, c),
     startWeek: startOrContinue,
+    backdrop,
   };
 }
 

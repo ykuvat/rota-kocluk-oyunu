@@ -2,6 +2,7 @@ import { AnimatedSprite, Container, Graphics, Sprite, Text, Texture } from "pixi
 import { depthKey, footprintAnchorOffsetX, footprintBottom, tileToScreen } from "../core/iso";
 import type { Placement, ProceduralRoom, RoomDef, SpriteManifest } from "../content/types";
 import { machineSprite } from "../content/machines";
+import { softDisc } from "./backdrop";
 import { SpotBook, Walker } from "./walkers";
 
 /** Yerleşim için çizim sırası anahtarları; bir yüzeyin üstündekiler o yüzeyin hemen ardından çizilir. */
@@ -95,6 +96,20 @@ export class RoomScene extends Container {
     machines: string[] = [],
   ) {
     super();
+
+    // odanın altında yumuşak gölge: oda boşlukta asılı durmasın
+    {
+      const span = (room.tilesX + room.tilesY) * 64;
+      const c = tileToScreen(room.tilesX / 2, room.tilesY / 2);
+      const sh = new Sprite(softDisc());
+      sh.anchor.set(0.5);
+      sh.tint = 0x0c0612;
+      sh.alpha = 0.55;
+      sh.width = span * 1.35;
+      sh.height = span * 0.62;
+      sh.position.set(c.x, c.y + span * 0.16);
+      this.addChild(sh);
+    }
 
     if (room.background) {
       const bg = new Sprite(textures.get(room.background));

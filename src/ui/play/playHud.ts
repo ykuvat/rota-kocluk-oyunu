@@ -17,11 +17,14 @@ import { fmt } from "./common";
 const css = `
 #phud{position:fixed;left:12px;top:12px;width:340px;padding:12px 14px;z-index:20}
 #phud .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-#phud .date{font-weight:800;color:var(--soft)}
-#phud .wk{font-size:12px;color:var(--muted);background:var(--card);border-radius:999px;padding:2px 9px}
+#phud .date{font-weight:800;color:var(--soft);white-space:nowrap}
 #phud .bal{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
-#phud .money{font-size:24px;font-weight:800;letter-spacing:-.01em}
+#phud .money{font-size:24px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums;border-radius:10px;transition:color .3s}
 #phud .money.neg{color:var(--bad)}
+#phud .money.up{animation:mup .9s ease-out}
+#phud .money.down{animation:mdown .9s ease-out}
+@keyframes mup{0%{color:var(--good);text-shadow:0 0 14px rgba(155,232,174,.8);transform:scale(1.06)}100%{transform:none}}
+@keyframes mdown{0%{color:var(--bad);text-shadow:0 0 14px rgba(255,170,165,.7);transform:scale(1.06)}100%{transform:none}}
 #phud .sub{font-size:12.5px;color:var(--muted)}
 #phud .stars{color:var(--accent);letter-spacing:1px}
 #phud .season{margin-top:8px;font-size:12.5px;color:var(--soft);background:var(--card);border-radius:12px;padding:6px 10px}
@@ -50,8 +53,7 @@ const css = `
 @media (max-width:760px){
   #phud{left:8px;right:8px;top:8px;width:auto;padding:8px 10px;border-radius:16px}
   #phud .top{flex-wrap:nowrap}
-  #phud .date{font-size:12.5px;white-space:nowrap}
-  #phud .wk{display:none}
+  #phud .date{font-size:12.5px}
   #phud .bal{margin-top:2px}
   #phud .money{font-size:19px}
   #phud .menu{gap:2px;flex:none}
@@ -85,6 +87,33 @@ export interface HudControls {
 export class PlayHud {
   private readonly el: HTMLDivElement;
   private lastKey = "";
+  /** ekranda görünen bakiye: gerçek değere sayarak yaklaşır (para hareketi fark edilsin) */
+  private shown = Number.NaN;
+  private target = 0;
+  private raf = 0;
+
+  /** Bakiye değişti: sayıyı akıt, yönüne göre kısa parlama. */
+  private moveMoney(to: number): void {
+    const dir = to > this.target ? "up" : "down";
+    this.target = to;
+    const el = this.el.querySelector<HTMLElement>(".money");
+    if (el) {
+      el.classList.remove("up", "down");
+      void el.offsetWidth; // animasyonu baştan başlat
+      el.classList.add(dir);
+    }
+    if (this.raf) return;
+    const step = () => {
+      const diff = this.target - this.shown;
+      this.shown = Math.abs(diff) < 1 ? this.target : this.shown + diff * 0.16;
+      const m = this.el.querySelector<HTMLElement>(".money");
+      const v = m?.querySelector<HTMLElement>(".mv");
+      if (v) v.textContent = fmt(this.shown);
+      m?.classList.toggle("neg", this.shown < 0);
+      this.raf = this.shown === this.target ? 0 : requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
 
   constructor(private readonly state: GameState, private readonly c: HudControls) {
     const style = document.createElement("style");
@@ -120,7 +149,9 @@ export class PlayHud {
     const company = this.c.showCompany();
     const tr = s.coach.training;
     const cert = tr ? CERT_BY_ID[tr.cert] : undefined;
-    const key = `${cal.dayIndex}|${Math.round(money)}|${s.quests.length}|${stars}|${company}|${tr?.cert}:${tr?.weeksLeft}|${Math.round(s.reputation.trust)}|${s.branches.length}|${s.season.reports.length}|${s.season.index}|${getLocale()}`;
+    if (Number.isNaN(this.shown)) this.shown = this.target = money;
+    else if (Math.round(money) !== Math.round(this.target)) this.moveMoney(money);
+    const key = `${cal.dayIndex}|${Math.round(trend)}|${s.quests.length}|${stars}|${company}|${tr?.cert}:${tr?.weeksLeft}|${Math.round(s.reputation.trust)}|${s.branches.length}|${s.season.reports.length}|${s.season.index}|${getLocale()}`;
     if (!force && key === this.lastKey) return;
     this.lastKey = key;
     const reward = (id: string) => {
@@ -129,15 +160,14 @@ export class PlayHud {
     };
     this.el.innerHTML = `
       <div class="top"><span class="date"><span class="wd">${tk(`day.${cal.weekday}`)} · </span>${cal.day}.${cal.month}.${cal.year}</span>
-        <span class="wk">${tf("play.week", { n: cal.weekIndex + 1 })}</span>
         <div class="menu">
           <button data-a="goals" class="gbtn ghost" title="${tk("play.goals")}">🎯${goals.length ? ` ${goals.length}` : ""}</button>
           ${company ? `<button data-a="company">${tk("play.company")}</button>` : ""}
           <button data-a="history" class="ghost">${tk("play.history")}</button>
           <button data-a="settings" class="ghost" title="${tk("set.title")}" aria-label="${tk("set.title")}">☰</button>
         </div></div>
-      <div class="bal"><span class="money ${money < 0 ? "neg" : ""}">💰 ${fmt(money)} ₺</span><span class="stars" title="${tk("play.rep")}">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></div>
-      <div class="sub">${tf("play.monthTrend", { v: `${trend >= 0 ? "+" : ""}${fmt(trend)}` })}</div>
+      <div class="bal"><span class="money ${this.shown < 0 ? "neg" : ""}">💰 <span class="mv">${fmt(this.shown)}</span> ₺</span><span class="stars" title="${tk("play.rep")}">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></div>
+      <div class="sub">${tf("play.week", { n: cal.weekIndex + 1 })} · ${tf("play.monthTrend", { v: `${trend >= 0 ? "+" : ""}${fmt(trend)}` })}</div>
       ${careerHtml(s)}
       ${tr && cert ? `<div class="train" title="${tk(`cert.effect.${cert.id}`)}"><div class="tl"><span>📖 ${tk(`cert.${cert.id}`)}</span><span>${tf("play.trainWeeks", { done: cert.weeks - tr.weeksLeft, total: cert.weeks })}</span></div>
         <div class="tb"><span style="width:${Math.round(((cert.weeks - tr.weeksLeft) / cert.weeks) * 100)}%"></span></div></div>` : ""}
