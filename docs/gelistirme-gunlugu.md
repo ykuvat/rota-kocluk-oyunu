@@ -325,3 +325,4 @@ Simülasyon, denge ve kayıt şeması değişmedi; yalnız arayüz ve çizim.
 - Geri bildirim: bakiye sayarak akar ve parlar; konfeti (yeni öğrenci, hedef, taşınma); hafta sonu ekranında haftanın havası ve sonucu üstte.
 - Açılış ekranı (`ui/play/title.ts`): Devam et / Yeni oyun, dil, KUVAT LABS imzası. Yeni oyun ve tarz değişimindeki yenilemede bir kez atlanır.
 - Ses (`platform/sound.ts`): WebAudio ile üretilen kısa tonlar (dosya yok); ☰ ayarlardan aç/kapa (`rota.sound.v1`).
+- Ek (aynı gün): müzik (`platform/music.ts`, WebAudio ile üretilen sakin döngü; ☰ ayar, `rota.music.v1`); uçan yazılar ve konfeti ekranda sabit boyda (kamera yakınken dev yazı oluyordu).

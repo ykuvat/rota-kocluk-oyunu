@@ -159,3 +159,7 @@ Kullanıcı Game Dev Tycoon benzeri temiz çizgi film görünümü istedi ("pixe
 - `fringe_clean`: kenara değen küçük turuncu zemin / boş odaya benzeyen kırıntılar silinir; `erase` artık en sonda uygulanır; `paint_light` gövde üstüne düşen açık arka plan parçasını boyar.
 - Ev: Buse + 3 öğrenci, semt: yardımcı koç + sekreter temiz. Rehber ve branş öğretmeninin kaynağında bacaklar mobilya arkasında: kesimle tam temizlenmiyor, yeniden çizim gerekir.
 - 3B denemesi (Tripo/Meshy) bırakıldı: Meshy modeli iyiydi ama indirme ücretli.
+
+## Temiz kenar, ölçek ve iz temizliği (2026-11-11)
+- `cartoon_cut.py` oda kesimi: maske 2 px içeri çekilir (`edge_trim`): oda kenarındaki açık saçak oyunda kesik çizgi gibi görünüyordu. `heal`: düz yüzeydeki istenmeyen iz (c5_seans_quiet masasındaki "W") yüzey rengine döner. Tüm çizgi film odaları yeniden kesildi (Windows'ta `PYTHONIOENCODING=utf-8` ile çalıştır).
+- Ev stüdyosunda `charScale: 0.74`: ayaktaki karakterler seans pozundaki (arka plana gömülü) Buse ile aynı boyda; önceden kitaplıktan uzundu.

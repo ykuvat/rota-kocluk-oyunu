@@ -38,6 +38,7 @@ import { WeekSummary } from "./ui/play/weekSummary";
 import { resetTutorial, Tutorial } from "./ui/play/tutorial";
 import { SettingsMenu } from "./ui/play/settings";
 import { loadLocale, saveLocale } from "./platform/prefs";
+import { startMusic } from "./platform/music";
 import { play } from "./platform/sound";
 import { skipTitleOnce, TitleScreen } from "./ui/play/title";
 
@@ -259,6 +260,9 @@ async function boot() {
     },
     onNewGame: startNewGame,
   });
+  // müzik ilk dokunuşla başlar (tarayıcı sesi ancak kullanıcı hareketinden sonra açar)
+  window.addEventListener("pointerdown", startMusic);
+  window.addEventListener("keydown", startMusic);
   // düğme sesi: oyun arayüzündeki her düğmede
   document.addEventListener("click", (e) => {
     if ((e.target as HTMLElement).closest?.(".pl button, #tut button")) play("click");
@@ -463,6 +467,7 @@ async function boot() {
       backdrop.setFocus(world.x + c.x * world.scale.x, world.y + (c.y - 40) * world.scale.y, span * world.scale.x);
     }
     backdrop.update(ticker.deltaMS / 1000);
+    floaters.textScale = 1 / world.scale.x;
     floaters.update(ticker.deltaMS / 1000);
     scene.update(ticker.deltaMS / 1000);
     if (running) {

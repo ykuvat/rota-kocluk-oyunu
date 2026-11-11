@@ -85,6 +85,18 @@ def do_room(it: dict, res: int, out_dir: Path) -> dict:
     bg = np.median(corners, axis=0)
     mask = np.abs(src - bg).sum(-1) > it.get("bg_tolerance", 24)
     mask = ndimage.binary_fill_holes(largest(ndimage.binary_opening(mask, iterations=2)))
+    # kenardaki açık arka plan saçağı (oyunda kesik çizgi gibi görünür): maskeyi birkaç piksel içeri çek
+    if it.get("edge_trim", 2):
+        mask = ndimage.binary_erosion(mask, iterations=it.get("edge_trim", 2))
+    # düz yüzeydeki istenmeyen iz (ör. üretimden kalan harf): dikdörtgende ortancadan koyu pikseller yüzey rengine döner
+    for hx0, hy0, hx1, hy1 in it.get("heal", []):
+        reg = src[hy0:hy1, hx0:hx1].astype(float)
+        med = np.median(reg.reshape(-1, 3), axis=0)
+        bad = ndimage.binary_dilation((med.sum() - reg.sum(-1)) > it.get("heal_tol", 14), iterations=2)
+        reg[bad] = med
+        soft = np.stack([ndimage.gaussian_filter(reg[..., c], 1.5) for c in range(3)], axis=-1)
+        reg[bad] = soft[bad]
+        src[hy0:hy1, hx0:hx1] = reg.astype(int)
     ys, xs = np.nonzero(mask)
     x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     if it.get("box"):

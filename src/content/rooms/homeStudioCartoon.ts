@@ -9,6 +9,8 @@ export const homeStudioCartoon: RoomDef = {
   floorOrigin: [204.3, 168.1],
   tilesX: 3,
   tilesY: 3,
+  // karakterler oda çiziminden ayrı ve iri çizildi: seans pozundaki (arka plana gömülü) Buse ile aynı boya iner
+  charScale: 0.74,
   placements: [{ id: "buse", sprite: "char_buse_cartoon_se", x: 1.4, y: 1.5, fx: 0.4, fy: 0.4, walker: true }],
   // seans dışında bekleyen / aynı gün gelen diğer öğrenciler
   studentSpots: [

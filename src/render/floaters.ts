@@ -25,6 +25,8 @@ const CONFETTI = [0xf4bd62, 0xff8fb1, 0x9be8ae, 0x9fc6ff, 0xfff1c9, 0xe9a14a];
 export class Floaters extends Container {
   private items: Floater[] = [];
   private bits: Bit[] = [];
+  /** yazılar ekranda sabit boyda kalsın: dünya ölçeğinin tersi (kamera yakınlaşınca dev yazı olmasın) */
+  textScale = 1;
 
   constructor() {
     super();
@@ -40,7 +42,8 @@ export class Floaters extends Container {
     });
     t.anchor.set(0.5, 1);
     t.resolution = 2;
-    const y0 = at.y - 6 - stack * 22;
+    const y0 = at.y - (6 + stack * 22) * this.textScale;
+    t.scale.set(this.textScale);
     t.position.set(Math.round(at.x), y0);
     this.addChild(t);
     this.items.push({ t, age: 0, life: 1.8, y0 });
@@ -64,10 +67,10 @@ export class Floaters extends Container {
       b.age += dtSeconds;
       b.vy += 320 * dtSeconds; // yer çekimi
       b.vx *= 1 - 1.2 * dtSeconds;
-      b.g.x += b.vx * dtSeconds;
-      b.g.y += b.vy * dtSeconds;
+      b.g.x += b.vx * dtSeconds * this.textScale;
+      b.g.y += b.vy * dtSeconds * this.textScale;
       b.g.rotation += b.spin * dtSeconds;
-      b.g.scale.x = Math.cos(b.age * 9); // dönerken yassılaşır
+      b.g.scale.set(Math.cos(b.age * 9) * this.textScale, this.textScale); // dönerken yassılaşır
       b.g.alpha = Math.min(1, (b.life - b.age) / 0.35);
     }
     for (const b of this.bits.filter((x) => x.age >= x.life)) b.g.destroy();
@@ -75,7 +78,8 @@ export class Floaters extends Container {
     for (const f of this.items) {
       f.age += dtSeconds;
       const k = f.age / f.life;
-      f.t.y = f.y0 - 38 * Math.min(1, k * 1.4);
+      f.t.scale.set(this.textScale);
+      f.t.y = f.y0 - 38 * this.textScale * Math.min(1, k * 1.4);
       f.t.alpha = k < 0.7 ? 1 : Math.max(0, 1 - (k - 0.7) / 0.3);
     }
     for (const f of this.items.filter((x) => x.age >= x.life)) {

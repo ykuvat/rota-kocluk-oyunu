@@ -23,6 +23,19 @@ let lastAt: Partial<Record<Sfx, number>> = {};
 
 export const soundOn = () => on;
 
+/** Ortak ses bağlamı (efektler ve müzik); ilk kullanıcı dokunuşundan sonra çağrılmalı. Ses yoksa null. */
+export function audioContext(): AudioContext | null {
+  const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return null;
+  try {
+    ctx ??= new AC();
+    if (ctx.state === "suspended") void ctx.resume();
+    return ctx;
+  } catch {
+    return null;
+  }
+}
+
 export function setSoundOn(v: boolean): void {
   on = v;
   saveSoundOn(v);
@@ -30,11 +43,9 @@ export function setSoundOn(v: boolean): void {
 
 export function play(name: Sfx): void {
   if (!on) return;
-  const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AC) return;
   try {
-    ctx ??= new AC();
-    if (ctx.state === "suspended") void ctx.resume();
+    const ctx = audioContext();
+    if (!ctx) return;
     // aynı ses art arda yığılmasın (hızlı haftada birçok olay aynı karede gelir)
     const now = ctx.currentTime;
     if (now - (lastAt[name] ?? -1) < 0.08) return;

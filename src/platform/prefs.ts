@@ -32,6 +32,25 @@ export function saveSoundOn(on: boolean): void {
   }
 }
 
+const MUSIC_KEY = "rota.music.v1";
+
+/** Müzik açık mı (varsayılan açık). */
+export function loadMusicOn(): boolean {
+  try {
+    return localStorage.getItem(MUSIC_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+
+export function saveMusicOn(on: boolean): void {
+  try {
+    localStorage.setItem(MUSIC_KEY, on ? "1" : "0");
+  } catch {
+    /* depo yok */
+  }
+}
+
 export function saveLocale(l: Locale): void {
   try {
     localStorage.setItem(KEY, l);
