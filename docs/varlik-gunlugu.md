@@ -163,3 +163,7 @@ Kullanıcı Game Dev Tycoon benzeri temiz çizgi film görünümü istedi ("pixe
 ## Temiz kenar, ölçek ve iz temizliği (2026-11-11)
 - `cartoon_cut.py` oda kesimi: maske 2 px içeri çekilir (`edge_trim`): oda kenarındaki açık saçak oyunda kesik çizgi gibi görünüyordu. `heal`: düz yüzeydeki istenmeyen iz (c5_seans_quiet masasındaki "W") yüzey rengine döner. Tüm çizgi film odaları yeniden kesildi (Windows'ta `PYTHONIOENCODING=utf-8` ile çalıştır).
 - Ev stüdyosunda `charScale: 0.74`: ayaktaki karakterler seans pozundaki (arka plana gömülü) Buse ile aynı boyda; önceden kitaplıktan uzundu.
+
+## Personel yeniden çizim (2026-11-12)
+- Yardımcı koç, sekreter, rehber, branş öğretmeni: Gemini 3.1 Pro, "Görüntü oluştur"; referans = Buse + eski karakterin sahneden kırpılmış hâli (panodan yapıştırıldı); istem: aynı tarz, tam boy, iki ayak görünür, düz açık gri zemin. Kaynak `art/inbox/cizgi2/p1_rehber_ogretmen_v1.jpg`, `p2_koc_sekreter_v1.jpg` (2752×1536).
+- Kesim `tools/cut_objects.py` (`personel2.json`, `personel3.json`), çıktı `art/sprites/cartoon/office2`. Boylar Buse (175) ile uyumlu: 168–180. Eski kesimler `office_district` klasöründen ve `cizgi_semt.json`'dan kaldırıldı.

@@ -1,0 +1,15 @@
+{
+  "_note": "Rehber ve branş öğretmeni yeniden çizim (2026-11-12, Gemini 3.1 Pro; referans: Buse + eski iki karakter). Düz gri zeminde, ayaklar görünür. Eski kesimler (cizgi_semt.json, mobilya arkasında yarım bacak) kaldırıldı. Boy: Buse 175 oyun pikseli.",
+  "source": "art/inbox/cizgi2/p1_rehber_ogretmen_v1.jpg",
+  "out_dir": "art/sprites/cartoon/office2",
+  "meta_name": "_meta_staff.json",
+  "resolution": 2,
+  "floor_at": [1376, 1400],
+  "opening": 1,
+  "tolerance": 30,
+  "despur": 2,
+  "items": [
+    {"name": "char_staff_counselor_cartoon_se", "pick": [552, 763], "box": [300, 0, 900, 1536], "height": 180},
+    {"name": "char_staff_teacher_cartoon_se", "pick": [2200, 763], "box": [1900, 0, 2500, 1536], "height": 170}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "_note": "Yardımcı koç ve sekreter yeniden çizim (2026-11-12, Gemini 3.1 Pro; personel2 ile aynı sohbet ve tarz). Düz gri zemin. Eski kesimler (cizgi_semt.json) kaldırıldı.",
+  "source": "art/inbox/cizgi2/p2_koc_sekreter_v1.jpg",
+  "out_dir": "art/sprites/cartoon/office2",
+  "meta_name": "_meta_staff2.json",
+  "resolution": 2,
+  "floor_at": [1376, 1400],
+  "opening": 1,
+  "tolerance": 30,
+  "despur": 2,
+  "items": [
+    {"name": "char_assistant_cartoon_se", "pick": [567, 763], "box": [300, 0, 900, 1536], "height": 178},
+    {"name": "char_staff_secretary_cartoon_se", "pick": [2185, 763], "box": [1900, 0, 2500, 1536], "height": 168}
+  ]
+}

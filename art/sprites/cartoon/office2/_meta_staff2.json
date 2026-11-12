@@ -1,0 +1,34 @@
+{
+  "source": "art/configs/personel3.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "char_assistant_cartoon_se",
+      "size": [
+        58,
+        186
+      ],
+      "anchor": [
+        29,
+        178
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    },
+    {
+      "name": "char_staff_secretary_cartoon_se",
+      "size": [
+        59,
+        176
+      ],
+      "anchor": [
+        29,
+        168
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    }
+  ]
+}

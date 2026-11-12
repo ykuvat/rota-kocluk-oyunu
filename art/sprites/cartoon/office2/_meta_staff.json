@@ -1,0 +1,34 @@
+{
+  "source": "art/configs/personel2.json",
+  "style": "cartoon",
+  "sprites": [
+    {
+      "name": "char_staff_counselor_cartoon_se",
+      "size": [
+        61,
+        188
+      ],
+      "anchor": [
+        30,
+        180
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    },
+    {
+      "name": "char_staff_teacher_cartoon_se",
+      "size": [
+        54,
+        177
+      ],
+      "anchor": [
+        27,
+        170
+      ],
+      "footprint": null,
+      "resolution": 2,
+      "smooth": true
+    }
+  ]
+}
